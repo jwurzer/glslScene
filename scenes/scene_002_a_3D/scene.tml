@@ -1,0 +1,77 @@
+context
+	rendering-api = opengl 2.1
+
+resources
+	mesh
+		id = MESH1
+		vertex-layout
+			x	y	r	g	b	a
+		triangles
+			-100.0	-100.0	1.0	0.0	0.0	1.0
+			100.0	-100.0	0.0	1.0	0.0	1.0
+			-100.0	100.0	0.0	0.0	1.0	1.0
+			100.0	-100.0	0.0	1.0	0.0	1.0
+			-100.0	100.0	0.0	0.0	1.0	1.0
+			100.0	100.0	1.0	1.0	1.0	1.0
+	shader
+		id = SHADER1
+		vertex = shaders/example.vert
+		fragment = shaders/example.frag
+		uniform float uTime = time
+		uniform mat4 uProjectionMatrix = projection-matrix
+		uniform mat4 uViewMatrix = view-matrix
+		uniform mat4 uModelMatrix = model-matrix
+		uniform mat4 uModelViewMatrix = model-view-matrix
+		uniform mat4 uModelViewProjectionMatrix = mvp-matrix
+		uniform mat4 uEntityMatrix = entity-matrix
+		attribute aPosition = 0 2
+		attribute aColor = 2 4
+
+scenes
+	scene
+		id = SCENE-ONE
+		entity
+			shader-component
+				shader-program-id = SHADER1
+			entity
+				transform-component
+					translate 0 0 100
+					rotate-degree 180 0 1 0
+				mesh-component
+					mesh-id = MESH1
+			entity
+				transform-component
+					translate 0 0 -100
+				mesh-component
+					mesh-id = MESH1
+			entity
+				transform-component
+					translate 100 0 0
+					rotate-degree 90 0 1 0
+				mesh-component
+					mesh-id = MESH1
+			entity
+				transform-component
+					translate -100 0 0
+					rotate-degree -90 0 1 0
+				mesh-component
+					mesh-id = MESH1
+			entity
+				transform-component
+					translate 0 -100 0
+					rotate-degree 90 1 0 0
+				mesh-component
+					mesh-id = MESH1
+rendering
+	render-pass
+		framebuffer-id = default
+		clear-color = 0.0 0.5 0.0 1.0
+		projection-matrix
+			#ortho = -500 500 -500 500 -500 500 shrink-to-fit
+			perspective-degree = 30 window-ratio 5 5000
+		view-matrix
+			look-at = 0 700 500
+		scene-id = SCENE-ONE
+		depth-test = true
+
+

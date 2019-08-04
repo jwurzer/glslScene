@@ -1,0 +1,61 @@
+# scene-name must be the directory name of the scene which includes the scene.tml file
+
+# ===================== 001 examples =========================
+
+# triangle without shader
+#scene-name = scene_001_a_triangles_no_shader
+
+# triangle with shaders. Using gl_Color, gl_Vertex, etc.
+#scene-name = scene_001_b_triangles
+
+# ===================== 002 examples =========================
+
+# A "open" cube. Using uniforms and attributes (no gl_ transforms)
+#scene-name = scene_002_a_3D
+
+# ===================== 003 examples =========================
+
+# A quad (per 2 triangles) some entities with transformations (no shaders)
+#scene-name = scene_003_a_transform_no_shader
+
+# with shaders. using Using gl_Color, gl_Vertex, gl_ matrices
+#scene-name = scene_003_b_transform
+
+# Using uniform matrices and attributes and NO gl_Color, gl_Vertex, gl_ matrices
+scene-name = scene_003_c_transform
+
+# Using gl 3.3 core. Using (location = x) for attributes
+#scene-name = scene_003_d_transform_gl33
+
+# Using gl 3.3 core. Using attributes in scene.tml to find the locations
+#scene-name = scene_003_e_transform_gl33
+
+# ===================== 004 examples =========================
+
+# A example which is compatible with glsl-sandbox examples
+# for more examples see http://glslsandbox.com/
+#scene-name = scene_004_a_glsl-sandbox
+
+# ===================== 005 examples =========================
+
+# A example which is "compatible" (in some parts) with shadertoy examples
+# see https://www.shadertoy.com/
+#scene-name = scene_005_a_shadertoy
+
+# ===================== 006 examples =========================
+
+# Two textures without shaders
+#scene-name = scene_006_a_texture_no_shader
+
+# Two textures with shaders (and one mesh without shader)
+#scene-name = scene_006_b_texture_shader
+
+# Two textures with shaders, no matrices
+#scene-name = scene_006_c_texture_no-matrix
+
+# Two textures with shaders, no matrices for gl 3.3 core
+#scene-name = scene_006_d_texture_gl33
+
+# Two textures with shaders with framebuffer
+#scene-name = scene_006_e_texture_fb_gl33
+
