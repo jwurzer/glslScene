@@ -1,0 +1,1 @@
+This file is used to determine the relative path origin for all other paths.

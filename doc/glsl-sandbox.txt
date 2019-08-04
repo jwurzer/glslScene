@@ -1,0 +1,45 @@
+
+
+
+http://glslsandbox.com/
+
+https://github.com/mrdoob/glsl-sandbox
+
+unter static/index.html befindet sich der intressante Teil.
+
+folgende "parameters" werden ausgelesen:
+
+parameters = { startTime: Date.now(), time: 0, mouseX: 0.5, mouseY: 0.5, screenWidth: 0, screenHeight: 0 },
+
+mouseX: zwischen 0.0 und 1.0, 0.0 ganz links, 1.0 ganz rechts
+mouseY: zwischen 0.0 und 1.0, 0.0 ganz unten, 1.0 ganz oben
+
+screenWidth und screenHeight
+haben die Werte von canvas.width und canvas.height
+ist die größe in pixel und wird für die "resolution" verwendet.
+Die Werte von canvas.width und canvas.height sind von window.innerWidth and window.innerHeight abgeleitet.
+canvas.width = window.innerWidth / quality;
+canvas.height = window.innerHeight / quality;
+quality kann 0.5, 1.0, 2.0, 4.0 oder 8.0 sein. 1 = 1:1 0.5 ist doppelte qualität (doppelte texture größe)
+
+surface = { centerX: 0, centerY: 0, width: 1, height: 1, isPanning: false, isZooming: false, lastX: 0, lastY: 0 },
+
+
+übergebene werte:
+time: float: Vergangene Zeit seit dem Laden der Seite in Sekunden
+mouse: vec2: x und y der mouse. x und y sind jeweils zwischen 0.0 und 1.0. links/unten 0.0/0.0, rechts/oben 1.0/1.0.
+resolution: vec2: Weite und Höhe in pixels bzw. um einen Faktor 0.5, 1.0, 2.0, 4.0, 8.0 dividiert.
+backbuffer: sampler2D, hardcoded auf 0 gesetzt (texture unit 0), ist anscheinend immer das vorherige frame als texture...
+surfaceSize: vec2: x gibt das verhältnis an. y ist immer 1.0. Z.B bei einer resolution von 300x200 wären die Werte 1.5 und 1.0.
+
+
+glsl-sandbox rendert nicht gleich auf den screen, sondern in einen eigenen framebuffer, der dann als texture dient.
+dieser Framebuffer hat genau die Auflösung, die mit resolution übergeben wird.
+
+dann gibts noch einen screen shader, der die gerenderte texture auf den ganzen screen interpoliert darstellt.
+Wenn beim Faktor 1.0 eingestellt ist, dann wird sie entsprechend 1:1 dargestellt (keine Interpolation)
+
+beim Factor 0.5 wird in eine Texture gerendert, die doppelt so groß ist, als dann die texture dargestellt wird.
+
+Bei factor 2, 4 bzw. 8 ist die Texture entsprechend kleiner und wird dann bei der Darstellung auf die volle Größe interpoliert.
+ 

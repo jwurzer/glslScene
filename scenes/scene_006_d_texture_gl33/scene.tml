@@ -1,0 +1,54 @@
+context
+	rendering-api = opengl 3.3 core
+
+resources
+	texture
+		id = TEX-SMILEY1
+		filename = textures/smiley.png
+		mipmap = true
+		min-filter = linear
+		mag-filter = linear
+
+	texture
+		id = TEX-BG
+		filename = textures/art-board-game-challenge-163064.jpg
+		mipmap = true
+		min-filter = linear
+		mag-filter = linear
+
+	mesh
+		id = MESH1
+		vertex-layout
+			x	y	s0	t0	s1	t1	r	g	b	a
+		triangles
+			-0.5	-0.5	0	0	0	0	1	0	0	1
+			0.5	-0.5	1	0	1	0	0	1	0	1
+			-0.5	0.5	0	1	0	1	0	0	1	1
+			0.5	-0.5	1	0	1	0	0	1	0	1
+			0.5	0.5	1	1	1	1	1	1	0	1
+			-0.5	0.5	0	1	0	1	0	0	1	1
+
+	shader
+		id = SHADER1
+		vertex = shaders/test1.vert
+		fragment = shaders/test1.frag
+		uniform sampler2d texSmiley = 0
+		uniform sampler2d texBg = 1
+
+scenes
+	scene
+		id = SCENE-ONE
+		entity
+			texture-component
+				tex-id-unit-0 = TEX-SMILEY1
+				tex-id-unit-1 = TEX-BG
+			shader-component
+				shader-program-id = SHADER1
+			mesh-component
+				mesh-id = MESH1
+
+rendering
+	render-pass
+		framebuffer-id = default
+		clear-color = 0.5 0.5 0.5 1.0
+		scene-id = SCENE-ONE

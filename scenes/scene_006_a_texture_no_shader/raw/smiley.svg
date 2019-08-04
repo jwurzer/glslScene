@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="10cm" height="10cm" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<rect style="fill: none; stroke: none;" x="0" y="0" width="200" height="200" rx="0" ry="0"/>
+	<ellipse style="fill: #ffffff; stroke-width: 6; stroke: #808080" cx="100" cy="100" rx="80" ry="80"/>
+	<ellipse style="fill: #000000; stroke: none" cx="70" cy="70" rx="14" ry="14"/>
+	<ellipse style="fill: #000000; stroke: none" cx="130" cy="70" rx="14" ry="14"/>
+	<path style="fill: none; stroke-width: 10; stroke-linecap: round; stroke: #000000" d="M 60,130 A 50,50 0 0 0 140,130"/>
+</svg>

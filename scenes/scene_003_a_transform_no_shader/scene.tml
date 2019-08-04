@@ -1,0 +1,73 @@
+context
+	rendering-api = opengl 2.1
+
+resources
+	mesh
+		id = MESH1
+		vertex-layout
+			x	y	r	g	b	a
+		triangles
+			0.0	0.0	1.0	0.0	0.0	1.0
+			100.0	0.0	0.0	1.0	0.0	1.0
+			0.0	100.0	0.0	0.0	1.0	1.0
+			100.0	0.0	0.0	1.0	0.0	1.0
+			0.0	100.0	0.0	0.0	1.0	1.0
+			100.0	100.0	1.0	1.0	1.0	1.0
+scenes
+	scene
+		id = SCENE-ONE
+		entity
+			transform-component
+				translate -150 -120
+			entity
+				transform-component
+					translate 15 0
+				mesh-component
+					mesh-id = MESH1
+				entity
+					transform-component
+						scale 0.5 0.5 200 200
+						translate 100 100
+						rotate-degree 45 -100 -100
+					mesh-component
+						mesh-id = MESH1
+					entity
+						transform-component
+							translate 100 100
+							scale 2.0 2.0
+							rotate-degree -45 -100 -100
+							translate -65 0
+						mesh-component
+							mesh-id = MESH1
+			entity
+				transform-component
+					translate 250 100
+				mesh-component
+					mesh-id = MESH1
+				entity
+					transform-component
+						scale 0.5 0.5 200 200
+						translate 100 100
+						rotate-degree 45 -100 -100
+					mesh-component
+						mesh-id = MESH1
+					entity
+						transform-component
+							translate 100 100
+							scale 2.0 2.0
+							rotate-degree -45 -100 -100
+							translate -65 0
+						mesh-component
+							mesh-id = MESH1
+rendering
+	render-pass
+		framebuffer-id = default
+		clear-color = 0.0 0.5 0.0 1.0
+		projection-matrix
+			ortho = -500 500 -500 500 -500 500 shrink-to-fit
+		view-matrix
+			transform
+				translate -200 0
+		scene-id = SCENE-ONE
+
+
