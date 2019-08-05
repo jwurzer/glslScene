@@ -107,6 +107,7 @@ void gs::Context::run()
 
 	bool newLoaded = true;
 
+	bool isWireframe = false;
 	while (running) {
 		++frameCnt;
 
@@ -157,6 +158,17 @@ void gs::Context::run()
 						mProperties.mMousePosFactor = Vector2f(
 								mProperties.mMousePosPixel.x / mProperties.mWindowSize.mWidth,
 								mProperties.mMousePosPixel.y / mProperties.mWindowSize.mHeight);
+					}
+					break;
+				case SDL_KEYDOWN:
+					if (e.key.keysym.sym == '1') {
+						isWireframe = !isWireframe;
+						if (isWireframe) {
+							glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+						}
+						else {
+							glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+						}
 					}
 					break;
 				case SDL_MOUSEMOTION:
@@ -279,6 +291,13 @@ void gs::Context::initContext()
 		return;
 	}
 	mIsSdlInit = true;
+
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 
 	if (mMajorVersion >= 0) {

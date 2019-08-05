@@ -6,8 +6,43 @@
 #include <system/log.h>
 #include <sstream>
 
+namespace gs
+{
+	namespace
+	{
+		unsigned int getPrimitive(PrimitiveType primType)
+		{
+			switch (primType)
+			{
+			case PrimitiveType::POINTS:
+				return GL_POINTS;
+			case PrimitiveType::LINES:
+				return GL_LINES;
+			case PrimitiveType::LINE_LOOP:
+				return GL_LINE_LOOP;
+			case PrimitiveType::LINE_STRIP:
+				return GL_LINE_STRIP;
+			case PrimitiveType::TRIANGLES:
+				return GL_TRIANGLES;
+			case PrimitiveType::TRIANGLE_STRIP:
+				return GL_TRIANGLE_STRIP;
+			case PrimitiveType::TRIANGLE_FAN:
+				return GL_TRIANGLE_FAN;
+			case PrimitiveType::QUADS:
+				return GL_QUADS;
+			case PrimitiveType::QUAD_STRIP:
+				return GL_QUAD_STRIP;
+			case PrimitiveType::POLYGON:
+				return GL_POLYGON;
+			}
+			return 0;
+		}
+	}
+}
+
 gs::Mesh::Mesh(bool useVaoVersion)
 		:Resource(std::weak_ptr<FileChangeMonitoring>()),
+		mPrimitiveType(PrimitiveType::TRIANGLES),
 		mVertices(),
 		mVertexSize(0),
 		mVertexCount(0),
@@ -119,7 +154,7 @@ void gs::Mesh::draw()
 		return;
 	}
 
-	glDrawArrays(GL_TRIANGLES, 0, mVertexCount);
+	glDrawArrays(getPrimitive(mPrimitiveType), 0, mVertexCount);
 }
 
 void gs::Mesh::unbind(const ShaderProgram* shaderProgram)

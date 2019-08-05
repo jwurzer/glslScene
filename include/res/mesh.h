@@ -3,6 +3,7 @@
 
 #include <res/resource.h>
 #include <rendering/gl_api.h>
+#include <common/primitive.h>
 #include <vector>
 
 namespace gs
@@ -42,6 +43,8 @@ namespace gs
 		bool addVertices(const VertexV3C4* vertices,
 				unsigned int vertexCount);
 
+		void setPrimitiveType(PrimitiveType primitiveType) { mPrimitiveType = primitiveType; }
+
 		unsigned int getVertexCount() const { return mVertexCount; }
 
 		/**
@@ -54,6 +57,8 @@ namespace gs
 
 		std::string toString() const;
 	private:
+		PrimitiveType mPrimitiveType;
+
 		std::vector<float> mVertices;
 		unsigned int mVertexSize; // unit: float-size!
 		unsigned int mVertexCount;

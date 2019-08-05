@@ -337,7 +337,113 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			LOGE("Vertices have wrong size\n");
 			return 0;
 		}
-		if (cfgValue.mArray[i].mName.mText == "triangles") {
+
+		if (cfgValue.mArray[i].mName.mArray.size() == 3 &&
+				cfgValue.mArray[i].mName.mArray[0].mValue.mText == "point-mesh") {
+			if (vertexCnt != 3) {
+				LOGE("Must be 3 vertices\n");
+				return 0;
+			}
+			if (!creation::addPointMesh(*mesh, vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount,
+					cfgValue.mArray[i].mName.mArray[1].mValue.mInteger,
+					cfgValue.mArray[i].mName.mArray[2].mValue.mInteger
+				)) {
+				LOGE("Can't add point-mesh\n");
+				return 0;
+			}
+		}
+		else if (cfgValue.mArray[i].mName.mArray.size() == 3 &&
+				cfgValue.mArray[i].mName.mArray[0].mValue.mText == "triangle-mesh") {
+			if (vertexCnt != 3) {
+				LOGE("Must be 3 vertices\n");
+				return 0;
+			}
+			if (!creation::addTriangleMesh(*mesh, vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount,
+					cfgValue.mArray[i].mName.mArray[1].mValue.mInteger,
+					cfgValue.mArray[i].mName.mArray[2].mValue.mInteger
+				)) {
+				LOGE("Can't add triangle-mesh\n");
+				return 0;
+			}
+		}
+		else if (cfgValue.mArray[i].mName.mArray.size() == 3 &&
+				cfgValue.mArray[i].mName.mArray[0].mValue.mText == "quad-mesh") {
+			if (vertexCnt != 3) {
+				LOGE("Must be 3 vertices\n");
+				return 0;
+			}
+			if (!creation::addQuadMesh(*mesh, vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount,
+					cfgValue.mArray[i].mName.mArray[1].mValue.mInteger,
+					cfgValue.mArray[i].mName.mArray[2].mValue.mInteger
+				)) {
+				LOGE("Can't add quad-mesh\n");
+				return 0;
+			}
+		}
+		else if (cfgValue.mArray[i].mName.mText == "points") {
+			if (!mesh->addVertices(vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount)) {
+				LOGE("Can't add points\n");
+				return 0;
+			}
+			mesh->setPrimitiveType(PrimitiveType::POINTS);
+		}
+		else if (cfgValue.mArray[i].mName.mText == "lines") {
+			if (!mesh->addVertices(vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount)) {
+				LOGE("Can't add lines\n");
+				return 0;
+			}
+			mesh->setPrimitiveType(PrimitiveType::LINES);
+		}
+		else if (cfgValue.mArray[i].mName.mText == "line-loop") {
+			if (!mesh->addVertices(vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount)) {
+				LOGE("Can't add line-loop\n");
+				return 0;
+			}
+			mesh->setPrimitiveType(PrimitiveType::LINES);
+		}
+		else if (cfgValue.mArray[i].mName.mText == "line-strip") {
+			if (!mesh->addVertices(vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount)) {
+				LOGE("Can't add line-strip\n");
+				return 0;
+			}
+			mesh->setPrimitiveType(PrimitiveType::LINE_STRIP);
+		}
+		else if (cfgValue.mArray[i].mName.mText == "triangles") {
 			if (vertexCnt % 3) {
 				LOGE("Must be a muliple of 3 for triangles\n");
 				return 0;
@@ -352,6 +458,30 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 				return 0;
 			}
 		}
+		else if (cfgValue.mArray[i].mName.mText == "triangle-strip") {
+			if (!mesh->addVertices(vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount)) {
+				LOGE("Can't add triangle-strip\n");
+				return 0;
+			}
+			mesh->setPrimitiveType(PrimitiveType::TRIANGLE_STRIP);
+		}
+		else if (cfgValue.mArray[i].mName.mText == "triangle-fan") {
+			if (!mesh->addVertices(vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount)) {
+				LOGE("Can't add triangle-fan\n");
+				return 0;
+			}
+			mesh->setPrimitiveType(PrimitiveType::TRIANGLE_FAN);
+		}
 		else if (cfgValue.mArray[i].mName.mText == "quads") {
 			if (vertices.size() % 4) {
 				LOGE("Must be a muliple of 4 for quads\n");
@@ -361,10 +491,35 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
 					layoutTexCount,
-					layoutColorCount)) {
-				LOGE("Can't add triangles\n");
+					layoutColorCount,
+					layoutCustomCount)) {
+				LOGE("Can't add quads\n");
 				return 0;
 			}
+		}
+		else if (cfgValue.mArray[i].mName.mText == "quad-strip") {
+			if (!mesh->addVertices(vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount)) {
+				LOGE("Can't add quad-strip\n");
+				return 0;
+			}
+			mesh->setPrimitiveType(PrimitiveType::QUAD_STRIP);
+		}
+		else if (cfgValue.mArray[i].mName.mText == "polygon") {
+			if (!mesh->addVertices(vertices.data(),
+					layoutSize * sizeof(float), vertexCnt,
+					layoutPosCount,
+					layoutTexCount,
+					layoutColorCount,
+					layoutCustomCount)) {
+				LOGE("Can't add polygon\n");
+				return 0;
+			}
+			mesh->setPrimitiveType(PrimitiveType::POLYGON);
 		}
 		else if (cfgValue.mArray[i].mName.mText == "rects") {
 			if (vertices.size() % 2) {
