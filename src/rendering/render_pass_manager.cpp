@@ -7,6 +7,7 @@
 #include <scene/scene_manager.h>
 #include <scene/scene.h>
 #include <system/log.h>
+#include <camera.h>
 #include <glm/gtc/type_ptr.hpp>
 
 gs::RenderPassManager::RenderPassManager()
@@ -20,6 +21,24 @@ gs::RenderPassManager::~RenderPassManager()
 void gs::RenderPassManager::addPass(const gs::RenderPass &pass)
 {
 	mPasses.push_back(pass);
+}
+
+void gs::RenderPassManager::handleEventForCameras(const SDL_Event& e)
+{
+	for (auto& pass : mPasses) {
+		if (pass.mCamera) {
+			pass.mCamera->handleEvent(e);
+		}
+	}
+}
+
+void gs::RenderPassManager::updateCameras(float seconds)
+{
+	for (auto& pass : mPasses) {
+		if (pass.mCamera) {
+			pass.mCamera->update(seconds);
+		}
+	}
 }
 
 void gs::RenderPassManager::renderAllPasses(Renderer &renderer,
@@ -72,6 +91,12 @@ void gs::RenderPassManager::renderAllPasses(Renderer &renderer,
 		p.mViewRatio = Size2f(viewSize.x / viewSize.y, 1.0f);
 
 		p.mViewMatrix = pass.mViewMatrix;
+		if (pass.mCamera) {
+			glm::vec3 eye, center, up;
+			pass.mCamera->getPropertiesForLookAt(eye, center, up);
+			p.mViewMatrix = glm::lookAt(eye, center, up);
+		}
+
 		if (p.mUseGlTransforms) {
 			glMatrixMode(GL_MODELVIEW);
 			glLoadIdentity();
@@ -110,3 +135,4 @@ bool gs::RenderPassManager::isValid() const
 	}
 	return true;
 }
+

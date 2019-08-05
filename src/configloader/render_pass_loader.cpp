@@ -7,6 +7,7 @@
 #include <ecs/transform_component.h>
 #include <common/cfg.h>
 #include <system/log.h>
+#include <camera.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace gs
@@ -14,8 +15,10 @@ namespace gs
 	namespace
 	{
 		// v = viewvector
-		glm::vec3 getUpVector(const glm::vec3& v)
+		glm::vec3 getUpVector(glm::vec3 v)
 		{
+			v = glm::normalize(v);
+
 			double xz = sqrt(v.x * v.x + v.z * v.z);
 			if (xz > 1.0) {
 				xz = 1.0;
@@ -33,7 +36,7 @@ namespace gs
 			return v2;
 		}
 
-		bool setViewMatrix(glm::mat4& viewMatrix, const gs::CfgValuePair& cfgValue)
+		bool setViewMatrix(RenderPass& pass, const gs::CfgValuePair& cfgValue)
 		{
 			if (cfgValue.mName.mText != "view-matrix") {
 				LOGE("no projection section! '%s'\n",
@@ -42,9 +45,11 @@ namespace gs
 			}
 			const CfgValue* lookAt = nullptr;
 			const CfgValue* transformCfg= nullptr;
+			const CfgValue* cameraCfg = nullptr;
 			CfgReadRule cfgRules[] = {
 					CfgReadRule("look-at", &lookAt, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ALL),
 					CfgReadRule("transform", &transformCfg, CfgReadRule::RULE_OPTIONAL),
+					CfgReadRule("camera", &cameraCfg, CfgReadRule::RULE_OPTIONAL),
 					CfgReadRule("")
 			};
 			size_t nextPos = 0;
@@ -54,6 +59,28 @@ namespace gs
 				LOGE("projection config is wrong, rv %d\n", int(storeCnt));
 				return false;
 			}
+			if (cameraCfg) {
+				if (cameraCfg->mArray.size() != 2 && cameraCfg->mArray.size() != 3) {
+					LOGE("Wrong camera value format.\n");
+					return false;
+				}
+				if (!cameraCfg->mArray[0].mValue.isBool()) {
+					LOGE("First camera value must be a boolean.\n");
+					return false;
+				}
+				if (cameraCfg->mArray[0].mValue.mBool) {
+					if (transformCfg) {
+						LOGE("camera can't be combined.\n");
+						return false;
+					}
+					pass.mCamera = std::make_shared<Camera>();
+					pass.mCamera->setSpeed(cameraCfg->mArray[1].mValue.mFloatingPoint);
+					if (cameraCfg->mArray.size() >= 3) {
+						pass.mCamera->setRotateDistance(cameraCfg->mArray[2].mValue.mFloatingPoint);
+					}
+				}
+			}
+			glm::mat4& viewMatrix = pass.mViewMatrix;
 			if (lookAt) {
 				size_t cnt = lookAt->mArray.size();
 				if (cnt != 3 && cnt != 6 && cnt != 9) {
@@ -80,6 +107,9 @@ namespace gs
 					up = getUpVector(viewVec);
 				}
 				viewMatrix = glm::lookAt(eye, center, up);
+				if (pass.mCamera) {
+					pass.mCamera->setLookAt(eye, center, up);
+				}
 			}
 			if (transformCfg) {
 				TransformComponent transform{std::weak_ptr<Entity>()};
@@ -299,7 +329,7 @@ namespace gs
 				}
 			}
 			if (viewCfg) {
-				if (!setViewMatrix(pass.mViewMatrix, *viewCfg)) {
+				if (!setViewMatrix(pass, *viewCfg)) {
 					LOGE("set view failed.\n");
 					return false;
 				}
