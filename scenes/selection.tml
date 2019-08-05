@@ -22,13 +22,16 @@
 #scene-name = scene_003_b_transform
 
 # Using uniform matrices and attributes and NO gl_Color, gl_Vertex, gl_ matrices
-scene-name = scene_003_c_transform
+#scene-name = scene_003_c_transform
 
 # Using gl 3.3 core. Using (location = x) for attributes
 #scene-name = scene_003_d_transform_gl33
 
 # Using gl 3.3 core. Using attributes in scene.tml to find the locations
 #scene-name = scene_003_e_transform_gl33
+
+# Using gl 3.3 core. Using attributes in scene.tml to find the locations
+scene-name = scene_003_f_geo_gl33
 
 # ===================== 004 examples =========================
 
