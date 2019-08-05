@@ -28,6 +28,8 @@ gs::Camera::Camera()
 	mRotateDown(false),
 	mRotateClockwise(false),
 	mRotateAntiClockwise(false),
+	mRotateDistanceLeft(false),
+	mRotateDistanceRight(false),
 	mStartTime(0.0),
 	mPointDiffTime(2.0),
 	mPoints(),
@@ -62,6 +64,10 @@ gs::Camera::~Camera()
 
 void gs::Camera::update(float seconds)
 {
+#if 1
+	updateCustomPosition(seconds);
+	mPrevSeconds = seconds;
+#else
 	if (seconds < mStartTime) {
 		updateCustomPosition(seconds);
 		mPrevSeconds = seconds;
@@ -86,6 +92,7 @@ void gs::Camera::update(float seconds)
 	mUpVector = getUpVector(mViewVector);
 
 	mPrevSeconds = seconds;
+#endif
 }
 
 void gs::Camera::moveForward(bool forward)
@@ -148,7 +155,15 @@ float gs::Camera::getZFar() const
 	return mZFar;
 }
 
-void gs::Camera::getPropertiesForGluLookAt(glm::vec3& eye, glm::vec3& center,
+void gs::Camera::setLookAt(const glm::vec3& eye, const glm::vec3& center,
+		const glm::vec3& up)
+{
+	mPosPoint = eye;
+	mViewVector = glm::normalize(center - mPosPoint);
+	mUpVector = glm::normalize(up);
+}
+
+void gs::Camera::getPropertiesForLookAt(glm::vec3& eye, glm::vec3& center,
 		glm::vec3& up) const
 {
 	eye = mPosPoint;
@@ -223,7 +238,7 @@ glm::quat gs::Camera::getInterQuatPoint(unsigned int index, float percent) const
 
 void gs::Camera::updateCustomPosition(float seconds)
 {
-	float rotSpeed = 0.01f;
+	float rotSpeed = 0.015f;
 
 	double diffSec = seconds - mPrevSeconds;
 	int moveForwardBackward((mMoveForward == mMoveBackward) ? 0 :
@@ -231,8 +246,7 @@ void gs::Camera::updateCustomPosition(float seconds)
 
 	if (moveForwardBackward) {
 		glm::vec3 cam_axis = mViewVector;
-		float speed = 4.0f;
-		cam_axis *= float(-moveForwardBackward) * diffSec * speed;
+		cam_axis *= float(-moveForwardBackward) * diffSec * mSpeed;
 		mPosPoint += cam_axis;
 	}
 
@@ -263,6 +277,17 @@ void gs::Camera::updateCustomPosition(float seconds)
 		glm::quat q = glm::normalize(glm::angleAxis(degree, mViewVector));
 		mUpVector = q * mUpVector;
 	}
+
+	int rotateDistLeftRight((mRotateDistanceLeft == mRotateDistanceRight) ? 0 :
+			(mRotateDistanceLeft ? -1 : 1));
+	if (rotateDistLeftRight) {
+		float speed = rotSpeed;
+		float degree = float(glm::degrees(float(-rotateDistLeftRight) * diffSec * speed));
+		mPosPoint += mViewVector * mRotateDistance;
+		glm::quat q = glm::normalize(glm::angleAxis(degree, mUpVector));
+		mViewVector = q * mViewVector;
+		mPosPoint -= mViewVector * mRotateDistance;
+	}
 }
 
 glm::vec3 gs::Camera::getUpVector(const glm::vec3& v)
@@ -292,28 +317,34 @@ void gs::Camera::handleEvent(const SDL_Event& e)
 			bool isPressed = (e.key.state == SDL_PRESSED);
 			switch (e.key.keysym.sym) {
 				case SDLK_RETURN:
-					//cam.moveForward(isPressed);
+					moveForward(isPressed);
 					break;
 				case SDLK_BACKSPACE:
-					//cam.moveBackward(isPressed);
+					moveBackward(isPressed);
 					break;
 				case SDLK_LEFT:
-					//cam.rotateLeft(isPressed);
+					rotateLeft(isPressed);
 					break;
 				case SDLK_RIGHT:
-					//cam.rotateRight(isPressed);
+					rotateRight(isPressed);
 					break;
 				case SDLK_UP:
-					//cam.rotateUp(isPressed);
+					rotateUp(isPressed);
 					break;
 				case SDLK_DOWN:
-					//cam.rotateDown(isPressed);
+					rotateDown(isPressed);
 					break;
 				case SDLK_PAGEUP:
-					//cam.rotateAntiClockwise(isPressed);
+					rotateAntiClockwise(isPressed);
 					break;
 				case SDLK_PAGEDOWN:
-					//cam.rotateClockwise(isPressed);
+					rotateClockwise(isPressed);
+					break;
+				case SDLK_8:
+					mRotateDistanceLeft = isPressed;
+					break;
+				case SDLK_9:
+					mRotateDistanceRight = isPressed;
 					break;
 			}
 			break;

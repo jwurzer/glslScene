@@ -30,23 +30,6 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
-namespace gs
-{
-	namespace
-	{
-		void moveWorldForCam(const Camera &cam)
-		{
-			if (cam.isPerspective()) {
-				glm::vec3 eye, center, up;
-				cam.getPropertiesForGluLookAt(eye, center, up);
-				gluLookAt(eye.x, eye.y, eye.z, // eye x, y, z
-						center.x, center.y, center.z, // center x, y, z
-						up.x, up.y, up.z); // up vector x, y, z
-			}
-		}
-	}
-}
-
 gs::Context::Context()
 		:mIsError(true), mIsSdlInit(false), //mIsSdlImageInit(false),
 		mWindow(nullptr), mContext(nullptr),
@@ -138,6 +121,7 @@ void gs::Context::run()
 			re.window.timestamp = tick;
 			re.window.windowID = 0;
 			mSceneManager->handleEvent(*mResourceManager, mProperties, re);
+			mPassManager->handleEventForCameras(re);
 		}
 
 		newLoaded = false;
@@ -188,10 +172,13 @@ void gs::Context::run()
 			}
 			// after updating the properties the event can be forwarded to the entities
 			mSceneManager->handleEvent(*mResourceManager, mProperties, e);
+			mPassManager->handleEventForCameras(e);
 		}
 
 
 		mSceneManager->update(*mResourceManager, mProperties);
+		//mPassManager->updateCameras(mProperties.mDeltaTimeSec);
+		mPassManager->updateCameras(mProperties.mTsSec);
 
 		mPassManager->renderAllPasses(renderer, *mSceneManager, *mResourceManager, mProperties);
 

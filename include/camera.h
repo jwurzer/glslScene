@@ -40,12 +40,16 @@ namespace gs
 		float getZNear() const;
 		float getZFar() const;
 
+		void setSpeed(float speed) { mSpeed = speed; }
+		void setRotateDistance(float rotateDistance) { mRotateDistance = rotateDistance; }
+		void setLookAt(const glm::vec3& eye, const glm::vec3& center,
+				const glm::vec3& up);
 		/**
 		 * @param eye OUT store eye x, y, z
 		 * @param center OUT store center x, y, z
 		 * @param up OUT store up x, y, z
 		 */
-		void getPropertiesForGluLookAt(glm::vec3& eye, glm::vec3& center,
+		void getPropertiesForLookAt(glm::vec3& eye, glm::vec3& center,
 				glm::vec3& up) const;
 		glm::vec3 getPos() const;
 		glm::vec3 getViewVector() const;
@@ -74,6 +78,9 @@ namespace gs
 		bool mMoveForward;
 		bool mMoveBackward;
 
+		float mSpeed = 1000.0f;
+		float mRotateDistance = 0.0f;
+
 		bool mRotateLeft;
 		bool mRotateRight;
 		bool mRotateUp;
@@ -81,6 +88,9 @@ namespace gs
 
 		bool mRotateClockwise;
 		bool mRotateAntiClockwise;
+
+		bool mRotateDistanceLeft;
+		bool mRotateDistanceRight;
 
 		// start time of the camera movment
 		float mStartTime;

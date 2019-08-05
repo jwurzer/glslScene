@@ -3,6 +3,7 @@
 
 #include <rendering/render_pass.h>
 #include <vector>
+#include <SDL.h>
 
 namespace gs
 {
@@ -18,6 +19,10 @@ namespace gs
 		RenderPassManager();
 		~RenderPassManager();
 		void addPass(const RenderPass& pass);
+
+		void handleEventForCameras(const SDL_Event& e);
+		void updateCameras(float seconds);
+
 		void renderAllPasses(Renderer &renderer,
 				const SceneManager& sm, const ResourceManager& rm,
 				const Properties& properties);

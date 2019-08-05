@@ -5,9 +5,12 @@
 #include <scene/projection.h>
 #include <common/color.h>
 #include <glm/mat4x4.hpp>
+#include <memory>
 
 namespace gs
 {
+	class Camera;
+
 	class RenderPass
 	{
 	public:
@@ -16,11 +19,12 @@ namespace gs
 		Color mClearColor;
 		Projection mProjection;
 		glm::mat4 mViewMatrix = glm::mat4(1.0f);
+		std::shared_ptr<Camera> mCamera; // null if not used
 		unsigned int mSceneId;
 		bool mDepthTest = false;
 
-		RenderPass(TResourceId fbId, const Color& clearColor, unsigned int sceneId)
-				:mFramebufferId(fbId), mClearColor(clearColor), mProjection(), mSceneId(sceneId) {}
+		RenderPass(TResourceId fbId, const Color& clearColor, unsigned int sceneId);
+		~RenderPass();
 	};
 }
 
