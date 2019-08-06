@@ -235,13 +235,19 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 		idName = cfgValue.mArray[0].mValue.mText;
 		startIndex = 1;
 	}
-	if (startIndex == 1 && cfgValue.mArray.size() == 1) {
-		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(rm.useVaoVersionForMesh());
+	float scaleForShowNormals = 1.0f;
+	if (cfgValue.mArray.size() > static_cast<unsigned int>(startIndex) &&
+			cfgValue.mArray[startIndex].mName.mText == "scale-for-show-normals") {
+		scaleForShowNormals = cfgValue.mArray[startIndex].mValue.mFloatingPoint;
+		++startIndex;
+	}
+	if ((startIndex == 1 || startIndex == 2) && cfgValue.mArray.size() == startIndex) {
+		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(rm.useVaoVersionForMesh(), scaleForShowNormals);
 		LOGW("Create a empty mesh!\n");
 		return rm.addResource(idName, mesh);
 	}
-	if (startIndex == 1 && cfgValue.mArray.size() < 3) {
-		LOGE("Wrong size. Must be at least 3 if id is used.\n");
+	if ((startIndex == 1 || startIndex == 2) && cfgValue.mArray.size() < static_cast<unsigned int>(startIndex) + 2) {
+		LOGE("Wrong size. Must be at least %d if id is used.\n", startIndex + 2);
 		return 0;
 	}
 
@@ -268,6 +274,17 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 	}
 	unsigned int layoutPosCount = (layoutSize > 2 && layout[2].mValue.mText == "z") ? 3 : 2;
 	size_t i = layoutPosCount;
+
+	unsigned int layoutNormalCount = 0;
+	if (layoutSize - i >= 3) {
+		if (layout[i].mValue.mText == "nx" &&
+				layout[i + 1].mValue.mText == "ny" &&
+				layout[i + 2].mValue.mText == "nz") {
+			layoutNormalCount = 3;
+			i += 3;
+		}
+	}
+
 	unsigned int layoutTexCount = 0;
 	for (; i + 1 < layoutSize; i += 2) {
 		if (layout[i + 0].mValue.mText != "s" + std::to_string(layoutTexCount) ||
@@ -306,7 +323,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 		}
 	}
 	std::vector<float> vertex(layoutSize, 0.0f);
-	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(rm.useVaoVersionForMesh());
+	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(rm.useVaoVersionForMesh(), scaleForShowNormals);
 	size_t cnt = cfgValue.mArray.size();
 	for (size_t i = startIndex + 1; i < cnt; ++i) {
 		size_t vertexCnt = cfgValue.mArray[i].mValue.mArray.size();
@@ -347,6 +364,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!creation::addPointMesh(*mesh, vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount,
@@ -366,6 +384,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!creation::addTriangleMesh(*mesh, vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount,
@@ -385,6 +404,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!creation::addQuadMesh(*mesh, vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount,
@@ -399,6 +419,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount)) {
@@ -411,6 +432,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount)) {
@@ -423,6 +445,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount)) {
@@ -435,6 +458,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount)) {
@@ -451,6 +475,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!creation::addTriangles(*mesh, vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount)) {
@@ -462,6 +487,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount)) {
@@ -474,6 +500,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount)) {
@@ -490,6 +517,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!creation::addQuads(*mesh, vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount)) {
@@ -501,6 +529,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount)) {
@@ -513,6 +542,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
+					layoutNormalCount,
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount)) {

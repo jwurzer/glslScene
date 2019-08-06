@@ -40,7 +40,7 @@ namespace gs
 	}
 }
 
-gs::Mesh::Mesh(bool useVaoVersion)
+gs::Mesh::Mesh(bool useVaoVersion, float scaleForShowNormals)
 		:Resource(std::weak_ptr<FileChangeMonitoring>()),
 		mPrimitiveType(PrimitiveType::TRIANGLES),
 		mVertices(),
@@ -51,6 +51,7 @@ gs::Mesh::Mesh(bool useVaoVersion)
 		mColorCount(0),
 		mCustomCount(0),
 		mUseVaoVersion(useVaoVersion),
+		mScaleForShowNormals(scaleForShowNormals),
 		mChanged(false),
 		mVbo(0),
 		mVao(0)
@@ -93,19 +94,21 @@ void gs::Mesh::clear()
 bool gs::Mesh::addVertices(const void* vertices,
 		unsigned int vertexSize, unsigned int vertexCount,
 		unsigned int posCount,
+		unsigned int normalCount,
 		unsigned int texCount,
 		unsigned int colorCount,
 		unsigned int customCount)
 {
 	if (!vertices ||
 			!vertexSize || (vertexSize % sizeof(float)) || !vertexCount ||
-			vertexSize != (posCount + texCount * 2 + colorCount + customCount) * sizeof(float)) {
+			vertexSize != (posCount + normalCount + texCount * 2 + colorCount + customCount) * sizeof(float)) {
 		LOGE("Wrong parameters\n");
 		return false;
 	}
 	if (!mVertexCount) {
 		mVertexSize = vertexSize;
 		mPosCount = posCount;
+		mNormalCount = normalCount;
 		mTexCount = texCount;
 		mColorCount = colorCount;
 		mCustomCount = customCount;
@@ -115,6 +118,7 @@ bool gs::Mesh::addVertices(const void* vertices,
 		// added vertices are compatible
 		if (mVertexSize != vertexSize ||
 				mPosCount != posCount ||
+				mNormalCount != normalCount ||
 				mTexCount != texCount ||
 				mColorCount != colorCount ||
 				mCustomCount != customCount) {
@@ -132,7 +136,7 @@ bool gs::Mesh::addVertices(const void* vertices,
 bool gs::Mesh::addVertices(const VertexV3C4* vertices,
 		unsigned int vertexCount)
 {
-	return addVertices(vertices, sizeof(VertexV3C4), vertexCount, 3, 0, 4, 0);
+	return addVertices(vertices, sizeof(VertexV3C4), vertexCount, 3, 0, 0, 4, 0);
 }
 void gs::Mesh::bind(const ShaderProgram* shaderProgram)
 {
@@ -168,6 +172,80 @@ void gs::Mesh::unbind(const ShaderProgram* shaderProgram)
 	}
 	else {
 		unbindNoVaoVersion(shaderProgram);
+	}
+}
+
+void gs::Mesh::drawNormals()
+{
+	if (mNormalCount != 3) {
+		return;
+	}
+
+	if (mUseVaoVersion) {
+		// TODO currently not supported
+		return;
+	}
+
+	std::vector<VertexNormal>& v = mNormalVertices; // REFERENCE for short name!
+
+	//if (v.empty()) {
+		float nvScale = mScaleForShowNormals;
+		VertexNormal vn = { 0.0f, 0.0f, 0.0f,
+			1.0f, 0.0f, 0.0f, 1.0f }; // default color
+
+		unsigned int normalVertexCount = mVertexCount * 2; // *2 because we want to show the normal as lines
+		v.resize(normalVertexCount, vn);
+
+		unsigned int vo = 0; // vertex offset
+		unsigned int vsize = mVertexSize / sizeof(float);
+		for (unsigned int i = 0; i < normalVertexCount; i += 2) {
+			switch (mPosCount) {
+			case 4:
+			case 3:
+				v[i].z = mVertices[vo + 2];
+				// no break!
+			case 2:
+				v[i].y = mVertices[vo + 1];
+				// no break!
+			case 1:
+				v[i].x = mVertices[vo];
+				break;
+			}
+			v[i + 1].x = v[i].x + mVertices[vo + mPosCount] * nvScale; // nx
+			v[i + 1].y = v[i].y + mVertices[vo + mPosCount + 1] * nvScale; // ny
+			v[i + 1].z = v[i].z + mVertices[vo + mPosCount + 2] * nvScale; // nz
+			vo += vsize;
+		}
+	//}
+
+	GLint shaderId;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &shaderId);
+	if (shaderId > 0) {
+		// unbind
+		glUseProgram(0);
+	}
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(
+			3, // components pro Vertex for (x,y,z)
+			GL_FLOAT, // type of component
+			sizeof(VertexNormal), // offset between 2 vertices in array
+			&v[0].x); // Pointer to the 1. component
+			//v.data()); // Pointer to the 1. component
+
+	glEnableClientState(GL_COLOR_ARRAY);
+	glColorPointer(4, GL_FLOAT, sizeof(VertexNormal),
+		&v[0].r);
+		//v.data() + 3);
+
+	glDrawArrays(GL_LINES, 0, v.size());
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+
+	if (shaderId > 0) {
+		// bind / restore shader
+		glUseProgram(shaderId);
 	}
 }
 
@@ -223,14 +301,14 @@ void gs::Mesh::bindNoVaoVersion(const ShaderProgram* shaderProgram)
 	if (mColorCount) {
 		glEnableClientState(GL_COLOR_ARRAY);
 		glColorPointer(mColorCount, GL_FLOAT, mVertexSize,
-				mVertices.data() + mPosCount + mTexCount * 2);
+				mVertices.data() + mPosCount + mNormalCount + mTexCount * 2);
 	}
 
 	for (unsigned int i = 0; i < mTexCount; ++i) {
 		glClientActiveTexture(GL_TEXTURE0 + i);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(2, GL_FLOAT, mVertexSize,
-				mVertices.data() + mPosCount + i * 2);
+				mVertices.data() + mPosCount + mNormalCount + i * 2);
 	}
 }
 
@@ -248,6 +326,8 @@ void gs::Mesh::unbindNoVaoVersion(const ShaderProgram* shaderProgram)
 		}
 	}
 
+	// TODO support normals
+	
 	if (mPosCount) {
 		glDisableClientState(GL_VERTEX_ARRAY);
 	}
