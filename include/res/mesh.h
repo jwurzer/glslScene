@@ -14,7 +14,7 @@ namespace gs
 	class Mesh : public Resource
 	{
 	public:
-		Mesh(bool useVaoVersion);
+		Mesh(bool useVaoVersion, float scaleForShowNormals);
 		virtual ~Mesh();
 
 		virtual ResType getType() const { return ResType::MESH; }
@@ -28,6 +28,7 @@ namespace gs
 		 * @param vertexSize must be the same as (posCount + texCount * 2 + colorCount + customCount) * sizeof(float), unit: bytes
 		 * @param vertexCount Count of vertices
 		 * @param posCount 2 for x,y, 3 for x,y,z
+		 * @param normalCount 0 for no normal or 3 for normal (nx, ny, nz)
 		 * @param texCount 1 for one texture s,t, 2 for s0,t0,s1,t1, N for s0,t0 to s<N-1>,t<N-1>
 		 * @param colorCount 3 for r,g,b, 4 for r,g,b,a
 		 * @param customCount can be any value
@@ -36,6 +37,7 @@ namespace gs
 		bool addVertices(const void* vertices,
 				unsigned int vertexSize, unsigned int vertexCount,
 				unsigned int posCount,
+				unsigned int normalCount,
 				unsigned int texCount,
 				unsigned int colorCount,
 				unsigned int customCount);
@@ -55,20 +57,32 @@ namespace gs
 		void draw();
 		void unbind(const ShaderProgram* shaderProgram);
 
+		void drawNormals();
+
 		std::string toString() const;
 	private:
 		PrimitiveType mPrimitiveType;
 
 		std::vector<float> mVertices;
-		unsigned int mVertexSize; // unit: float-size!
+		unsigned int mVertexSize; // in bytes!
 		unsigned int mVertexCount;
 
 		unsigned int mPosCount;
+		unsigned int mNormalCount;
 		unsigned int mTexCount;
 		unsigned int mColorCount;
 		unsigned int mCustomCount;
 
+		struct VertexNormal
+		{
+			float x, y, z;
+			float r, g, b, a;
+		};
+		std::vector<VertexNormal> mNormalVertices;
+
 		bool mUseVaoVersion;
+
+		float mScaleForShowNormals;
 
 		bool mChanged = false;
 		GLuint mVbo;

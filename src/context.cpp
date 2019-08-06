@@ -154,6 +154,9 @@ void gs::Context::run()
 							glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 						}
 					}
+					else if (e.key.keysym.sym == '2') {
+						mProperties.mDrawNormals = !mProperties.mDrawNormals;
+					}
 					break;
 				case SDL_MOUSEMOTION:
 					mProperties.mMousePosPixel = Vector2f(static_cast<float>(e.motion.x),

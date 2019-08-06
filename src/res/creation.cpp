@@ -4,21 +4,23 @@
 bool gs::creation::addTriangles(Mesh& mesh, const void* vertices,
 		unsigned int vertexSize, unsigned int vertexCount,
 		unsigned int posCount,
+		unsigned int normalCount,
 		unsigned int texCount,
 		unsigned int colorCount,
 		unsigned int customCount)
 {
 	mesh.setPrimitiveType(PrimitiveType::TRIANGLES);
-	return mesh.addVertices(vertices, vertexSize, vertexCount, posCount, texCount, colorCount, customCount);
+	return mesh.addVertices(vertices, vertexSize, vertexCount, posCount, normalCount, texCount, colorCount, customCount);
 }
 
 bool gs::creation::addPointMesh(Mesh& mesh, const void* vertices,
-	unsigned int vertexSize, unsigned int vertexCount,
-	unsigned int posCount,
-	unsigned int texCount,
-	unsigned int colorCount,
-	unsigned int customCount,
-	unsigned int xCnt, unsigned int yCnt)
+		unsigned int vertexSize, unsigned int vertexCount,
+		unsigned int posCount,
+		unsigned int normalCount,
+		unsigned int texCount,
+		unsigned int colorCount,
+		unsigned int customCount,
+		unsigned int xCnt, unsigned int yCnt)
 {
 	if (vertexCount != 3) {
 		return false;
@@ -41,7 +43,7 @@ bool gs::creation::addPointMesh(Mesh& mesh, const void* vertices,
 	for (unsigned int y = 0; y < yCnt; ++y) {
 		std::vector<float> vx = vyStart;
 		for (unsigned int x = 0; x < xCnt; ++x) {
-			mesh.addVertices(vx.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
 			for (unsigned int i = 0; i < compCount; ++i) {
 				vx[i] += vxDiff[i];
 			}
@@ -56,12 +58,13 @@ bool gs::creation::addPointMesh(Mesh& mesh, const void* vertices,
 }
 
 bool gs::creation::addTriangleMesh(Mesh& mesh, const void* vertices,
-	unsigned int vertexSize, unsigned int vertexCount,
-	unsigned int posCount,
-	unsigned int texCount,
-	unsigned int colorCount,
-	unsigned int customCount,
-	unsigned int xCnt, unsigned int yCnt)
+		unsigned int vertexSize, unsigned int vertexCount,
+		unsigned int posCount,
+		unsigned int normalCount,
+		unsigned int texCount,
+		unsigned int colorCount,
+		unsigned int customCount,
+		unsigned int xCnt, unsigned int yCnt)
 {
 	if (vertexCount != 3) {
 		return false;
@@ -95,12 +98,12 @@ bool gs::creation::addTriangleMesh(Mesh& mesh, const void* vertices,
 			vx2b[i] += vxDiff[i];
 		}
 		for (unsigned int x = 0; x < xCnt - 1; ++x) {
-			mesh.addVertices(vx1.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
-			mesh.addVertices(vx1b.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
-			mesh.addVertices(vx2b.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
-			mesh.addVertices(vx1.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
-			mesh.addVertices(vx2b.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
-			mesh.addVertices(vx2.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx1.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx1b.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx2b.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx1.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx2b.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx2.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
 			for (unsigned int i = 0; i < compCount; ++i) {
 				vx1[i] += vxDiff[i];
 				vx2[i] += vxDiff[i];
@@ -119,12 +122,13 @@ bool gs::creation::addTriangleMesh(Mesh& mesh, const void* vertices,
 }
 
 bool gs::creation::addQuadMesh(Mesh& mesh, const void* vertices,
-	unsigned int vertexSize, unsigned int vertexCount,
-	unsigned int posCount,
-	unsigned int texCount,
-	unsigned int colorCount,
-	unsigned int customCount,
-	unsigned int xCnt, unsigned int yCnt)
+		unsigned int vertexSize, unsigned int vertexCount,
+		unsigned int posCount,
+		unsigned int normalCount,
+		unsigned int texCount,
+		unsigned int colorCount,
+		unsigned int customCount,
+		unsigned int xCnt, unsigned int yCnt)
 {
 	if (vertexCount != 3) {
 		return false;
@@ -158,12 +162,12 @@ bool gs::creation::addQuadMesh(Mesh& mesh, const void* vertices,
 			vx2b[i] += vxDiff[i];
 		}
 		for (unsigned int x = 0; x < xCnt - 1; ++x) {
-			mesh.addVertices(vx1.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
-			mesh.addVertices(vx1b.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
-			mesh.addVertices(vx2b.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
-			mesh.addVertices(vx1.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
-			mesh.addVertices(vx2b.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
-			mesh.addVertices(vx2.data(), vertexSize, 1, posCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx1.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx1b.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx2b.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx1.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx2b.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
+			mesh.addVertices(vx2.data(), vertexSize, 1, posCount, normalCount, texCount, colorCount, customCount);
 			for (unsigned int i = 0; i < compCount; ++i) {
 				vx1[i] += vxDiff[i];
 				vx2[i] += vxDiff[i];
@@ -184,17 +188,19 @@ bool gs::creation::addQuadMesh(Mesh& mesh, const void* vertices,
 bool gs::creation::addQuads(Mesh& mesh, const void* vertices,
 		unsigned int vertexSize, unsigned int vertexCount,
 		unsigned int posCount,
+		unsigned int normalCount,
 		unsigned int texCount,
 		unsigned int colorCount,
 		unsigned int customCount)
 {
 	mesh.setPrimitiveType(PrimitiveType::QUADS);
-	return mesh.addVertices(vertices, vertexSize, vertexCount, posCount, texCount, colorCount, customCount);
+	return mesh.addVertices(vertices, vertexSize, vertexCount, posCount, normalCount, texCount, colorCount, customCount);
 }
 
 bool gs::creation::addRects(Mesh& mesh, const void* vertices,
 		unsigned int vertexSize, unsigned int vertexCount,
 		unsigned int posCount,
+		unsigned int normalCount,
 		unsigned int texCount,
 		unsigned int colorCount,
 		unsigned int customCount)

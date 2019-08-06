@@ -15,6 +15,8 @@ namespace gs
 	public:
 		bool mUseGlTransforms = true;
 
+		bool mDrawNormals = false;
+
 		uint32_t mTsMsec = 0;
 		float mTsSec = 0.0f;
 

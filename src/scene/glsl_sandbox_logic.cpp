@@ -109,7 +109,7 @@ void gs::GlslSandboxLogic::updateMeshAndUniform(const std::shared_ptr<Entity>& e
 			{-vx,  vy, -sx + mOffsetX,  sy + mOffsetY}
 	};
 	mesh->clear();
-	if (!mesh->addVertices(vertices, sizeof(Vertex), 6, 0, 0, 0, 4)) {
+	if (!mesh->addVertices(vertices, sizeof(Vertex), 6, 0, 0, 0, 0, 4)) {
 		LOGW("Change mesh failed!\n");
 	}
 
