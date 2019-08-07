@@ -4,6 +4,7 @@
 #include <res/resource.h>
 #include <res/shader_info.h>
 #include <rendering/gl_api.h>
+#include <glm/mat4x4.hpp>
 #include <vector>
 
 namespace gs
@@ -28,6 +29,7 @@ namespace gs
 		bool changeUniformVec2(const std::string& name, const glm::vec2& v2);
 		bool changeUniformVec3(const std::string& name, const glm::vec3& v3);
 		bool changeUniformVec4(const std::string& name, const glm::vec4& v4);
+		bool changeUniformMat4(const std::string& name, const glm::mat4& m);
 
 		const ShaderProgramLoadInfo& getShaderProgramLoadInfo() const { return mShaderProgramLoadInfo; }
 		const std::vector<ShaderLoadInfo>& getShaderSources() const { return mShaderSources; }
