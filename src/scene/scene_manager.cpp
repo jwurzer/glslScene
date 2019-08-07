@@ -1,8 +1,11 @@
 #include <scene/scene_manager.h>
 
+#include <rendering/matrices.h>
+#include <rendering/properties.h>
 #include <scene/scene.h>
 #include <system/log.h>
 #include <ecs/entity.h>
+#include <ecs/transform_component.h>
 #include <ecs/logic_component.h>
 #include <ecs/child_entities.h>
 
@@ -66,23 +69,57 @@ std::shared_ptr<gs::Scene> gs::SceneManager::getSceneByIdNumber(unsigned int idN
 }
 
 void gs::SceneManager::handleEvent(ResourceManager& rm,
-		const Properties& properties, const SDL_Event& evt)
+		const Properties& propertiesOrig, const SDL_Event& evt)
 {
+	Properties properties = propertiesOrig;
+
+	Matrices m;
+	m.mModelMatrix = properties.mModelMatrix;
+
+	m.mEntityMatrix = glm::mat4(1.0f);
+	m.mModelMatrix *= m.mEntityMatrix;
+	m.mModelViewMatrix = m.mModelMatrix * properties.mViewMatrix;
+	m.mMvpMatrix = properties.mProjectionMatrix * m.mModelViewMatrix;
+	properties.mModelMatrix = m.mModelMatrix;
+
 	for (const auto& scene : mSceneByIdNumber) {
 		handleEventEntity(scene.second->getRootOe(), rm, properties, evt);
 	}
 }
 
-void gs::SceneManager::update(ResourceManager& rm, const Properties& properties)
+void gs::SceneManager::update(ResourceManager& rm, const Properties& propertiesOrig)
 {
+	Properties properties = propertiesOrig;
+
+	Matrices m;
+	m.mModelMatrix = properties.mModelMatrix;
+
+	m.mEntityMatrix = glm::mat4(1.0f);
+	m.mModelMatrix *= m.mEntityMatrix;
+	m.mModelViewMatrix = m.mModelMatrix * properties.mViewMatrix;
+	m.mMvpMatrix = properties.mProjectionMatrix * m.mModelViewMatrix;
+	properties.mModelMatrix = m.mModelMatrix;
+
 	for (const auto& scene : mSceneByIdNumber) {
 		updateEntity(scene.second->getRootOe(), rm, properties);
 	}
 }
 
 void gs::SceneManager::handleEventEntity(const std::shared_ptr<Entity>& e, ResourceManager& rm,
-		const Properties& properties, const SDL_Event& evt)
+		const Properties& propertiesOrig, const SDL_Event& evt)
 {
+	Properties properties = propertiesOrig;
+	if (e->getConstTransform()) {
+		Matrices m;
+		m.mModelMatrix = properties.mModelMatrix;
+
+		m.mEntityMatrix = e->getConstTransform()->getMatrix();
+		m.mModelMatrix *= m.mEntityMatrix;
+		m.mModelViewMatrix = properties.mViewMatrix * m.mModelMatrix;
+		m.mMvpMatrix = properties.mProjectionMatrix * m.mModelViewMatrix;
+		properties.mModelMatrix = m.mModelMatrix;
+	}
+
 	if (e->getConstLogic()) {
 		e->logic().handleEvent(rm, properties, evt);
 	}
@@ -96,8 +133,20 @@ void gs::SceneManager::handleEventEntity(const std::shared_ptr<Entity>& e, Resou
 }
 
 void gs::SceneManager::updateEntity(const std::shared_ptr<Entity>& e, ResourceManager& rm,
-		const Properties& properties)
+		const Properties& propertiesOrig)
 {
+	Properties properties = propertiesOrig;
+	if (e->getConstTransform()) {
+		Matrices m;
+		m.mModelMatrix = properties.mModelMatrix;
+
+		m.mEntityMatrix = e->getConstTransform()->getMatrix();
+		m.mModelMatrix *= m.mEntityMatrix;
+		m.mModelViewMatrix = properties.mViewMatrix * m.mModelMatrix;
+		m.mMvpMatrix = properties.mProjectionMatrix * m.mModelViewMatrix;
+		properties.mModelMatrix = m.mModelMatrix;
+	}
+
 	if (e->getConstLogic()) {
 		e->logic().update(rm, properties);
 	}

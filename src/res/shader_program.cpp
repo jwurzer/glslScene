@@ -294,13 +294,16 @@ namespace gs
 					case UniformSource::VIEW_MATRIX:
 						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(p.mViewMatrix));
 						break;
+					case UniformSource::INVERSE_VIEW_MATRIX:
+						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(p.mInverseViewMatrix));
+						break;
 					case UniformSource::MODEL_MATRIX:
 						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mModelMatrix));
 						break;
 					case UniformSource::MODEL_VIEW_MATRIX:
 						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mModelViewMatrix));
 						break;
-					case UniformSource::ENTITX_MATRIX:
+					case UniformSource::ENTITY_MATRIX:
 						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mEntityMatrix));
 						break;
 					case UniformSource::MVP_MATRIX:
@@ -332,7 +335,7 @@ namespace gs
 								glUniform4f(u.mLocation, u.mValue.mVec4.x, u.mValue.mVec4.y, u.mValue.mVec4.z, u.mValue.mVec4.w);
 								break;
 							case UniformType::MAT4X4:
-								LOGW("Custom uniform for mat4x4 (mat4) is not supported.\n");
+								glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, u.mValue.mMat4.m);
 								break;
 						}
 						break;
@@ -350,7 +353,7 @@ namespace gs
 					case UniformSource::MODEL_VIEW_MATRIX:
 						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mModelViewMatrix));
 						break;
-					case UniformSource::ENTITX_MATRIX:
+					case UniformSource::ENTITY_MATRIX:
 						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mEntityMatrix));
 						break;
 					case UniformSource::MVP_MATRIX:
@@ -514,6 +517,21 @@ bool gs::ShaderProgram::changeUniformVec4(const std::string& name, const glm::ve
 			u.mValue.mVec4.y = v4.y;
 			u.mValue.mVec4.z = v4.z;
 			u.mValue.mVec4.w = v4.w;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool gs::ShaderProgram::changeUniformMat4(const std::string& name, const glm::mat4& m)
+{
+	for (auto& u : mShaderProgramLoadInfo.mUniforms) {
+		if (u.mName == name) {
+			if (u.mType != UniformType::MAT4X4) {
+				LOGE("Uniform value can't be changed. %s is not a mat4.\n", u.mName.c_str());
+				return false;
+			}
+			memcpy(u.mValue.mMat4.m, glm::value_ptr(m), sizeof(u.mValue.mMat4.m));
 			return true;
 		}
 	}

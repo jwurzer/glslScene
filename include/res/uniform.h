@@ -53,11 +53,13 @@ namespace gs
 		// no value used
 		VIEW_MATRIX,
 		// no value used
+		INVERSE_VIEW_MATRIX,
+		// no value used
 		MODEL_MATRIX,
 		// no value used
 		MODEL_VIEW_MATRIX,
 		// no value used
-		ENTITX_MATRIX,
+		ENTITY_MATRIX,
 		// no value used
 		MVP_MATRIX,
 
@@ -83,6 +85,9 @@ namespace gs
 			struct {
 				float x, y, z, w;
 			} mVec4;
+			struct {
+				float m[16];
+			} mMat4;
 		} mValue;
 		int mLocation;
 

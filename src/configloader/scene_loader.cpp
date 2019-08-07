@@ -9,6 +9,8 @@
 #include <ecs/shader_component.h>
 #include <ecs/mesh_component.h>
 #include <scene/glsl_sandbox_logic.h>
+#include <scene/rotate_logic.h>
+#include <scene/light_matrix_logic.h>
 #include <configloader/uniform_attr_loader.h>
 #include <configloader/res_loader.h>
 #include <configloader/render_pass_loader.h>
@@ -23,10 +25,33 @@ namespace gs
 		bool addLogic(const CfgValue& cfgValue,
 				LogicComponent& logic) {
 			for (const auto &vp : cfgValue.mArray) { // vp ... value pair
-				const std::string& logicName = vp.mName.mText;
+				std::string logicName = vp.mName.mText;
+				if (vp.mName.mArray.size()) {
+					logicName = vp.mName.mArray[0].mValue.mText;
+				}
 
 				if (logicName == "glsl-sandbox-logic") {
 					logic.addLogic(std::unique_ptr<GlslSandboxLogic>(new GlslSandboxLogic()));
+				}
+				else if (logicName == "rotate-logic") {
+					if (vp.mName.mArray.size() != 5) {
+						LOGE("Wrong rotate-logic format.\n");
+						return false;
+					}
+					logic.addLogic(std::unique_ptr<RotateLogic>(new RotateLogic(
+							vp.mName.mArray[1].mValue.mFloatingPoint,
+							vp.mName.mArray[2].mValue.mFloatingPoint,
+							vp.mName.mArray[3].mValue.mFloatingPoint,
+							vp.mName.mArray[4].mValue.mFloatingPoint)));
+				}
+				else if (logicName == "light-matrix-logic") {
+					if (vp.mName.mArray.size() != 3) {
+						LOGE("Wrong light-matrix-logic format.\n");
+						return false;
+					}
+					logic.addLogic(std::unique_ptr<LightMatrixLogic>(new LightMatrixLogic(
+							vp.mName.mArray[1].mValue.mText,
+							vp.mName.mArray[2].mValue.mInteger)));
 				}
 				else {
 					LOGE("Logic %s is not supported.\n", logicName.c_str());

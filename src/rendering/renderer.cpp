@@ -25,8 +25,9 @@ gs::Renderer::~Renderer()
 }
 
 void gs::Renderer::render(const std::shared_ptr<Entity>& e, const ResourceManager& rm,
-		const Properties& properties)
+		const Properties& propertiesOrig)
 {
+	Properties properties = propertiesOrig;
 	mMatrixStack.clear();
 
 	Matrices m;
@@ -34,6 +35,7 @@ void gs::Renderer::render(const std::shared_ptr<Entity>& e, const ResourceManage
 	m.mModelMatrix *= m.mEntityMatrix;
 	m.mModelViewMatrix = m.mModelMatrix * properties.mViewMatrix;
 	m.mMvpMatrix = properties.mProjectionMatrix * m.mModelViewMatrix;
+	properties.mModelMatrix = m.mModelMatrix;
 	mMatrixStack.push_back(m); // push after m is set correct
 
 	mShaderStack.setGlobalProperties(properties);
@@ -48,8 +50,9 @@ void gs::Renderer::render(const std::shared_ptr<Entity>& e, const ResourceManage
 }
 
 void gs::Renderer::renderEntity(const std::shared_ptr<Entity>& e, const ResourceManager& rm,
-		const Properties& properties)
+		const Properties& propertiesOrig)
 {
+	Properties properties = propertiesOrig;
 	if (e->getConstTransform()) {
 		if (properties.mUseGlTransforms) {
 			glPushMatrix();
@@ -63,6 +66,7 @@ void gs::Renderer::renderEntity(const std::shared_ptr<Entity>& e, const Resource
 		m.mModelMatrix *= m.mEntityMatrix;
 		m.mModelViewMatrix = properties.mViewMatrix * m.mModelMatrix;
 		m.mMvpMatrix = properties.mProjectionMatrix * m.mModelViewMatrix;
+		properties.mModelMatrix = m.mModelMatrix;
 		mShaderStack.setMatrices(m);
 	}
 

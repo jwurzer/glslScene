@@ -103,6 +103,8 @@ void gs::RenderPassManager::renderAllPasses(Renderer &renderer,
 			glMultMatrixf(glm::value_ptr(p.mViewMatrix));
 		}
 
+		p.mInverseViewMatrix = glm::inverse(p.mViewMatrix);
+
 		if (pass.mDepthTest) {
 			glEnable(GL_DEPTH_TEST);
 		}

@@ -103,6 +103,9 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 					else if (vp.mValue.mText == "view-matrix") {
 						uniform.mSource = UniformSource::VIEW_MATRIX;
 					}
+					else if (vp.mValue.mText == "inverse-view-matrix") {
+						uniform.mSource = UniformSource::INVERSE_VIEW_MATRIX;
+					}
 					else if (vp.mValue.mText == "model-matrix") {
 						uniform.mSource = UniformSource::MODEL_MATRIX;
 					}
@@ -110,7 +113,7 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 						uniform.mSource = UniformSource::MODEL_VIEW_MATRIX;
 					}
 					else if (vp.mValue.mText == "entity-matrix") {
-						uniform.mSource = UniformSource::ENTITX_MATRIX;
+						uniform.mSource = UniformSource::ENTITY_MATRIX;
 					}
 					else if (vp.mValue.mText == "mvp-matrix") {
 						uniform.mSource = UniformSource::MVP_MATRIX;
@@ -162,6 +165,16 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 							uniform.mValue.mVec4.y = vp.mValue.mArray[1].mValue.mFloatingPoint;
 							uniform.mValue.mVec4.z = vp.mValue.mArray[2].mValue.mFloatingPoint;
 							uniform.mValue.mVec4.w = vp.mValue.mArray[3].mValue.mFloatingPoint;
+							break;
+						case 16:
+							if (uniform.mType != UniformType::MAT4X4) {
+								LOGE("Must be the type mat4 for four values.\n");
+								return false;
+							}
+							uniform.mSource = UniformSource::CUSTOM_VALUE;
+							for (int i = 0; i < 16; ++i) {
+								uniform.mValue.mMat4.m[i] = vp.mValue.mArray[i].mValue.mFloatingPoint;
+							}
 							break;
 						default:
 							LOGE("%zu values not supported.\n", vp.mValue.mArray.size());

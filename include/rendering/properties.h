@@ -32,6 +32,9 @@ namespace gs
 		Vector2f mMousePosFactor;
 		Vector2f mMousePosPixel;
 
+		glm::mat4 mModelMatrix = glm::mat4(1.0f);
+		//glm::mat4 mModelViewMatrix = glm::mat4(1.0f);
+
 		// All the following members should not be used from a logic component
 		// because the only have correct values at rendering and not at update.
 
@@ -44,7 +47,12 @@ namespace gs
 		Size2f mViewRatio = Size2f(1.0f, 1.0f);
 
 		glm::mat4 mProjectionMatrix = glm::mat4(1.0f);
-		glm::mat4 mViewMatrix = glm::mat4(1.0f); // defines the position of the "camera"
+		// move the world to the "camera"/eye. (worldspace --> eye space)
+		glm::mat4 mViewMatrix = glm::mat4(1.0f);
+
+		// is calc by glm::inverse(mViewMatrix) each render pass
+		// e.g. Is useful to calculate the eye position in world space
+		glm::mat4 mInverseViewMatrix = glm::mat4(1.0f);
 
 		std::string toString() const;
 	};
