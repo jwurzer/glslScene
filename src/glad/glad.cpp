@@ -1,4 +1,4 @@
-#include <rendering/gl_version.h>
+#include <gs/rendering/gl_version.h>
 #ifdef GLSLSCENE_USE_GLAD
 /*
 
