@@ -1,5 +1,5 @@
-#include "context.h"
-#include <system/log.h>
+#include <gs/context.h>
+#include <gs/system/log.h>
 #include <stdlib.h>
 
 
