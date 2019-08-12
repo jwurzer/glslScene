@@ -31,6 +31,10 @@
 #include <gs/system/file_change_monitoring.h>
 #include <gs/common/fs.h>
 
+#ifdef _MSC_VER
+#define strncpy(dst, src, n) strncpy_s(dst, n, src, strlen(src))
+#endif
+
 namespace gs
 {
 	namespace
@@ -459,11 +463,11 @@ namespace gs
 		{
 			if (ImGui::TreeNode("sorted by watch id")) {
 				fcm.lock();
-				char strId[16];
+				char strId[32];
 				for (const auto& it : fcm.getFilesByWatchId()) {
-					snprintf(strId, 16, "watch-id_%d", it.first);
-					if (ImGui::TreeNode(strId, "watch id %d, dir: %s, files: %zu",
-							it.first, it.second->getWatchname().c_str(),
+					snprintf(strId, 32, "watch-id_%ld", long(it.first));
+					if (ImGui::TreeNode(strId, "watch id %ld, dir: %s, files: %zu",
+							long(it.first), it.second->getWatchname().c_str(),
 							it.second->getWatchIdCount())) {
 						for (const auto& itName : it.second->getNames()) {
 							const FileChangeMonitoring::Filename* fn = &itName.second;
@@ -497,9 +501,9 @@ namespace gs
 					const FileChangeMonitoring::Filename* fn =
 							it.second.mFileEntry->getFilenameForFile(fs::getBasenameFromPath(it.first));
 					if (!fn) {
-						IntentText("%s, count: %u, watch id: %d (callback not found!)",
+						IntentText("%s, count: %u, watch id: %ld (callback not found!)",
 								it.first.c_str(), it.second.mCount,
-								it.second.mFileEntry->getWatchId());
+								long(it.second.mFileEntry->getWatchId()));
 						continue;
 					}
 					std::string cbIds = (fn->mCallbacks.size() <= 1) ?
@@ -516,9 +520,9 @@ namespace gs
 						cbIds += std::to_string(cb.first);
 						reload += cb.second.mCallCount;
 					}
-					IntentText("%s, count: %u, watch id: %d, %s, reload: %u",
+					IntentText("%s, count: %u, watch id: %ld, %s, reload: %u",
 							it.first.c_str(), it.second.mCount,
-							it.second.mFileEntry->getWatchId(),
+							long(it.second.mFileEntry->getWatchId()),
 							cbIds.c_str(), reload);
 				}
 				fcm.unlock();
@@ -530,7 +534,9 @@ namespace gs
 					const FileChangeMonitoring::Callback* cb =
 							it.second.mFileEntry->getCallbackForFile(it.second.mBasename, it.first);
 					if (cb) {
-						IntentText("cb id: %u, %s, watch id: %u, reload: %u", it.first, cb->mOrigFilename.c_str(), it.second.mFileEntry->getWatchId(), cb->mCallCount);
+						IntentText("cb id: %u, %s, watch id: %ld, reload: %u",
+								it.first, cb->mOrigFilename.c_str(),
+								long(it.second.mFileEntry->getWatchId()), cb->mCallCount);
 					}
 					else {
 						IntentText("cb id: %u, basename: %s (callback not found!)", it.first, it.second.mBasename.c_str());
@@ -607,7 +613,6 @@ namespace gs
 			if (ImGui::CollapsingHeader(tmpLabel))
 			{
 				const SceneManager::TSceneByIdNumberMap& sceneMap = sm.getSceneMapByIdNumber();
-				char strId[32];
 				for (const auto& it : sceneMap) {
 					addSceneToMenu(*it.second);
 				}
