@@ -22,6 +22,8 @@ namespace gs
 		~Renderer();
 
 		void switchToTextureUnitForLoading() { mTextureStack.switchToTextureUnitForLoading(); }
+		TextureUnitStack& getTextureUnitStack() { return mTextureStack; }
+		ShaderStack& getShaderStack() { return mShaderStack; }
 
 		void render(const std::shared_ptr<Entity>& e, const ResourceManager& rm,
 				const Properties& properties);

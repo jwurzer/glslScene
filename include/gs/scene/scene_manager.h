@@ -16,6 +16,9 @@ namespace gs
 	class SceneManager
 	{
 	public:
+		typedef std::map<std::string /* id name */, std::shared_ptr<Scene> > TSceneByIdNameMap;
+		typedef std::map<unsigned int /* id number */, std::shared_ptr<Scene> > TSceneByIdNumberMap;
+
 		SceneManager();
 		~SceneManager();
 
@@ -27,10 +30,11 @@ namespace gs
 		void handleEvent(ResourceManager& rm, const Properties& properties,
 				const SDL_Event& evt);
 		void update(ResourceManager& rm, const Properties& properties);
-	private:
-		typedef std::map<std::string /* id name */, std::shared_ptr<Scene> > TSceneByIdNameMap;
-		typedef std::map<unsigned int /* id number */, std::shared_ptr<Scene> > TSceneByIdNumberMap;
 
+		unsigned int getSceneCount() const { return mSceneByIdNumber.size(); }
+
+		const TSceneByIdNumberMap& getSceneMapByIdNumber() const { return mSceneByIdNumber; }
+	private:
 		TSceneByIdNameMap mSceneByIdName;
 		TSceneByIdNumberMap mSceneByIdNumber;
 

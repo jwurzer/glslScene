@@ -56,7 +56,7 @@ namespace gs
 		std::string toString() const;
 
 		void checkChanges();
-	private:
+//	private:
 		class Callback
 		{
 		public:
@@ -70,6 +70,7 @@ namespace gs
 			// This is the original filename which was used for the function
 			// call addFile().
 			std::string mOrigFilename;
+			unsigned int mCallCount;
 
 			Callback(unsigned int fileCallbackId,
 					TCallback callbackFunc, const std::shared_ptr<void>& param1,
@@ -77,7 +78,7 @@ namespace gs
 					const std::string& origFilename)
 					:mFileCallbackId(fileCallbackId), mCbFunc(callbackFunc),
 					mParam1(param1), mParam2(param2), mFilename(filename),
-					mOrigFilename(origFilename) {}
+					mOrigFilename(origFilename), mCallCount(0) {}
 		};
 
 		typedef std::map<unsigned int /* callback id */, Callback> TCallbackMap;
@@ -116,6 +117,7 @@ namespace gs
 #else
 					int watchId,
 #endif
+					const std::string& watchname, // directory of watchId
 					const std::string& filename,
 					const std::string& origFilename,
 					unsigned int fileCallbackId, TCallback callbackFunc,
@@ -132,6 +134,9 @@ namespace gs
 					std::string& filenameForCallback,
 					bool& wasRemovedFromMap);
 			bool isFile(const std::string& filename, unsigned int callbackId) const;
+			// return null if not found
+			const Callback* getCallbackForFile(const std::string& filename, unsigned int callbackId) const;
+			const Filename* getFilenameForFile(const std::string& filename) const;
 			unsigned int getFilenameCount(const std::string& filename) const;
 			std::string toString() const;
 #if defined(_MSC_VER)
@@ -139,10 +144,13 @@ namespace gs
 #else
 			int getWatchId() const { return mWatchId; }
 #endif
+			const std::string& getWatchname() const { return mWatchname; }
 			size_t getWatchIdCount() const { return mNames.size(); }
+			TFilenameMap& getNames() { return mNames; }
 			const TFilenameMap& getNames() const { return mNames; }
 #if defined(_MSC_VER)
 			HANDLE mWatchId;
+			std::string mWatchname;
 			OVERLAPPED mOverlapped;
 			DWORD mNotifyFilter;
 			BYTE mBuffer[32 * 1024];
@@ -150,6 +158,7 @@ namespace gs
 #else
 		private:
 			int mWatchId;
+			std::string mWatchname;
 #endif
 			// watch count is the count how often inotify_add_watch() return the
 			// same watch id
@@ -189,16 +198,28 @@ namespace gs
 		typedef std::map<std::string /* filename */, FileEntryCountPair> TFileMapByName;
 		typedef std::map<unsigned int /* callback id */, FileEntryNamePair> TFileMapByCallbackId;
 
+		void lock() const { mSync.lock(); }
+		unsigned int getCallCount() const { return mFileChangeMonitoringCallCount; }
+		const TFileMapByWatchId& getFilesByWatchId() const { return mFilesByWatchId; }
+		const TFileMapByName& getFilesByName() const { return mFilesByName; }
+		const TFileMapByCallbackId& getFilesByCallbackId() const { return mFilesByCallbackId; }
+		void unlock() const { mSync.unlock(); }
+	private:
 		bool mUseSeparateMonitoringThread;
 		bool mRunning;
 		int mInotifyFd;
 		std::thread mMonitoringThread;
 
+		// Files which are changed at some directories which are monitored.
+		// The changed file itself don't need to be a monitoring file.
+		unsigned int mFileChangeCount;
+		// Files which are changed and monitored!!!!
+		unsigned int mFileChangeMonitoringCallCount;
 		TFileMapByWatchId mFilesByWatchId;
 		TFileMapByName mFilesByName;
 		TFileMapByCallbackId mFilesByCallbackId;
 		unsigned int mNextFileCallbackId;
-		std::mutex mSync;
+		mutable std::mutex mSync;
 
 		static void *posixMonitoringThread(void *thisFileChangeMonitoring);
 		void monitoringThread();

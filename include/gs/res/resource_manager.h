@@ -19,6 +19,9 @@ namespace gs
 	class ResourceManager
 	{
 	public:
+		typedef std::map<std::string /* id name */, std::shared_ptr<Resource> > TResByIdNameMap;
+		typedef std::map<TResourceId /* id number */, std::shared_ptr<Resource> > TResByIdNumberMap;
+
 		ResourceManager(const std::weak_ptr<FileChangeMonitoring>& fcm,
 				bool useVaoVersionForMesh);
 
@@ -48,10 +51,12 @@ namespace gs
 		std::shared_ptr<Framebuffer> getFramebufferByIdNumber(TResourceId idNumber) const;
 
 		bool useVaoVersionForMesh() const { return mUseVaoVersionForMesh; }
-	private:
-		typedef std::map<std::string /* id name */, std::shared_ptr<Resource> > TResByIdNameMap;
-		typedef std::map<TResourceId /* id number */, std::shared_ptr<Resource> > TResByIdNumberMap;
 
+		unsigned int getResourceCount() const { return mResByIdNumber.size(); }
+
+		const TResByIdNameMap& getResourceMapByIdName() const { return mResByIdName; }
+		const TResByIdNumberMap&  getResourceMapByIdNumber() const { return mResByIdNumber; }
+	private:
 		std::weak_ptr<FileChangeMonitoring> mFileMonitoring;
 		bool mUseVaoVersionForMesh;
 

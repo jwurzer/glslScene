@@ -9,6 +9,7 @@
 #include <gs/res/mesh.h>
 #include <gs/res/resource_manager.h>
 #include <gs/scene/scene_manager.h>
+#include <gs/gui/gui_manager.h>
 #include <gs/common/vertex.h>
 #include <gs/common/fs.h>
 #include <gs/configloader/sml_parser.h>
@@ -16,15 +17,15 @@
 #include <gs/common/cfg.h>
 #include <gs/scene/scene.h>
 #include <gs/camera.h>
+#include <gs/configloader/context_loader.h>
+#include <gs/configloader/res_loader.h>
+#include <gs/configloader/render_pass_loader.h>
 #include <glm/gtc/quaternion.hpp>
 #include <stdio.h>
 #include <string>
 #include <iostream>
 #include <iomanip>      // std::setw
 #include <vector>
-#include <gs/configloader/context_loader.h>
-#include <gs/configloader/res_loader.h>
-#include <gs/configloader/render_pass_loader.h>
 
 //Screen dimension constants
 #define SCREEN_WIDTH 800
@@ -45,8 +46,7 @@ gs::Context::Context()
 		mIsError = true;
 		return;
 	}
-	if (!contextloader::getContextParameters(*mSceneConfig, mRenderApiVersion,
-			mProfile, mForward, mMajorVersion, mMinorVersion)) {
+	if (!contextloader::getContextParameters(*mSceneConfig, mContextProperties)) {
 		LOGW("Warning: Can't load parameters for context creation!\n");
 	}
 	initContext();
@@ -78,7 +78,7 @@ void gs::Context::run()
 
 	const CfgValuePair& cfg = *mSceneConfig;
 
-	mResourceManager.reset(new ResourceManager(mFileMonitoring, useVaoVersionForMesh()));
+	mResourceManager.reset(new ResourceManager(mFileMonitoring, mContextProperties.useVaoVersionForMesh()));
 	mSceneManager.reset(new SceneManager());
 	mPassManager.reset(new RenderPassManager());
 	if (!sceneloader::reload(cfg, *mResourceManager, *mSceneManager, *mPassManager, true, true, true)) {
@@ -122,6 +122,7 @@ void gs::Context::run()
 			re.window.windowID = 0;
 			mSceneManager->handleEvent(*mResourceManager, mProperties, re);
 			mPassManager->handleEventForCameras(re);
+			mGuiManager->handleEvent(re);
 		}
 
 		newLoaded = false;
@@ -176,6 +177,7 @@ void gs::Context::run()
 			// after updating the properties the event can be forwarded to the entities
 			mSceneManager->handleEvent(*mResourceManager, mProperties, e);
 			mPassManager->handleEventForCameras(e);
+			mGuiManager->handleEvent(e);
 		}
 
 
@@ -184,6 +186,8 @@ void gs::Context::run()
 		mPassManager->updateCameras(mProperties.mTsSec);
 
 		mPassManager->renderAllPasses(renderer, *mSceneManager, *mResourceManager, mProperties);
+		mGuiManager->render(renderer, *mPassManager, *mSceneManager, *mResourceManager,
+				mContextProperties, mProperties, *mFileMonitoring);
 
 		SDL_GL_SwapWindow(mWindow);
 
@@ -273,10 +277,11 @@ bool gs::Context::selectScene()
 
 void gs::Context::initContext()
 {
-	LOGI("Config for context creation:\n%s\n", contextCreationParameters().c_str());
+	LOGI("Config for context creation:\n%s\n", mContextProperties.toString().c_str());
 
 	// Initialize SDL lib
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+	//if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
 		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 		return;
 	}
@@ -286,28 +291,30 @@ void gs::Context::initContext()
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+	//SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 
-	if (mMajorVersion >= 0) {
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, mMajorVersion);
-		LOGI("Set SDL GL context major version to %d\n", mMajorVersion);
+	if (mContextProperties.mMajorVersion >= 0) {
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, mContextProperties.mMajorVersion);
+		LOGI("Set SDL GL context major version to %d\n", mContextProperties.mMajorVersion);
 	}
-	if (mMinorVersion >= 0) {
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, mMinorVersion);
-		LOGI("Set SDL GL context minor version to %d\n", mMinorVersion);
+	if (mContextProperties.mMinorVersion >= 0) {
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, mContextProperties.mMinorVersion);
+		LOGI("Set SDL GL context minor version to %d\n", mContextProperties.mMinorVersion);
 	}
 
 	{
 		int sdlGlContextProfile = 0;
-		if (mRenderApiVersion == RenderingApi::OPENGL_ES) {
+		if (mContextProperties.mRenderApiVersion == RenderingApi::OPENGL_ES) {
 			sdlGlContextProfile |= SDL_GL_CONTEXT_PROFILE_ES;
 		}
-		if (mProfile == RenderingApiProfile::CORE) {
+		if (mContextProperties.mProfile == RenderingApiProfile::CORE) {
 			sdlGlContextProfile |= SDL_GL_CONTEXT_PROFILE_CORE;
 		}
-		else if (mProfile == RenderingApiProfile::COMPATIBILITY) {
+		else if (mContextProperties.mProfile == RenderingApiProfile::COMPATIBILITY) {
 			sdlGlContextProfile |= SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
 		}
 		if (sdlGlContextProfile != 0) {
@@ -325,7 +332,7 @@ void gs::Context::initContext()
 	// Create window
 	mWindow = SDL_CreateWindow(("glslScene: " + mSceneDirName).c_str(),
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-			SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+			SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 	if (!mWindow) {
 		printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
 		return;
@@ -341,6 +348,8 @@ void gs::Context::initContext()
 		fprintf(stderr, "OpenGL context could not be created! SDL Error: %s\n", SDL_GetError());
 		return;
 	}
+
+	SDL_GL_SetSwapInterval(1); // enable vsync
 
 #ifdef GLSLSCENE_USE_GLEW
 	//Initialize GLEW
@@ -368,16 +377,22 @@ void gs::Context::initContext()
 	mProperties.mWindowRatio = Size2f(mProperties.mWindowSize.mWidth / mProperties.mWindowSize.mHeight, 1.0f);
 	LOGI("Window size: %dx%d\n", mProperties.mWindowSizeI.mWidth, mProperties.mWindowSizeI.mHeight);
 
-	mProperties.mUseGlTransforms = !useVaoVersionForMesh();
+	mProperties.mUseGlTransforms = !mContextProperties.useVaoVersionForMesh();
 
 	LOGI("use gl transformations: %s\n", mProperties.mUseGlTransforms ? "yes" : "no");
-	LOGI("use VAO version for mesh: %s\n", useVaoVersionForMesh() ? "yes" : "no");
+	LOGI("use VAO version for mesh: %s\n", mContextProperties.useVaoVersionForMesh() ? "yes" : "no");
 
 	// all ok --> set is error to false ;-)
 	mIsError = false;
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_STENCIL_TEST);
+	//glDisable(GL_SCISSOR_TEST);
+	//glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	//glStencilMask(0xffffffff);
+	//glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	//glStencilFunc(GL_ALWAYS, 0, 0xffffffff);
 
 	// LOG OPENGL VERSION, VENDOR (IMPLEMENTATION), RENDERER, GLSL, ETC.:
 	std::cout << std::setw(34) << std::left << "OpenGL Version: " <<
@@ -389,10 +404,22 @@ void gs::Context::initContext()
 			(char *)glGetString(GL_VENDOR) << std::endl;
 	std::cout << std::setw(34) << std::left << "OpenGL Renderer:" <<
 			(char *)glGetString(GL_RENDERER) << std::endl;
+	mContextProperties.mCreatedGlVersion = (char*)glGetString(GL_VERSION);
+	mContextProperties.mCreatedGlslVersion =
+			(char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
+	mContextProperties.mCreatedVendor = (char *)glGetString(GL_VENDOR);
+	mContextProperties.mCreatedRenderer = (char *)glGetString(GL_RENDERER);
+	glGetIntegerv(GL_MAJOR_VERSION, &mContextProperties.mCreatedMajorVersion);
+	glGetIntegerv(GL_MINOR_VERSION, &mContextProperties.mCreatedMinorVersion);
+
+	mGuiManager.reset(new GuiManager());
+	mGuiManager->initImGui(mWindow, mContext, mContextProperties);
 }
 
 void gs::Context::destroyContext()
 {
+	mGuiManager->destroyImGui();
+
 	if (mContext) {
 		SDL_GL_DeleteContext(mContext);
 	}
@@ -402,72 +429,6 @@ void gs::Context::destroyContext()
 	if (mIsSdlInit) {
 		SDL_Quit();
 	}
-}
-
-std::string gs::Context::contextCreationParameters() const
-{
-	std::stringstream s;
-	s << "Rendering API: ";
-	switch (mRenderApiVersion) {
-		case RenderingApi::DEFAULT:
-			s << "default";
-			break;
-		case RenderingApi::OPENGL:
-			s << "OpenGL";
-			break;
-		case RenderingApi::OPENGL_ES:
-			s << "OpenGL ES";
-			break;
-	}
-	s << ", Profile: ";
-	switch (mProfile) {
-		case RenderingApiProfile::DEFAULT:
-			s << "default";
-			break;
-		case RenderingApiProfile::CORE:
-			s << "core";
-			break;
-		case RenderingApiProfile::COMPATIBILITY:
-			s << "compatibility";
-			break;
-	}
-	s << ", Forward-compatibility: ";
-	switch (mForward) {
-		case ForwardCompatibility::DEFAULT:
-			s << "no (default)";
-			break;
-		case ForwardCompatibility::FORWARD_COMPATIBILITY:
-			s << "yes (activated)";
-			break;
-	}
-	s << ", version: ";
-	if (mMajorVersion < 0 && mMinorVersion < 0) {
-		s << "default";
-	}
-	else if (mMajorVersion >= 0 && mMinorVersion < 0) {
-		s << mMajorVersion << ".x";
-	}
-	else if (mMajorVersion < 0 && mMinorVersion >= 0) {
-		s << "?." << mMinorVersion << " (incorrect?)";
-	}
-	else {
-		s << mMajorVersion << "." << mMinorVersion;
-	}
-	return s.str();
-}
-
-bool gs::Context::useVaoVersionForMesh() const
-{
-	if (mRenderApiVersion == RenderingApi::OPENGL &&
-			((mMajorVersion == 3 && mMinorVersion >= 2) || mMajorVersion > 3) &&
-			mProfile == RenderingApiProfile::CORE) {
-		return true;
-	}
-	if (mRenderApiVersion == RenderingApi::OPENGL_ES &&
-			mMajorVersion >= 2) {
-		return true;
-	}
-	return false;
 }
 
 void gs::Context::hotReloading(unsigned int callbackId,
@@ -502,14 +463,15 @@ void gs::Context::reload()
 	ResourceManager* rm = mResourceManager.get();
 	SceneManager* sm = mSceneManager.get();
 	RenderPassManager* pm = mPassManager.get();
-#if 0
+#ifdef USE_NEW_FILE_MONITORING_AT_SCENE_RELOAD
 	std::shared_ptr<FileChangeMonitoring> fileMonitoring = std::make_shared<FileChangeMonitoring>(false);
 #else
 	// works also without recreate the file monitoring
 	std::shared_ptr<FileChangeMonitoring> fileMonitoring = mFileMonitoring;
 #endif
 	if (reloadResourceManager) {
-		resourceManager.reset(new ResourceManager(fileMonitoring, useVaoVersionForMesh()));
+		resourceManager.reset(new ResourceManager(fileMonitoring,
+				mContextProperties.useVaoVersionForMesh()));
 		rm = resourceManager.get();
 	}
 	if (reloadSceneManager) {
@@ -537,9 +499,11 @@ void gs::Context::reload()
 	if (reloadRenderPassManager) {
 		mPassManager = std::move(passManager);
 	}
+#ifdef USE_NEW_FILE_MONITORING_AT_SCENE_RELOAD
 	LOGI("Switch hot reloading.\n");
 	mFileMonitoring = fileMonitoring;
 	mHotReloadingId = mFileMonitoring->addFile(mSceneFilename, hotReloading, std::shared_ptr<void>(), this);
+#endif
 	LOGI("Reload and apply scene file.\n");
 }
 

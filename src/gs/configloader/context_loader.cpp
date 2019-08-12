@@ -8,9 +8,7 @@ namespace gs
 	namespace
 	{
 		bool getVersionParameters(const CfgValue& ver,
-				RenderingApi& renderingApi, RenderingApiProfile& profile,
-				ForwardCompatibility& forward,
-				int& majorVersion, int& minorVersion)
+				ContextProperties& p)
 		{
 			if (!ver.isArray()) {
 				LOGE("Wrong value for version\n");
@@ -25,10 +23,10 @@ namespace gs
 			if (apiStr == "opengl" ||
 					apiStr == "openGl" ||
 					apiStr == "OpenGl") {
-				renderingApi = RenderingApi::OPENGL;
+				p.mRenderApiVersion = RenderingApi::OPENGL;
 			}
 			else if (apiStr == "gles" || apiStr == "GLES") {
-				renderingApi = RenderingApi::OPENGL_ES;
+				p.mRenderApiVersion = RenderingApi::OPENGL_ES;
 			}
 			else {
 				LOGE("Wrong value for rendering API (wrong value for version)\n");
@@ -44,28 +42,28 @@ namespace gs
 			if (ver.mArray[1].mValue.isText()) {
 				const std::string &apiStr2 = ver.mArray[1].mValue.mText;
 				if (apiStr2 == "es" || apiStr2 == "ES") {
-					if (renderingApi != RenderingApi::OPENGL) {
+					if (p.mRenderApiVersion != RenderingApi::OPENGL) {
 						LOGE("'es' is only allowed if the word opengl is before\n");
 						return false;
 					}
-					renderingApi = RenderingApi::OPENGL_ES;
+					p.mRenderApiVersion = RenderingApi::OPENGL_ES;
 					++verPosIndex;
 				}
 				else if (apiStr2 == "core" ||
 						apiStr2 == "compatibility" ||
 						apiStr2 == "compat") {
-					if (renderingApi != RenderingApi::OPENGL) {
+					if (p.mRenderApiVersion != RenderingApi::OPENGL) {
 						LOGE("A profile is only allowed for opengl.\n");
 						return false;
 					}
-					profile = (apiStr2 == "core") ?
+					p.mProfile = (apiStr2 == "core") ?
 							RenderingApiProfile::CORE :
 							RenderingApiProfile::COMPATIBILITY;
 					verNumberAllowed = false;
 					profileAllowed = false;
 				}
 				else if (apiStr2 == "forward" || apiStr2 == "forward-compatibility") {
-					forward = ForwardCompatibility::FORWARD_COMPATIBILITY;
+					p.mForward = ForwardCompatibility::FORWARD_COMPATIBILITY;
 					verNumberAllowed = false;
 					profileAllowed = false;
 					forwardAllowed = false;
@@ -92,7 +90,7 @@ namespace gs
 						LOGE("Major opengl version must be >= 1 and not %d\n", majorVer);
 						return false;
 					}
-					majorVersion = majorVer;
+					p.mMajorVersion = majorVer;
 				}
 				else if (ver.mArray[verPosIndex].mValue.isFloat()) {
 					float verNumber = ver.mArray[verPosIndex].mValue.mFloatingPoint;
@@ -100,14 +98,14 @@ namespace gs
 						LOGE("Major opengl version must be >= 1 and not %f\n", verNumber);
 						return false;
 					}
-					majorVersion = static_cast<int>(verNumber + 0.0001f);
-					minorVersion = static_cast<int>((verNumber - static_cast<float>(majorVersion)) * 10.0f + 0.0001f);
+					p.mMajorVersion = static_cast<int>(verNumber + 0.0001f);
+					p.mMinorVersion = static_cast<int>((verNumber - static_cast<float>(p.mMajorVersion)) * 10.0f + 0.0001f);
 				}
 				++verPosIndex;
 			}
 
 			unsigned int nextIndex = verPosIndex;
-			if (renderingApi != RenderingApi::OPENGL) {
+			if (p.mRenderApiVersion != RenderingApi::OPENGL) {
 				// --> no profile and no forward is allowed
 				if (nextIndex != count) {
 					LOGE("Wrong count of arguments for version value.\n");
@@ -129,7 +127,7 @@ namespace gs
 						LOGE("No profile is only allowed at this position.\n");
 						return false;
 					}
-					profile = (apiStr2 == "core") ?
+					p.mProfile = (apiStr2 == "core") ?
 							RenderingApiProfile::CORE :
 							RenderingApiProfile::COMPATIBILITY;
 					++nextIndex;
@@ -139,7 +137,7 @@ namespace gs
 						LOGE("No forward is only allowed at this position.\n");
 						return false;
 					}
-					forward = ForwardCompatibility::FORWARD_COMPATIBILITY;
+					p.mForward = ForwardCompatibility::FORWARD_COMPATIBILITY;
 					forwardAllowed = false;
 					++nextIndex;
 				}
@@ -160,7 +158,7 @@ namespace gs
 						LOGE("No forward is only allowed at this position.\n");
 						return false;
 					}
-					forward = ForwardCompatibility::FORWARD_COMPATIBILITY;
+					p.mForward = ForwardCompatibility::FORWARD_COMPATIBILITY;
 					++nextIndex;
 				}
 				else {
@@ -176,9 +174,7 @@ namespace gs
 		}
 
 		bool getParameters(const CfgValuePair& cfgValuePair,
-				RenderingApi& renderingApi, RenderingApiProfile& profile,
-				ForwardCompatibility& forward,
-				int& majorVersion, int& minorVersion)
+				ContextProperties& p)
 		{
 			if (cfgValuePair.mName.mText != "context") {
 				return false;
@@ -200,22 +196,15 @@ namespace gs
 				LOGE("rendering-api can only be used once!\n");
 				return false;
 			}
-			return getVersionParameters(*version, renderingApi, profile,
-					forward, majorVersion, minorVersion);
+			return getVersionParameters(*version, p);
 		}
 	}
 }
 
 bool gs::contextloader::getContextParameters(const CfgValuePair& cfgValue,
-		RenderingApi& renderingApi, RenderingApiProfile& profile,
-		ForwardCompatibility& forward,
-		int& majorVersion, int& minorVersion)
+		ContextProperties& p)
 {
-	renderingApi = RenderingApi::DEFAULT;
-	profile = RenderingApiProfile::DEFAULT;
-	forward = ForwardCompatibility::DEFAULT;
-	majorVersion = -1;
-	minorVersion = -1;
+	p.reset();
 
 	if (!cfgValue.mValue.isArray()) {
 		return false;
@@ -226,21 +215,12 @@ bool gs::contextloader::getContextParameters(const CfgValuePair& cfgValue,
 		if (vp.mName.mText == "context") {
 			if (contextCount) {
 				LOGE("Only one context is allowed.\n");
-				renderingApi = RenderingApi::DEFAULT;
-				profile = RenderingApiProfile::DEFAULT;
-				forward = ForwardCompatibility::DEFAULT;
-				majorVersion = -1;
-				minorVersion = -1;
+				p.reset();
 				return false;
 			}
-			if (!getParameters(vp, renderingApi, profile,
-					forward, majorVersion, minorVersion)) {
+			if (!getParameters(vp, p)) {
 				LOGE("Wrong context config\n");
-				renderingApi = RenderingApi::DEFAULT;
-				profile = RenderingApiProfile::DEFAULT;
-				forward = ForwardCompatibility::DEFAULT;
-				majorVersion = -1;
-				minorVersion = -1;
+				p.reset();
 				return false;
 			}
 			++contextCount;
