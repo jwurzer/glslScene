@@ -2,6 +2,10 @@
 #include <string.h>
 #include <sstream>
 
+#ifdef _MSC_VER
+#define strncpy(dst, src, n) strncpy_s(dst, n, src, strlen(src))
+#endif
+
 namespace gs
 {
 	namespace
