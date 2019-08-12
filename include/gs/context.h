@@ -2,35 +2,17 @@
 #define GLSLSCENE_CONTEXT_H
 
 #include <gs/rendering/properties.h>
+#include <gs/context_properties.h>
 #include <SDL.h>
 #include <memory>
 
 namespace gs
 {
-	enum class RenderingApi
-	{
-		DEFAULT, // not specified
-		OPENGL,
-		OPENGL_ES,
-	};
-
-	enum class RenderingApiProfile
-	{
-		DEFAULT, // not specified
-		CORE,
-		COMPATIBILITY,
-	};
-
-	enum class ForwardCompatibility
-	{
-		DEFAULT, // not specified, none
-		FORWARD_COMPATIBILITY,
-	};
-
 	class CfgValuePair;
 	class ResourceManager;
 	class SceneManager;
 	class RenderPassManager;
+	class GuiManager;
 	class FileChangeMonitoring;
 
 	class Context
@@ -44,13 +26,9 @@ namespace gs
 	private:
 		std::unique_ptr<CfgValuePair> mSceneConfig;
 
-		// to change the parameters for context creation the scene config should
-		// be used!
-		RenderingApi mRenderApiVersion = RenderingApi::DEFAULT;
-		RenderingApiProfile mProfile = RenderingApiProfile::DEFAULT;
-		ForwardCompatibility mForward = ForwardCompatibility::DEFAULT;
-		int mMajorVersion = -1; // -1 for not specified
-		int mMinorVersion = -1; // -1 for not specified
+		// to change the parameters for context creation,
+		// the scene config should be used!
+		ContextProperties mContextProperties;
 
 		bool mIsError;
 		bool mIsSdlInit;
@@ -70,15 +48,12 @@ namespace gs
 		std::unique_ptr<ResourceManager> mResourceManager;
 		std::unique_ptr<SceneManager> mSceneManager;
 		std::unique_ptr<RenderPassManager> mPassManager;
+		std::unique_ptr<GuiManager> mGuiManager;
 
 		// select and load config file for scene
 		bool selectScene();
 		void initContext();
 		void destroyContext();
-
-		std::string contextCreationParameters() const;
-
-		bool useVaoVersionForMesh() const;
 
 		static void hotReloading(unsigned int callbackId,
 				const std::string& filename,

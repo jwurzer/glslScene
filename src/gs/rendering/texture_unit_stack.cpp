@@ -164,6 +164,11 @@ void gs::TextureUnitStack::switchToTextureUnitForLoading()
 	SWITCH_TO_TEXTURE_UNIT(MAX_UNITS)
 }
 
+void gs::TextureUnitStack::switchToTextureUnit(unsigned int textureUnit)
+{
+	SWITCH_TO_TEXTURE_UNIT(textureUnit)
+}
+
 void gs::TextureUnitStack::resetStatistic()
 {
 #ifdef ENABLE_TEXTURE_UNIT_STACK_STATISTIC

@@ -71,6 +71,18 @@ int gs::SmlParser::getNextSmlEntry(std::string& utf8Line, CfgValuePair& entry,
 	entry.mValue.mLineNumber = lineNumber;
 
 	size_t len = utf8Line.length();
+	if (len > 0) {
+		if (utf8Line[len - 1] == '\n') {
+			--len;
+		}
+	}
+	if (len > 0) {
+		if (utf8Line[len - 1] == '\r') {
+			--len;
+		}
+	}
+	utf8Line.erase(len);
+
 	if (!mIndentChar && len > 0 && (utf8Line[0] == ' ' || utf8Line[0] == '\t')) {
 		mIndentChar = utf8Line[0];
 		// mIndentCharCount already has the value 1 from init

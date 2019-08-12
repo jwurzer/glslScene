@@ -7,7 +7,6 @@
 
 namespace gs
 {
-	class Entity;
 	class Renderer;
 	class SceneManager;
 	class ResourceManager;
@@ -27,6 +26,7 @@ namespace gs
 				const SceneManager& sm, const ResourceManager& rm,
 				const Properties& properties);
 		bool isValid() const;
+		const std::vector<RenderPass>& getPasses() const { return mPasses; }
 	private:
 		std::vector<RenderPass> mPasses;
 	};

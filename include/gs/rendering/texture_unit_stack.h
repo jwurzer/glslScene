@@ -25,6 +25,7 @@ namespace gs
 		void bindForRendering();
 
 		void switchToTextureUnitForLoading();
+		void switchToTextureUnit(unsigned int textureUnit);
 
 		void resetStatistic();
 		void printStatistic();

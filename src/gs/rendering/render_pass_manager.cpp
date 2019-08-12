@@ -77,7 +77,12 @@ void gs::RenderPassManager::renderAllPasses(Renderer &renderer,
 
 		glClearColor(pass.mClearColor.r, pass.mClearColor.g, pass.mClearColor.b, pass.mClearColor.a);
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if (!pass.mFramebufferId) {
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		}
+		else {
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
 
 		std::shared_ptr<Scene> scene = sm.getSceneByIdNumber(pass.mSceneId);
 		if (!scene) {
@@ -86,6 +91,8 @@ void gs::RenderPassManager::renderAllPasses(Renderer &renderer,
 		}
 
 		glm::vec3 viewSize;
+		// if p.mUseGlTransforms is true then applyProjection() also
+		// use glMatrixMode(GL_PROJECTION); and the necessary gl-functions.
 		p.mProjectionMatrix = pass.mProjection.applyProjection(p,
 				float(resolution.mWidth), float(resolution.mHeight), viewSize);
 		p.mViewSize = viewSize;

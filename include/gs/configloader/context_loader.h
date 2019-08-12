@@ -18,13 +18,12 @@ profile can be core or compatibility (or short version compat)
 namespace gs
 {
 	class CfgValuePair;
+	class ContextProperties;
 
 	namespace contextloader
 	{
 		bool getContextParameters(const CfgValuePair& cfgValue,
-				RenderingApi& renderingApi, RenderingApiProfile& profile,
-				ForwardCompatibility& forward,
-				int& majorVersion, int& minorVersion);
+				ContextProperties& p);
 	}
 }
 

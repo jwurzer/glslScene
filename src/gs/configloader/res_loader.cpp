@@ -230,13 +230,13 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 		return 0;
 	}
 	std::string idName;
-	int startIndex = 0; // index of vertex-layout
+	unsigned int startIndex = 0; // index of vertex-layout
 	if (cfgValue.mArray[0].mName.mText == "id") {
 		idName = cfgValue.mArray[0].mValue.mText;
 		startIndex = 1;
 	}
 	float scaleForShowNormals = 1.0f;
-	if (cfgValue.mArray.size() > static_cast<unsigned int>(startIndex) &&
+	if (cfgValue.mArray.size() > startIndex &&
 			cfgValue.mArray[startIndex].mName.mText == "scale-for-show-normals") {
 		scaleForShowNormals = cfgValue.mArray[startIndex].mValue.mFloatingPoint;
 		++startIndex;
@@ -246,8 +246,8 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 		LOGW("Create a empty mesh!\n");
 		return rm.addResource(idName, mesh);
 	}
-	if ((startIndex == 1 || startIndex == 2) && cfgValue.mArray.size() < static_cast<unsigned int>(startIndex) + 2) {
-		LOGE("Wrong size. Must be at least %d if id is used.\n", startIndex + 2);
+	if ((startIndex == 1 || startIndex == 2) && cfgValue.mArray.size() < startIndex + 2) {
+		LOGE("Wrong size. Must be at least %u if id is used.\n", startIndex + 2);
 		return 0;
 	}
 

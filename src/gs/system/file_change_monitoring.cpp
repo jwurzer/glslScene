@@ -33,6 +33,8 @@
 gs::FileChangeMonitoring::FileChangeMonitoring(bool useSeparateMonitoringThread)
 		:mUseSeparateMonitoringThread(useSeparateMonitoringThread),
 		mRunning(false), mInotifyFd(-1), mMonitoringThread(),
+		mFileChangeCount(0),
+		mFileChangeMonitoringCallCount(0),
 		mFilesByWatchId(), mFilesByName(), mFilesByCallbackId(),
 		mNextFileCallbackId(1), mSync()
 {
@@ -156,7 +158,7 @@ unsigned int gs::FileChangeMonitoring::addFile(const std::string& origFilename,
 	if (fileEntryItById == mFilesByWatchId.end()) {
 		// not found --> create new one
 		// FileEntry set the watch counter to 1!
-		fentry = std::shared_ptr<FileEntry>(new FileEntry(watchFd, fname, origFilename, fileId, callback, param1, param2));
+		fentry = std::shared_ptr<FileEntry>(new FileEntry(watchFd, watchname, fname, origFilename, fileId, callback, param1, param2));
 #if defined(_MSC_VER)
 		fentry->mOverlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 		fentry->mNotifyFilter = FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE;
@@ -285,6 +287,9 @@ void gs::FileChangeMonitoring::removeAllFiles()
 std::string gs::FileChangeMonitoring::toString() const
 {
 	std::stringstream s;
+
+	std::lock_guard<std::mutex> lock(mSync);
+
 	s << "files by watch id, map entry count: " << mFilesByWatchId.size() << "\n";
 	s << "files by filename, map entry count: " << mFilesByName.size() << "\n";
 	s << "files by callback, map entry count: " << mFilesByCallbackId.size() << "\n";
@@ -298,6 +303,7 @@ std::string gs::FileChangeMonitoring::toString() const
 			}
 		}
 	}
+
 	for (const auto& it : mFilesByName) {
 		const std::string& name = it.first;
 		const FileEntry& e = *it.second.mFileEntry;
@@ -305,6 +311,7 @@ std::string gs::FileChangeMonitoring::toString() const
 			s << "error: " << name << " exist at files by name map but not at file entry\n";
 		}
 	}
+
 	for (const auto& it : mFilesByCallbackId) {
 		unsigned int cbId = it.first;
 		const FileEntryNamePair& fen = it.second;
@@ -328,7 +335,7 @@ void gs::FileChangeMonitoring::checkChanges()
 		LOGW("monitoringFileChanges() return an error\n");
 	}
 	else if (changeCount > 0) {
-		LOGI("%d files changed\n", changeCount);
+		//LOGI("%d files changed\n", changeCount);
 	}
 }
 
@@ -378,6 +385,7 @@ int gs::FileChangeMonitoring::monitoringFileChanges()
 	struct inotify_event *event;
 	for (ssize_t i = 0; i < length; i += EVENT_SIZE + event->len) {
 		++changeCount;
+		++mFileChangeCount;
 		event = (struct inotify_event *)&buffer[i];
 #if 0
 		uint32_t mask = event->mask;
@@ -441,13 +449,15 @@ int gs::FileChangeMonitoring::monitoringFileChanges()
 			//LOGI("%s\n", fileEntryIt->second->toString().c_str());
 			if (event->len > 0) {
 				std::string basename = event->name;
-				const FileEntry& fe = *fileEntryIt->second;
+				FileEntry& fe = *fileEntryIt->second;
 				auto fnameIt = fe.getNames().find(basename);
 				if (fnameIt != fe.getNames().end()) {
-					for (const auto& cbIt : fnameIt->second.mCallbacks) {
-						const Callback& cb = cbIt.second;
+					for (auto& cbIt : fnameIt->second.mCallbacks) {
+						Callback& cb = cbIt.second;
 						LOGI("file %s, orig name %s changed!\n", cb.mFilename.c_str(), cb.mOrigFilename.c_str());
 						cb.mCbFunc(cb.mFileCallbackId, cb.mOrigFilename, cb.mParam1, cb.mParam2);
+						++cb.mCallCount;
+						++mFileChangeMonitoringCallCount;
 					}
 				}
 			}
@@ -470,10 +480,11 @@ gs::FileChangeMonitoring::FileEntry::FileEntry(
 #else
 		int watchId,
 #endif
+		const std::string& watchname, // directory of watchId
 		const std::string& filename,
 		const std::string& origFilename, unsigned int fileCallbackId,
 		TCallback callbackFunc, const std::shared_ptr<void>& param1, void* param2)
-		:mWatchId(watchId), mNames()
+		:mWatchId(watchId), mWatchname(watchname), mNames()
 {
 	if (!addFile(filename, origFilename, false, fileCallbackId, callbackFunc, param1, param2)) {
 		LOGE("Fatal error! Can't add filename for file entry!\n");
@@ -548,6 +559,31 @@ bool gs::FileChangeMonitoring::FileEntry::isFile(const std::string& filename,
 	return true;
 }
 
+const gs::FileChangeMonitoring::Callback* gs::FileChangeMonitoring::FileEntry::getCallbackForFile(
+		const std::string& filename, unsigned int callbackId) const
+{
+	auto fnameIt = mNames.find(filename);
+	if (fnameIt == mNames.end()) {
+		return nullptr;
+	}
+	const Filename& fn = fnameIt->second;
+	auto cbIt = fn.mCallbacks.find(callbackId);
+	if (cbIt == fn.mCallbacks.end()) {
+		return nullptr;
+	}
+	return &cbIt->second;
+}
+
+const gs::FileChangeMonitoring::Filename* gs::FileChangeMonitoring::FileEntry::getFilenameForFile(
+		const std::string& filename) const
+{
+	auto fnameIt = mNames.find(filename);
+	if (fnameIt == mNames.end()) {
+		return nullptr;
+	}
+	return &fnameIt->second;
+}
+
 unsigned int gs::FileChangeMonitoring::FileEntry::getFilenameCount(const std::string& filename) const
 {
 	auto it = mNames.find(filename);
@@ -561,13 +597,14 @@ std::string gs::FileChangeMonitoring::FileEntry::toString() const
 {
 	std::stringstream s;
 	std::stringstream s2;
-	s << "watch id: " << mWatchId << ", watch id count (map size): " << mNames.size();
+	s << "watch id: " << mWatchId << ", watch dir: " << mWatchname << ", watch id count (map size): " << mNames.size();
 	unsigned int count = 0;
 	for (const auto& it : mNames) {
 		s2 << " name-key: " << it.first << ", basename: " << it.second.mBasename << ", count: " << it.second.mCallbacks.size() << "\n";
 		for (const auto& cbIt : it.second.mCallbacks) {
 			s2 << "  callback id: " << cbIt.second.mFileCallbackId <<
-					", filename: " << cbIt.second.mFilename << "\n";
+					", filename: " << cbIt.second.mFilename <<
+					", orig fn.: " << cbIt.second.mOrigFilename << "\n";
 		}
 		count += it.second.mCallbacks.size();
 	}

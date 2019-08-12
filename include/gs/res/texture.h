@@ -40,6 +40,7 @@ namespace gs
 
 		void create(unsigned int width, unsigned int height, const ColorU32& color);
 		void update(const RectInt& updateArea, const ColorU32& color);
+		const std::string& getFilename() const { return mFilename; }
 		TexMipmap getMipmap() const;
 		TexFilter getMinFilter() const;
 		TexFilter getMagFilter() const;
