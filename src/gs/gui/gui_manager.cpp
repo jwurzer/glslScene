@@ -29,6 +29,7 @@
 #include <gs/rendering/render_pass_manager.h>
 
 #include <gs/system/file_change_monitoring.h>
+#include <gs/system/log.h>
 #include <gs/common/fs.h>
 
 #ifdef _MSC_VER
@@ -466,8 +467,13 @@ namespace gs
 				char strId[32];
 				for (const auto& it : fcm.getFilesByWatchId()) {
 					snprintf(strId, 32, "watch-id_%ld", long(it.first));
-					if (ImGui::TreeNode(strId, "watch id %ld, dir: %s, files: %zu",
-							long(it.first), it.second->getWatchname().c_str(),
+					std::string wn = (it.second->getWatchnames().size() <= 1) ? "dir:" : "dirs:";
+					for (const auto& watchname : it.second->getWatchnames()) {
+						wn += " ";
+						wn += watchname;
+					}
+					if (ImGui::TreeNode(strId, "watch id %ld, %s, files: %zu",
+							long(it.first), wn.c_str(),
 							it.second->getWatchIdCount())) {
 						for (const auto& itName : it.second->getNames()) {
 							const FileChangeMonitoring::Filename* fn = &itName.second;
@@ -491,6 +497,42 @@ namespace gs
 						}
 						ImGui::TreePop();
 					}
+				}
+				fcm.unlock();
+				ImGui::TreePop();
+			}
+			if (ImGui::TreeNode("sorted by watch dir")) {
+				fcm.lock();
+				char strId[32];
+				unsigned int i = 0;
+				for (const auto& it : fcm.getFilesByWatchDir()) {
+					snprintf(strId, 32, "watch-dir_%d", i);
+					if (ImGui::TreeNode(strId, "watch dir: %s, watch id %ld, files: %zu",
+							it.first.c_str(), long(it.second->getWatchId()),
+							it.second->getWatchIdCount())) {
+						for (const auto& itName : it.second->getNames()) {
+							const FileChangeMonitoring::Filename* fn = &itName.second;
+							std::string cbIds = (fn->mCallbacks.size() <= 1) ?
+									"cb id: " : "cb ids: ";
+							bool isFirst = true;
+							unsigned int reload = 0;
+							for (const auto& cb : fn->mCallbacks) {
+								if (isFirst) {
+									isFirst = false;
+								}
+								else {
+									cbIds += ", ";
+								}
+								cbIds += std::to_string(cb.first);
+								reload += cb.second.mCallCount;
+							}
+							IntentText("%s, cb count: %zu, %s, reload: %u",
+									itName.first.c_str(), fn->mCallbacks.size(),
+									cbIds.c_str(), reload);
+						}
+						ImGui::TreePop();
+					}
+					++i;
 				}
 				fcm.unlock();
 				ImGui::TreePop();
@@ -558,7 +600,8 @@ namespace gs
 				const RenderPassManager& pm, const SceneManager& sm,
 				const ResourceManager& rm, const ContextProperties& cp,
 				const Properties& properties,
-				const FileChangeMonitoring& fcm)
+				const FileChangeMonitoring& fcm,
+				bool* showWindow)
 		{
 			ImGuiWindowFlags windowFlags = 0;
 			//windowFlags |= ImGuiWindowFlags_NoTitleBar;
@@ -570,12 +613,11 @@ namespace gs
 			//windowFlags |= ImGuiWindowFlags_NoNav;
 			//windowFlags |= ImGuiWindowFlags_NoBackground;
 			//windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
-			bool* p_open = NULL; // Don't pass our bool* to Begin
 
 			char tmpLabel[64];
 
 			// Main body of the Demo window starts here.
-			if (!ImGui::Begin("glslScene", p_open, windowFlags))
+			if (!ImGui::Begin("glslScene", showWindow, windowFlags))
 			{
 				// Early out if the window is collapsed, as an optimization.
 				ImGui::End();
@@ -588,7 +630,7 @@ namespace gs
 			}
 
 			snprintf(tmpLabel, 64, "resources - count: %u", rm.getResourceCount());
-			if (ImGui::CollapsingHeader(tmpLabel))
+			if (ImGui::CollapsingHeaderEx("resources", tmpLabel))
 			{
 				const ResourceManager::TResByIdNumberMap& resMap = rm.getResourceMapByIdNumber();
 				for (const auto& it : resMap) {
@@ -610,7 +652,7 @@ namespace gs
 			}
 
 			snprintf(tmpLabel, 64, "scenes - count: %u", sm.getSceneCount());
-			if (ImGui::CollapsingHeader(tmpLabel))
+			if (ImGui::CollapsingHeaderEx("scenes", tmpLabel))
 			{
 				const SceneManager::TSceneByIdNumberMap& sceneMap = sm.getSceneMapByIdNumber();
 				for (const auto& it : sceneMap) {
@@ -619,7 +661,7 @@ namespace gs
 			}
 
 			snprintf(tmpLabel, 64, "rendering - count: %zu", pm.getPasses().size());
-			if (ImGui::CollapsingHeader(tmpLabel))
+			if (ImGui::CollapsingHeaderEx("rendering", tmpLabel))
 			{
 				const std::vector<RenderPass>& passes = pm.getPasses();
 				char strId[32];
@@ -650,7 +692,7 @@ namespace gs
 			snprintf(tmpLabel, 64, "hot reloading - file change monitoring - reload: %u",
 					fcm.getCallCount());
 			fcm.unlock();
-			if (ImGui::CollapsingHeader(tmpLabel))
+			if (ImGui::CollapsingHeaderEx("hot_reloading", tmpLabel))
 			{
 				addFileChangeMonitoringToMenu(fcm);
 			}
@@ -699,7 +741,7 @@ namespace gs
 }
 
 gs::GuiManager::GuiManager()
-		:mWindow(nullptr), mContext(nullptr), mUseOpenGl3(false)
+		:mShowMainMenu(true), mWindow(nullptr), mContext(nullptr), mUseOpenGl3(false)
 {
 }
 
@@ -825,10 +867,12 @@ void gs::GuiManager::render(Renderer &renderer, const RenderPassManager& pm,
 	ImGui::NewFrame();
 
 	//createDemo();
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.06f, 0.06f, 0.06f, 0.75f));
-	createGlslSceneMenu(renderer, pm, sm, rm, cp, properties, fcm);
-	ImGui::PopStyleColor();
 
+	if (mShowMainMenu) {
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.06f, 0.06f, 0.06f, 0.75f));
+		createGlslSceneMenu(renderer, pm, sm, rm, cp, properties, fcm, &mShowMainMenu);
+		ImGui::PopStyleColor();
+	}
 
 	// Rendering
 	ImGui::Render();
