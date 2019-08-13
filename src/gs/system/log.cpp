@@ -16,6 +16,7 @@
 #endif
 #include <sys/syscall.h>
 #endif
+#include <SDL.h>
 
 // tmp string is created on the stack with MAX_LOG_MSG
 //#define MAX_LOG_MSG 10240
@@ -56,7 +57,15 @@ namespace
 #ifdef _WIN32
 		int idLen = sprintf_s(headerStr, headerSize, "%llu: ", (unsigned long long)tid);
 #else
-		int idLen = sprintf(headerStr, "%llu: ", (unsigned long long)tid);
+		int idLen = snprintf(headerStr, headerSize, "%llu: ", (unsigned long long)tid);
+#endif
+		headerStr += idLen;
+		headerSize -= idLen;
+
+#ifdef _WIN32
+		idLen = sprintf_s(headerStr, headerSize, "%" PRIu32 ": ", SDL_GetTicks());
+#else
+		idLen = snprintf(headerStr, headerSize, "%" PRIu32 ": ", SDL_GetTicks());
 #endif
 		headerStr += idLen;
 		headerSize -= idLen;

@@ -14,6 +14,7 @@
 #include <sys/inotify.h>
 #include <unistd.h>
 #endif
+#include <SDL.h>
 
 #if defined(_MSC_VER)
 #define S_ISDIR(x) (((x) & S_IFMT) == S_IFDIR)
@@ -35,7 +36,7 @@ gs::FileChangeMonitoring::FileChangeMonitoring(bool useSeparateMonitoringThread)
 		mRunning(false), mInotifyFd(-1), mMonitoringThread(),
 		mFileChangeCount(0),
 		mFileChangeMonitoringCallCount(0),
-		mFilesByWatchId(), mFilesByName(), mFilesByCallbackId(),
+		mFilesByWatchId(), mFilesByWatchDir(), mFilesByName(), mFilesByCallbackId(),
 		mNextFileCallbackId(1), mSync()
 {
 #if defined(_MSC_VER)
@@ -136,32 +137,46 @@ unsigned int gs::FileChangeMonitoring::addFile(const std::string& origFilename,
 			return fileId;
 		}
 	}
-	
+
+	auto itWatchDir = mFilesByWatchDir.find(watchname);
+
 #if defined(_MSC_VER)
-	HANDLE watchFd = CreateFile(watchname.c_str(), FILE_LIST_DIRECTORY,
-			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, 
-			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
-	if (watchFd == INVALID_HANDLE_VALUE) {
-		LOGE("Add file '%s' for watching failed. INVALID_HANDLE_VALUE\n", fname.c_str());
-		return 0;
-	}
+	HANDLE watchFd;
 #else
-	int watchFd = inotify_add_watch(mInotifyFd, watchname.c_str(),
-			IN_CLOSE_WRITE | IN_MOVED_TO);
-	if (watchFd == -1) {
-		LOGE("Add file '%s' for watching failed. %s\n", fname.c_str(), strerror(errno));
-		return 0;
-	}
+	int watchFd;
 #endif
+	if (itWatchDir != mFilesByWatchDir.end()) {
+		watchFd = itWatchDir->second->getWatchId();
+	}
+	else {
+#if defined(_MSC_VER)
+		watchFd = CreateFile(watchname.c_str(), FILE_LIST_DIRECTORY,
+				FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, 
+				OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
+		if (watchFd == INVALID_HANDLE_VALUE) {
+			LOGE("Add file '%s' for watching failed. INVALID_HANDLE_VALUE\n", fname.c_str());
+			return 0;
+		}
+#else
+		watchFd = inotify_add_watch(mInotifyFd, watchname.c_str(),
+				IN_CLOSE_WRITE | IN_MOVED_TO);
+		if (watchFd == -1) {
+			LOGE("Add file '%s' for watching failed. %s\n", fname.c_str(), strerror(errno));
+			return 0;
+		}
+#endif
+	}
+
 	auto fileEntryItById = mFilesByWatchId.find(watchFd);
 	std::shared_ptr<FileEntry> fentry;
 	if (fileEntryItById == mFilesByWatchId.end()) {
 		// not found --> create new one
 		// FileEntry set the watch counter to 1!
-		fentry = std::shared_ptr<FileEntry>(new FileEntry(watchFd, watchname, fname, origFilename, fileId, callback, param1, param2));
+		fentry = std::shared_ptr<FileEntry>(new FileEntry(this, watchFd, watchname, fname, origFilename, fileId, callback, param1, param2));
 #if defined(_MSC_VER)
 		fentry->mOverlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 		fentry->mNotifyFilter = FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE;
+		//fentry->mNotifyFilter = FILE_NOTIFY_CHANGE_LAST_WRITE;
 		if (!ReadDirectoryChangesW(
 				fentry->mWatchId, fentry->mBuffer, sizeof(fentry->mBuffer), false /* recursive */,
 				fentry->mNotifyFilter, NULL, &fentry->mOverlapped, FileChangedCallback)) {
@@ -172,6 +187,8 @@ unsigned int gs::FileChangeMonitoring::addFile(const std::string& origFilename,
 		}
 #endif
 		mFilesByWatchId[watchFd] = fentry;
+		mFilesByWatchDir[watchname] = fentry;
+		// fentry->setOrAddWatchDir(watchname) is not necessary!!! Done by FileEntry() constructor
 		mFilesByName[fname].mFileEntry = fentry;
 		++mFilesByName[fname].mCount;
 		mFilesByCallbackId[fileId] = FileEntryNamePair(basename, fentry);
@@ -182,6 +199,11 @@ unsigned int gs::FileChangeMonitoring::addFile(const std::string& origFilename,
 			LOGE("Fatal implementation error! Can't add name for file entry!\n");
 			return 0;
 		}
+		// On windows two different watch ids can exist for the same directory (with different names).
+		// This is the case if two different paths for the same directory are used.
+		// e.g. shaders/test.vert and ./shaders/test.vert
+		mFilesByWatchDir[watchname] = fentry; // in most cases this should not be necessary
+		fentry->setOrAddWatchDir(watchname); // in most cases this should not be necessary
 		mFilesByName[fname].mFileEntry = fentry;
 		++mFilesByName[fname].mCount;
 		mFilesByCallbackId[fileId] = FileEntryNamePair(basename, fentry);
@@ -198,7 +220,7 @@ bool gs::FileChangeMonitoring::removeFile(unsigned int callbackId)
 		LOGE("Can't find file for callback id %u\n", callbackId);
 		return false;
 	}
-	FileEntryNamePair entryAndName = fileEntryItByCbId->second;
+	FileEntryNamePair entryAndName = fileEntryItByCbId->second; // create a copy!
 	const std::shared_ptr<FileEntry>& fentry = entryAndName.mFileEntry;
 	const std::string& basename= entryAndName.mBasename;
 	bool wasRemovedFromMap = false;
@@ -229,6 +251,20 @@ bool gs::FileChangeMonitoring::removeFile(unsigned int callbackId)
 				fname.c_str(), fentry->getWatchId());
 		return false;
 	}
+	// delete all watch dir entries at watch dir map for this watch entry (file/dir entry)
+	for (const std::string& watchname : fileEntryItById->second->getWatchnames()) {
+		auto it = mFilesByWatchDir.find(watchname);
+		if (it == mFilesByWatchDir.end()) {
+			LOGW("Can't find watch dir at watch dir map (for erase)\n");
+			continue;
+		}
+		if (it->second != fentry) {
+			LOGW("Wrong entry at watch dir map\n");
+			continue;
+		}
+		mFilesByWatchDir.erase(it);
+	}
+	// now delete this watch entry (file/dir entry)
 	mFilesByWatchId.erase(fileEntryItById);
 
 #if defined(_MSC_VER)
@@ -366,7 +402,39 @@ int gs::FileChangeMonitoring::monitoringFileChanges()
 {
 #if defined(_MSC_VER)
 	MsgWaitForMultipleObjectsEx(0, NULL, 0, QS_ALLINPUT, MWMO_ALERTABLE);
-	return 0;
+	if (mChangeMap.empty()) {
+		return 0;
+	}
+	int changeCount = 0;
+	uint32_t ts = SDL_GetTicks();
+	for (TChangeMapByCallbackId::iterator itChange = mChangeMap.begin(); itChange != mChangeMap.end(); ) {
+		// 300 for 300ms callback delay
+		if (ts > itChange->second + 300) {
+			unsigned int cbId = itChange->first;
+			const auto& itEntry = mFilesByCallbackId.find(cbId);
+			if (itEntry != mFilesByCallbackId.end()) {
+				const FileEntryNamePair& fen = itEntry->second;
+				Callback* cbPtr = fen.mFileEntry->getCallbackForFile(fen.mBasename, cbId);
+				if (cbPtr) {
+					Callback& cb = *cbPtr;
+					cb.mCbFunc(cb.mFileCallbackId, cb.mOrigFilename, cb.mParam1, cb.mParam2);
+					LOGI("Call callback function for file %s, orig name %s.\n", cb.mFilename.c_str(), cb.mOrigFilename.c_str());
+					++cb.mCallCount;
+					++mFileChangeMonitoringCallCount;
+				}
+			}
+			else {
+				LOGW("Can't find callback for callback id %u.\n", cbId);
+			}
+
+			itChange = mChangeMap.erase(itChange);
+			++changeCount;
+		}
+		else {
+			++itChange;
+		}
+	}
+	return changeCount;
 #else
 	char buffer[BUF_LEN];
 	ssize_t length = 0;
@@ -475,6 +543,7 @@ int gs::FileChangeMonitoring::monitoringFileChanges()
 /////////////////////////////////
 
 gs::FileChangeMonitoring::FileEntry::FileEntry(
+		FileChangeMonitoring* fileChangeMonitoring,
 #if defined(_MSC_VER)
 		HANDLE watchId,
 #else
@@ -484,8 +553,10 @@ gs::FileChangeMonitoring::FileEntry::FileEntry(
 		const std::string& filename,
 		const std::string& origFilename, unsigned int fileCallbackId,
 		TCallback callbackFunc, const std::shared_ptr<void>& param1, void* param2)
-		:mWatchId(watchId), mWatchname(watchname), mNames()
+		:mWatchId(watchId), mWatchnames(), mNames(), mFcm(fileChangeMonitoring)
 {
+	mWatchnames.insert(watchname);
+
 	if (!addFile(filename, origFilename, false, fileCallbackId, callbackFunc, param1, param2)) {
 		LOGE("Fatal error! Can't add filename for file entry!\n");
 	}
@@ -559,6 +630,21 @@ bool gs::FileChangeMonitoring::FileEntry::isFile(const std::string& filename,
 	return true;
 }
 
+gs::FileChangeMonitoring::Callback* gs::FileChangeMonitoring::FileEntry::getCallbackForFile(
+		const std::string& filename, unsigned int callbackId)
+{
+	auto fnameIt = mNames.find(filename);
+	if (fnameIt == mNames.end()) {
+		return nullptr;
+	}
+	Filename& fn = fnameIt->second;
+	auto cbIt = fn.mCallbacks.find(callbackId);
+	if (cbIt == fn.mCallbacks.end()) {
+		return nullptr;
+	}
+	return &cbIt->second;
+}
+
 const gs::FileChangeMonitoring::Callback* gs::FileChangeMonitoring::FileEntry::getCallbackForFile(
 		const std::string& filename, unsigned int callbackId) const
 {
@@ -572,6 +658,16 @@ const gs::FileChangeMonitoring::Callback* gs::FileChangeMonitoring::FileEntry::g
 		return nullptr;
 	}
 	return &cbIt->second;
+}
+
+gs::FileChangeMonitoring::Filename* gs::FileChangeMonitoring::FileEntry::getFilenameForFile(
+		const std::string& filename)
+{
+	auto fnameIt = mNames.find(filename);
+	if (fnameIt == mNames.end()) {
+		return nullptr;
+	}
+	return &fnameIt->second;
 }
 
 const gs::FileChangeMonitoring::Filename* gs::FileChangeMonitoring::FileEntry::getFilenameForFile(
@@ -597,7 +693,12 @@ std::string gs::FileChangeMonitoring::FileEntry::toString() const
 {
 	std::stringstream s;
 	std::stringstream s2;
-	s << "watch id: " << mWatchId << ", watch dir: " << mWatchname << ", watch id count (map size): " << mNames.size();
+	s << "watch id: " << mWatchId << ", watch ";
+	s << (mWatchnames.size() <= 1) ? "dir:" : "dirs:";
+	for (const auto& watchname : mWatchnames) {
+		s << " " << watchname;
+	}
+	s << ", watch id count (map size): " << mNames.size();
 	unsigned int count = 0;
 	for (const auto& it : mNames) {
 		s2 << " name-key: " << it.first << ", basename: " << it.second.mBasename << ", count: " << it.second.mCallbacks.size() << "\n";
@@ -624,13 +725,17 @@ void CALLBACK gs::FileChangeMonitoring::FileChangedCallback(DWORD dwErrorCode, D
 	}
 
 	FileEntry* fe = reinterpret_cast<FileEntry*>((char*)lpOverlapped - offsetof(FileEntry, mOverlapped));
-#if 0
+	//LOGI("%s\n", fe->toString().c_str());
+	FileChangeMonitoring* fcm = fe->getFileChangeMonitoring();
+
 	PFILE_NOTIFY_INFORMATION notify;
 	size_t offset = 0;
 	TCHAR filename[MAX_PATH];
+	uint32_t ts = SDL_GetTicks();
 	do
 	{
 		notify = (PFILE_NOTIFY_INFORMATION) &fe->mBuffer[offset];
+		//LOGI("action: %lu\n", (unsigned long)notify->Action);
 		offset += notify->NextEntryOffset;
 #if defined(UNICODE)
 		{
@@ -645,21 +750,31 @@ void CALLBACK gs::FileChangeMonitoring::FileChangedCallback(DWORD dwErrorCode, D
 			filename[count] = TEXT('\0');
 		}
 #endif
-		LOGI("filename: %s\n", filename);
-	} while (notify->NextEntryOffset != 0);
-#endif
-	// TODO check with filename and only call this callback
-	//LOGI("%s\n", fe->toString().c_str());
-	for (const auto& filenameIt : fe->getNames()) {
-		const Filename& filename = filenameIt.second;
-		for (const auto& cbIt : filename.mCallbacks)
-		{
-			const Callback& cb = cbIt.second;
-			LOGI("file %s, orig name %s changed!\n", cb.mFilename.c_str(), cb.mOrigFilename.c_str());
-			cb.mCbFunc(cb.mFileCallbackId, cb.mOrigFilename, cb.mParam1, cb.mParam2);
+		//LOGI("filename by reading: %s\n", filename);
+		Filename* fn = fe->getFilenameForFile(filename);
+
+		if (fn) {
+			++fcm->mFileChangeCount;
+			for (auto& cbIt : fn->mCallbacks) {
+				Callback& cb = cbIt.second;
+				fcm->mChangeMap[cb.mFileCallbackId] = ts;
+				LOGI("file %s, orig name %s changed!\n", cb.mFilename.c_str(), cb.mOrigFilename.c_str());
+			}
 		}
+		//else {
+		//	LOGI("Can't find '%s'\n", filename);
+		//}
+	} while (notify->NextEntryOffset != 0);
+
+	// renew watchdog
+	if (!ReadDirectoryChangesW(
+			fe->mWatchId, fe->mBuffer, sizeof(fe->mBuffer), false /* recursive */,
+			fe->mNotifyFilter, NULL, &fe->mOverlapped, FileChangedCallback)) {
+		LOGE("ReadDirectoryChangesW failed!!!!!\n");
+		CloseHandle(fe->mOverlapped.hEvent);
+		CloseHandle(fe->mWatchId);
+		return;
 	}
-	//fe->f
 }
 #endif
 

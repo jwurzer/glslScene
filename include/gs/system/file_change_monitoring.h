@@ -14,6 +14,11 @@
 
 namespace gs
 {
+	/**
+	 * Supports linux and windows. On windows the callback function for changes is delayed by 300ms.
+	 * The delay is necessary to prevent multiple calls for one file modification.
+	 * See: https://stackoverflow.com/questions/14036449/c-winapi-readdirectorychangesw-receiving-double-notifications
+	 */
 	class FileChangeMonitoring
 	{
 	public:
@@ -112,6 +117,7 @@ namespace gs
 		{
 		public:
 			FileEntry(
+					FileChangeMonitoring* fileChangeMonitoring,
 #if defined(_MSC_VER)
 					HANDLE watchId,
 #else
@@ -135,22 +141,26 @@ namespace gs
 					bool& wasRemovedFromMap);
 			bool isFile(const std::string& filename, unsigned int callbackId) const;
 			// return null if not found
+			Callback* getCallbackForFile(const std::string& filename, unsigned int callbackId);
 			const Callback* getCallbackForFile(const std::string& filename, unsigned int callbackId) const;
+			Filename* getFilenameForFile(const std::string& filename);
 			const Filename* getFilenameForFile(const std::string& filename) const;
 			unsigned int getFilenameCount(const std::string& filename) const;
 			std::string toString() const;
+			void setOrAddWatchDir(const std::string& watchDir) { mWatchnames.insert(watchDir); }
 #if defined(_MSC_VER)
 			HANDLE getWatchId() const { return mWatchId; }
 #else
 			int getWatchId() const { return mWatchId; }
 #endif
-			const std::string& getWatchname() const { return mWatchname; }
+			const std::set<std::string>& getWatchnames() const { return mWatchnames; }
 			size_t getWatchIdCount() const { return mNames.size(); }
 			TFilenameMap& getNames() { return mNames; }
 			const TFilenameMap& getNames() const { return mNames; }
+			FileChangeMonitoring* getFileChangeMonitoring() const { return mFcm; }
 #if defined(_MSC_VER)
 			HANDLE mWatchId;
-			std::string mWatchname;
+			std::set<std::string> mWatchnames;
 			OVERLAPPED mOverlapped;
 			DWORD mNotifyFilter;
 			BYTE mBuffer[32 * 1024];
@@ -166,6 +176,7 @@ namespace gs
 
 			// key is the basename (not the filename)
 			TFilenameMap mNames;
+			FileChangeMonitoring* mFcm;
 		};
 
 		class FileEntryCountPair
@@ -195,12 +206,16 @@ namespace gs
 #else
 		typedef std::map<int /* watch id */, std::shared_ptr<FileEntry> > TFileMapByWatchId;
 #endif
+		typedef std::map<std::string /* watchdir */, std::shared_ptr<FileEntry> > TFileMapByWatchDir;
 		typedef std::map<std::string /* filename */, FileEntryCountPair> TFileMapByName;
 		typedef std::map<unsigned int /* callback id */, FileEntryNamePair> TFileMapByCallbackId;
+
+		typedef std::map<unsigned int /* callback id */, uint32_t /* last change ts */> TChangeMapByCallbackId;
 
 		void lock() const { mSync.lock(); }
 		unsigned int getCallCount() const { return mFileChangeMonitoringCallCount; }
 		const TFileMapByWatchId& getFilesByWatchId() const { return mFilesByWatchId; }
+		const TFileMapByWatchDir& getFilesByWatchDir() const { return mFilesByWatchDir; }
 		const TFileMapByName& getFilesByName() const { return mFilesByName; }
 		const TFileMapByCallbackId& getFilesByCallbackId() const { return mFilesByCallbackId; }
 		void unlock() const { mSync.unlock(); }
@@ -210,12 +225,14 @@ namespace gs
 		int mInotifyFd;
 		std::thread mMonitoringThread;
 
+		TChangeMapByCallbackId mChangeMap;
 		// Files which are changed at some directories which are monitored.
 		// The changed file itself don't need to be a monitoring file.
 		unsigned int mFileChangeCount;
 		// Files which are changed and monitored!!!!
 		unsigned int mFileChangeMonitoringCallCount;
 		TFileMapByWatchId mFilesByWatchId;
+		TFileMapByWatchDir mFilesByWatchDir;
 		TFileMapByName mFilesByName;
 		TFileMapByCallbackId mFilesByCallbackId;
 		unsigned int mNextFileCallbackId;

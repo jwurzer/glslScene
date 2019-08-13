@@ -146,7 +146,10 @@ void gs::Context::run()
 					}
 					break;
 				case SDL_KEYDOWN:
-					if (e.key.keysym.sym == '1') {
+					if (e.key.keysym.sym == SDLK_ESCAPE) {
+						mGuiManager->toggleEnableDisable();
+					}
+					else if (e.key.keysym.sym == '1') {
 						isWireframe = !isWireframe;
 						if (isWireframe) {
 							glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -195,7 +198,9 @@ void gs::Context::run()
 		if (tick > prevFpsTick + 1000 || tick < prevFpsTick) {
 			//printf("FPS %u\n", frameCnt);
 			SDL_SetWindowTitle(mWindow,
-					("glslScene: " + mSceneDirName + ", FPS: " + std::to_string(frameCnt)).c_str());
+					("glslScene: " + mSceneDirName +
+					", FPS: " + std::to_string(frameCnt) +
+					"   -   ESC for enable/disable menu").c_str());
 			prevFpsTick += 1000;
 			frameCnt = 0;
 		}
