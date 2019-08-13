@@ -377,7 +377,81 @@ namespace gs
 			}
 		}
 
-		void addShaderProgResToMenu(const ShaderProgram& shader)
+		void addUniformEdit(Uniform& u)
+		{
+			if (u.mSource != UniformSource::CUSTOM_VALUE) {
+				return;
+			}
+			const float percent = 0.001f;
+			const float minLimit = 0.001f;
+			ImGuiColorEditFlags flags = ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar;
+			ImGui::Indent();
+			switch (u.mType) {
+				case UniformType::SAMPLER2D:
+				{
+					//ImGuiDataType_S32 is for int!
+					//ImS32 is a typedef of int!
+					int s32_one = 1;
+					ImGui::InputScalar(u.mName.c_str(), ImGuiDataType_S32, &u.mValue.mInt, &s32_one, NULL, "%d");
+					break;
+				}
+				case UniformType::INT:
+				{
+					ImGui::DragInt(u.mName.c_str(), &u.mValue.mInt, 0.5f);
+					break;
+				}
+				case UniformType::FLOAT:
+				{
+					float value = fabs(u.mValue.mFloat);
+					float speed = value * percent;
+					if (speed < minLimit) {
+						speed = minLimit;
+					}
+					ImGui::DragFloat(u.mName.c_str(), &u.mValue.mFloat, speed);
+					break;
+				}
+				case UniformType::VEC2:
+				{
+					float value = fmax(fabs(u.mValue.mVec2.x), fabs(u.mValue.mVec2.y));
+					float speed = fabs(value * percent);
+					if (speed < minLimit) {
+						speed = minLimit;
+					}
+					ImGui::DragFloat2(u.mName.c_str(), &u.mValue.mVec2.x, speed);
+					break;
+				}
+				case UniformType::VEC3:
+				{
+					float value = fmax(fmax(fabs(u.mValue.mVec3.x), fabs(u.mValue.mVec3.y)),
+							fabs(u.mValue.mVec3.y));
+					float speed = fabs(value * percent);
+					if (speed < minLimit) {
+						speed = minLimit;
+					}
+					ImGui::DragFloat3(u.mName.c_str(), &u.mValue.mVec3.x, speed);
+					ImGui::ColorEdit3((u.mName + " (col)").c_str(), &u.mValue.mVec3.x, flags);
+					break;
+				}
+				case UniformType::VEC4:
+				{
+					float value = fmax(fmax(fabs(u.mValue.mVec4.x), fabs(u.mValue.mVec4.y)),
+							fmax(fabs(u.mValue.mVec4.z), fabs(u.mValue.mVec4.w)));
+					float speed = fabs(value * percent);
+					if (speed < minLimit) {
+						speed = minLimit;
+					}
+					ImGui::DragFloat4(u.mName.c_str(), &u.mValue.mVec4.x, speed);
+					ImGui::ColorEdit4((u.mName + " (col)").c_str(), &u.mValue.mVec4.x, flags);
+					break;
+				}
+				default:
+					// matrix currently not supported
+					break;
+			}
+			ImGui::Unindent();
+		}
+
+		void addShaderProgResToMenu(ShaderProgram& shader)
 		{
 			if (!addResToMenu(shader, "shader")) {
 				return; // no ImGui::TreePop() here!
@@ -388,12 +462,13 @@ namespace gs
 						i.isFilename() ? "file" : "direct-source",
 						i.isFilename() ? i.getFilenameOrSource().c_str() : "...");
 			}
-			const std::vector<Uniform>& uniforms = shader.getUniforms();
+			std::vector<Uniform>& uniforms = shader.getUniforms();
 			char valueStr[256];
-			for (const auto& u : uniforms) {
+			for (auto& u : uniforms) {
 				getUniformValue(u, valueStr, 256);
 				IntentText("uniform %s %s: value: %s, location: %d", getUniformTypeStr(u.mType),
 						u.mName.c_str(), valueStr, u.mLocation);
+				addUniformEdit(u);
 			}
 			const std::vector<Attribute>& attrs = shader.getAttributes();
 			for (const auto& a : attrs) {

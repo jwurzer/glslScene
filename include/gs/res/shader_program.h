@@ -39,6 +39,7 @@ namespace gs
 		void bindMatricesOnly(const Matrices& m);
 
 		const std::vector<ShaderLoadInfo>& getShaderLoadInfos() const { return mShaderProgramLoadInfo.mShaderInfos; }
+		std::vector<Uniform>& getUniforms() { return mShaderProgramLoadInfo.mUniforms; }
 		const std::vector<Uniform>& getUniforms() const { return mShaderProgramLoadInfo.mUniforms; }
 		const std::vector<Attribute>& getAttributes() const { return mShaderProgramLoadInfo.mAttributes; }
 		unsigned int getLoadCounter() const { return mLoadCounter; }
