@@ -398,9 +398,6 @@ void gs::Context::initContext()
 	LOGI("use gl transformations: %s\n", mProperties.mUseGlTransforms ? "yes" : "no");
 	LOGI("use VAO version for mesh: %s\n", mContextProperties.useVaoVersionForMesh() ? "yes" : "no");
 
-	// all ok --> set is error to false ;-)
-	mIsError = false;
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glEnable(GL_STENCIL_TEST);
@@ -411,22 +408,45 @@ void gs::Context::initContext()
 	//glStencilFunc(GL_ALWAYS, 0, 0xffffffff);
 
 	// LOG OPENGL VERSION, VENDOR (IMPLEMENTATION), RENDERER, GLSL, ETC.:
-	std::cout << std::setw(34) << std::left << "OpenGL Version: " <<
-			(char*)glGetString(GL_VERSION) << std::endl;
-	// GL_SHADING_LANGUAGE_VERSION is not available at OpenGL 1.0
-	std::cout << std::setw(34) << std::left << "OpenGL Shading Language Version: " <<
-			(char *)glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-	std::cout << std::setw(34) << std::left << "OpenGL Vendor:" <<
-			(char *)glGetString(GL_VENDOR) << std::endl;
-	std::cout << std::setw(34) << std::left << "OpenGL Renderer:" <<
-			(char *)glGetString(GL_RENDERER) << std::endl;
 	mContextProperties.mCreatedGlVersion = (char*)glGetString(GL_VERSION);
+	LOGI("OpenGL Version (string): %s\n", mContextProperties.mCreatedGlVersion.c_str());
+
+	{
+		const char* s = mContextProperties.mCreatedGlVersion.c_str();
+		for (; *s && (*s < '0' || *s > '9'); ++s)
+			;
+		size_t len = strlen(s);
+		if (len >= 1) { // access s[1] is no problem also if len is 1 because of \0.
+			if (s[0] == '1' && (s[1] < '0' || s[1] > '9')) {
+				LOGE("At least OpenGL version 2.0 must be supported! Version %s (%s) is to low (not supported by glslScene).\n",
+						mContextProperties.mCreatedGlVersion.c_str(), s);
+				return;
+			}
+			LOGI("OpenGL version: %s\n", s);
+		}
+		else {
+			LOGW("Can't check if OpenGL version is >= 2.0 with gl version string.\n");
+		}
+	}
+
+	// all ok --> set is error to false ;-)
+	mIsError = false;
+
+	// GL_SHADING_LANGUAGE_VERSION is not available at OpenGL 1.0
 	mContextProperties.mCreatedGlslVersion =
 			(char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	mContextProperties.mCreatedVendor = (char *)glGetString(GL_VENDOR);
 	mContextProperties.mCreatedRenderer = (char *)glGetString(GL_RENDERER);
 	glGetIntegerv(GL_MAJOR_VERSION, &mContextProperties.mCreatedMajorVersion);
 	glGetIntegerv(GL_MINOR_VERSION, &mContextProperties.mCreatedMinorVersion);
+
+	LOGI("OpenGL Shading Language Version: %s\n",
+			mContextProperties.mCreatedGlslVersion.c_str());
+	LOGI("OpenGL Vendor: %s\n", mContextProperties.mCreatedVendor.c_str());
+	LOGI("OpenGL Renderer: %s\n", mContextProperties.mCreatedRenderer.c_str());
+	LOGI("OpenGL Version (int values): %d.%d\n",
+			mContextProperties.mCreatedMajorVersion,
+			mContextProperties.mCreatedMinorVersion);
 
 	mGuiManager.reset(new GuiManager());
 	mGuiManager->initImGui(mWindow, mContext, mContextProperties);

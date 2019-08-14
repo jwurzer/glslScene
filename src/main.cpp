@@ -9,9 +9,13 @@ namespace {
 		gs::Context game(progname);
 		if (game.isError()) {
 			// error happend at init and/or loading resources
+			LOGE("Error happend at context creation. Press any key to say Good bye!\n");
+			getchar();
 			return 1;
 		}
 		if (!game.run()) {
+			LOGE("Error happend at loading. Press any key to say Good bye!\n");
+			getchar();
 			return 1;
 		}
 		return 0;
@@ -28,15 +32,7 @@ int main(int argc, char* args[])
 
 	int rv = startGlslScene(progname);
 
-#ifdef _WIN32
-	if (rv) {
-		LOGE("Error happend at loading. Press any key to say Good bye!\n");
-		getchar();
-	}
 	LOGI("Good bye!\n");
-#else
-	LOGI("Good bye!\n");
-#endif
 	return rv;
 }
 
