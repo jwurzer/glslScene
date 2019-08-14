@@ -1,0 +1,90 @@
+glslScene is dual licensed except external libraries.
+
+glslScene is in the public domain. no warranty implied; use at your own risk.
+
+glslScene is also licensed under the zlib license.
+If you have lawyers who are unhappy with public domain. Every source file (excepted external libraries)
+includes an explicit dual-license for you to choose from.
+
+glslScene scene projects (scenes subdirectory):
+If no own license exists in the directory of the specific scene project or
+no other license information exists, then the corresponding scene project is also
+under the public domain or zlib license (dual license).
+
+
+zlib license
+------------
+
+Copyright (c) 2019 Jürgen Wurzer wurzer.juergen@gmx.at
+
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
+
+
+Licenes of external libraries used by glslScene:
+	Simple DirectMedia Layer (SDL) under zlib License
+	- https://www.libsdl.org/license.php
+
+	Used classes from SFML under zlib License
+	- https://github.com/SFML/SFML/blob/master/license.md
+
+	stb_image dual-licensed under public domain and MIT License
+	- https://github.com/nothings/stb/blob/master/stb_image.h
+
+	glad under MIT License
+	- https://github.com/Dav1dde/glad/blob/master/LICENSE
+
+	ImGui under MIT License
+	- https://github.com/ocornut/imgui/blob/master/LICENSE.txt
+
+	GLEW under modified BSD License
+	- http://glew.sourceforge.net/glew.txt
+
+
+
+External libraries are stored in this project at:
+	Simple DirectMedia Layer (SDL) under zlib License
+	- Source files are not included, excepted one modified file:
+	- src/gs/common/sdl_events_trace.cpp
+
+	Used classes from SFML under zlib License
+	- Modified versions from SFML are stored at:
+	- include/gs/common/rect2.h
+	- include/gs/common/rect2.inl
+	- include/gs/common/vector2.h
+	- include/gs/common/vector2.inl
+	- include/gs/common/vector3.h
+	- include/gs/common/vector3.inl
+	- include/gs/common/size2.h
+	- include/gs/common/size2.inl
+
+	stb_image dual-licensed under public domain and MIT License
+	- https://github.com/nothings/stb/blob/master/stb_image.h
+
+	glad under MIT License
+	- Generated files from glad generator at:
+	- include/glad/*
+	- src/glad/*
+	- include/KHR/*
+	- src/KHR/*
+
+	ImGui under MIT License
+	- The essential source files for ImGui are stored at:
+	- include/imgui/*
+	- src/imgui/*
+
+	GLEW under modified BSD License
+	- Source files are not included
