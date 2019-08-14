@@ -1,0 +1,154 @@
+context
+	rendering-api = opengl 2.1
+
+resources
+	texture
+		id = TEX-DIFFUSE
+		filename = textures/metal_plate_diff_1k.jpg
+		mipmap = true
+		min-filter = linear
+		mag-filter = linear
+	texture
+		id = TEX-SPECULAR
+		filename = textures/metal_plate_spec_1k.jpg
+		mipmap = true
+		min-filter = linear
+		mag-filter = linear
+	mesh
+		id = MESH1
+		scale-for-show-normals = 10.0
+		vertex-layout
+			x	y	z	nx	ny	nz	s0	t0	r	g	b	a
+		# far
+		triangle-mesh 10 10
+			-100.0	-100.0	-100.0	0.0	0.0	-1.0	0.0	0.0	1.0	1.0	1.0	1.0
+			200.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0
+			0.0	200.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0
+		# near
+		triangle-mesh 10 10
+			-100.0	-100.0	100.0	0.0	0.0	1.0	0.0	0.0	1.0	1.0	1.0	1.0
+			200.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0
+			0.0	200.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0
+		# left
+		triangle-mesh 10 10
+			-100.0	-100.0	-100.0	-1.0	0.0	0.0	0.0	0.0	1.0	1.0	1.0	1.0
+			0.0	0.0	200.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0
+			0.0	200.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0
+		# right
+		triangle-mesh 10 10
+			100.0	-100.0	-100.0	1.0	0.0	0.0	0.0	0.0	1.0	1.0	1.0	1.0
+			0.0	0.0	200.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0
+			0.0	200.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0
+		# bottom
+		triangle-mesh 10 10
+			-100.0	-100.0	-100.0	0.0	-1.0	0.0	0.0	0.0	1.0	1.0	1.0	1.0
+			200.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0
+			0.0	0.0	200.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0
+		# top
+		triangle-mesh 10 10
+			-100.0	100.0	-100.0	0.0	1.0	0.0	0.0	0.0	1.0	1.0	1.0	1.0
+			200.0	0.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0
+			0.0	0.0	200.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	0.0	0.0
+	mesh
+		id = MESH-LIGHT
+		vertex-layout
+			x	y	z
+		# far
+		triangle-mesh 2 2
+			-5.0	-5.0	-5.0
+			10.0	0.0	0.0
+			0.0	10.0	0.0
+		# near
+		triangle-mesh 2 2
+			-5.0	-5.0	5.0
+			10.0	0.0	0.0
+			0.0	10.0	0.0
+		# left
+		triangle-mesh 2 2
+			-5.0	-5.0	-5.0
+			0.0	0.0	10.0
+			0.0	10.0	0.0
+		# right
+		triangle-mesh 2 2
+			5.0	-5.0	-5.0
+			0.0	0.0	10.0
+			0.0	10.0	0.0
+		# bottom
+		triangle-mesh 2 2
+			-5.0	-5.0	-5.0
+			10.0	0.0	0.0
+			0.0	0.0	10.0
+		# top
+		triangle-mesh 2 2
+			-5.0	5.0	-5.0
+			10.0	0.0	0.0
+			0.0	0.0	10.0
+	shader
+		id = SHADER1
+		vertex = shaders/example.vert
+		fragment = shaders/example.frag
+		#uniform float uTime = time
+		uniform mat4 uProjectionMatrix = projection-matrix
+		uniform mat4 uViewMatrix = view-matrix
+		uniform mat4 uInverseViewMatrix = inverse-view-matrix
+		uniform mat4 uModelMatrix = model-matrix
+		uniform mat4 uInverseModelMatrix = inverse-model-matrix
+		#uniform mat4 uModelViewMatrix = model-view-matrix
+		#uniform mat4 uModelViewProjectionMatrix = mvp-matrix
+		#uniform mat4 uEntityMatrix = entity-matrix
+		uniform mat4 uLightModelMatrix0 = 0 0 0 0  0 0 0 0  0 0 0 0  0 0 0 0
+		uniform sampler2d uDiffuseMap = 0
+		uniform sampler2d uSpecularMap = 1
+
+		# light config
+		uniform vec3 uLightColor = 1.0 1.0 1.0
+		#uniform vec4 uLightColorA = 1.0 1.0 1.0 1.0
+		uniform float uShininess = 64.0
+		uniform float uAmbientStrength = 0.5
+		uniform float uDiffuseStrength = 1.0
+		uniform float uSpecularStrength = 1.5
+
+		attribute aPosition = 0 3
+		attribute aNormal = 3 3
+		attribute aTexCoord = 6 2
+		attribute aColor = 8 4
+
+scenes
+	scene
+		id = SCENE-ONE
+		entity
+			texture-component
+				tex-id-unit-0 = TEX-DIFFUSE
+				tex-id-unit-1 = TEX-SPECULAR
+			shader-component
+				shader-program-id = SHADER1
+			mesh-component
+				mesh-id = MESH1
+		entity
+			logic-component
+				# rotate-logic <angle-speed> <rot-axis-x> <rot-axis-y> <rot-axis-z>
+				rotate-logic 90 0 1 1
+			entity
+				transform-component
+					translate 250 0 0
+				mesh-component
+					mesh-id = MESH-LIGHT
+				entity
+					logic-component
+						light-matrix-logic SHADER1 0
+
+
+rendering
+	render-pass
+		framebuffer-id = default
+		clear-color = 0.0 0.0 0.0 1.0
+		projection-matrix
+			#ortho = -500 500 -500 500 -500 500 shrink-to-fit
+			perspective-degree = 30 window-ratio 5 5000
+		view-matrix
+			look-at = 0 700 500
+			camera = true 2500 1000
+		scene-id = SCENE-ONE
+		depth-test = true
+
+
