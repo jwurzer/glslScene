@@ -12,7 +12,7 @@ Main features of glslScene:
  * OpenGL version can be configured
  * One scene project file (scene.tml) to configure context properties, resources, scenes and rendering passes.
  * Easy to handle and switch between multiple projects. Each scene project has its own subdirectory.
- * Open Source
+ * Open Source, permissive free software license. See: [LICENSE](LICENSE)
 
 Screenshots
 -----------
