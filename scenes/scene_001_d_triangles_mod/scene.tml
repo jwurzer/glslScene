@@ -1,0 +1,76 @@
+context
+	rendering-api = opengl 2.1
+
+resources
+	mesh
+		id = MESH1
+		vertex-layout
+			x	y	s0	t0	r	g	b	a
+		triangle-mesh 50 50
+			-0.5	-0.5	0.0	0.0	1.0	0.0	0.0	1.0
+			1.0	0.0	1.0	0.0	0.0	0.0	0.0	0.0
+			0.0	1.0	0.0	1.0	0.0	0.0	0.0	0.0
+	mesh
+		id = MESH2
+		vertex-layout
+			x	y	s0	t0	r	g	b	a
+		triangle-mesh 50 50
+			-0.5	-0.5	0.0	0.0	1.0	0.0	0.0	1.0
+			1.0	0.0	1.0	0.0	0.0	1.0	0.0	0.0
+			0.0	1.0	0.0	1.0	0.0	0.0	1.0	0.0
+	shader
+		id = SHADER1
+		vertex = shaders/triangle.vert
+		fragment = shaders/triangle.frag
+		uniform float uTime = time
+		uniform float uSpeed = 4
+		uniform sampler2d uTexture = 5
+		attribute aPosition = 0 2
+		attribute aTexCoord0 = 2 2
+		attribute aColor = 4 4
+	texture
+		id = TEX-SMILEY
+		filename = textures/smiley.png
+		mipmap = true
+		min-filter = linear
+		mag-filter = linear
+scenes
+	scene
+		id = SCENE-ONE
+		entity
+			transform-component
+				translate 0 0 -0.2
+			mesh-component
+				mesh-id = MESH2
+		entity
+			transform-component
+				rotate-degree 45
+			texture-component
+				tex-id-unit-5 = TEX-SMILEY
+			shader-component
+				shader-program-id = SHADER1
+			mesh-component
+				mesh-id = MESH1
+		entity
+			transform-component
+				translate 0 0 0.4
+				rotate-degree -45
+			texture-component
+				tex-id-unit-5 = TEX-SMILEY
+			shader-component
+				shader-program-id = SHADER1
+			mesh-component
+				mesh-id = MESH2
+
+rendering
+	render-pass
+		framebuffer-id = default
+		clear-color = 0.0 0.0 0.0 0.0
+		projection-matrix
+			perspective-degree = 45 window-ratio 0.01 5.0
+		view-matrix
+			look-at = 0.0 -1.5 1.5
+			camera = true 1 2
+		scene-id = SCENE-ONE
+		depth-test = true
+

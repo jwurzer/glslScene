@@ -1,19 +1,31 @@
 # scene-name must be the directory name of the scene which includes the scene.tml file
 
+# Comments start with # character.
+
+# Only one scene-name can be used!
+# If multiple scene-name attributes are defined then only the first is used!!!
+
 # ===================== 001 examples =========================
 
 # triangle without shader
 #scene-name = scene_001_a_triangles_no_shader
 
 # triangle with shaders. Using gl_Color, gl_Vertex, etc.
+
 #scene-name = scene_001_b_triangles
+
+scene-name = scene_001_c_triangles
+
+#scene-name = scene_001_d_triangles_mod
+
+#scene-name = scene_001_e_triangles_fb_mod
 
 # ===================== 002 examples =========================
 
 # A "open" cube. Using uniforms and attributes (no gl_ transforms)
 #scene-name = scene_002_a_3D
 
-scene-name = scene_002_b_3D
+#scene-name = scene_002_b_3D
 
 # ===================== 003 examples =========================
 
