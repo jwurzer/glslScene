@@ -4,9 +4,9 @@
 
 
 namespace {
-	int startGlslScene()
+	int startGlslScene(const std::string& progname)
 	{
-		gs::Context game;
+		gs::Context game(progname);
 		if (game.isError()) {
 			// error happend at init and/or loading resources
 			return 1;
@@ -20,11 +20,17 @@ namespace {
 
 int main(int argc, char* args[])
 {
-	int rv = startGlslScene();
+	std::string progname;
+	if (argc >= 1) {
+		// should be always the case...
+		progname = args[0];
+	}
+
+	int rv = startGlslScene(progname);
 
 #ifdef _WIN32
 	if (rv) {
-		LOGI("Error happend at loading. Press any key to say Good bye!\n");
+		LOGE("Error happend at loading. Press any key to say Good bye!\n");
 		getchar();
 	}
 	LOGI("Good bye!\n");

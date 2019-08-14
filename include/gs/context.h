@@ -18,7 +18,7 @@ namespace gs
 	class Context
 	{
 	public:
-		Context();
+		Context(const std::string& progname);
 		~Context();
 		bool isError() const { return mIsError; }
 		// return true if game loop was running (and scene was loaded)
@@ -51,7 +51,7 @@ namespace gs
 		std::unique_ptr<GuiManager> mGuiManager;
 
 		// select and load config file for scene
-		bool selectScene();
+		bool selectScene(const std::string& progname);
 		void initContext();
 		void destroyContext();
 
