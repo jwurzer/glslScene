@@ -26,7 +26,7 @@
 #define STR_FMT_FILE_LINE "%s:%d: "
 #define STR_FMT_TAG "%s: "
 
-std::mutex sOutSync;
+static std::mutex sOutSync;
 
 static const char* logPrioStr[] =
 {
@@ -40,8 +40,12 @@ static const char* logPrioStr[] =
 	"F"  // LOG_FATAL,       // is used by LOGF
 };
 
+namespace gs
+{
 namespace
 {
+	LogBuffer logBuf;
+
 	int getLogHeader(char* headerStr, size_t headerSize, int prio,
 			const char* filename, int lineNumber, const char *tag)
 	{
@@ -97,7 +101,7 @@ namespace
 		return snprintf(headerStr, headerSize, STR_FMT_PRIO, logPrioStr[prio]);
 	}
 
-	void printMessage(char* fullMsg)
+	void printMessage(int prio, char* fullMsg)
 	{
 		int len = strlen(fullMsg);
 		if (len > 0 && fullMsg[len - 1] == '\n') {
@@ -105,6 +109,7 @@ namespace
 			--len;
 		}
 		std::lock_guard<std::mutex> lock(sOutSync);
+		logBuf.write(prio, fullMsg);
 #ifdef _WIN32
 		std::cout << fullMsg << std::endl;
 #else
@@ -112,12 +117,12 @@ namespace
 		//#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_INFO, "sfml-activity", __VA_ARGS__))
 		__android_log_print(ANDROID_LOG_INFO, "glslScene", "%ld %s", (unsigned long)gettid(), fullMsg);
 #else
-		//std::wcout << fullMsg << std::endl;
 		write(1, fullMsg, len);
 		write(1, "\n", 1);
 #endif
 #endif
 	}
+}
 }
 /*
  * Send a simple string to the log.
@@ -134,7 +139,7 @@ void gs::logWrite(int prio, const char* filename, int lineNumber, const char *ta
 #endif
 	logHeader[MAX_LOG_MSG - 1] = '\0';
 
-	printMessage(logHeader);
+	printMessage(prio, logHeader);
 }
 
 /*
@@ -164,13 +169,18 @@ void gs::logVprint(int prio, const char* filename, int lineNumber, const char *t
 
 	strncat(logHeader, logMsg, MAX_LOG_MSG - headerLen - 1);
 
-	printMessage(logHeader);
+	printMessage(prio, logHeader);
 #else
 	char logMsg[MAX_LOG_MSG];
 	vsnprintf(logMsg, MAX_LOG_MSG, fmt, ap);
 
 	logWrite(prio, filename, lineNumber, tag, logMsg);
 #endif
+}
+
+const gs::LogBuffer* gs::getLogBuffer()
+{
+	return &logBuf;
 }
 
 void gs::logLockMutex()

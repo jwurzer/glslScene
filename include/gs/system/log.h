@@ -19,6 +19,7 @@
 #include <inttypes.h> // --> no extra including for printing uint32_t with PRIu32 ...
 #include <stdarg.h> // for va_list
 #include <sstream>
+#include <array>
 
 #ifdef LOG_DISABLED
 #define LOG(prio, tag, fmt, ...) {}
@@ -71,21 +72,7 @@
 #define LOGSET(tag) LOGS(gs::LOG_ERROR, tag)
 #define LOGSFT(tag) LOGS(gs::LOG_FATAL, tag)
 
-#define WLOGS(prio, tag) gs::LogWc(prio, __FILE__, __LINE__, tag)
-
-#define WLOGSV WLOGSVT(0)
-#define WLOGSD WLOGSDT(0)
-#define WLOGSI WLOGSIT(0)
-#define WLOGSW WLOGSWT(0)
-#define WLOGSE WLOGSET(0)
-#define WLOGSF WLOGSFT(0)
-
-#define WLOGSVT(tag) WLOGS(gs::LOG_VERBOSE, tag)
-#define WLOGSDT(tag) WLOGS(gs::LOG_DEBUG, tag)
-#define WLOGSIT(tag) WLOGS(gs::LOG_INFO, tag)
-#define WLOGSWT(tag) WLOGS(gs::LOG_WARN, tag)
-#define WLOGSET(tag) WLOGS(gs::LOG_ERROR, tag)
-#define WLOGSFT(tag) WLOGS(gs::LOG_FATAL, tag)
+#define MAX_LOG_ENTRIES 512
 
 namespace gs
 {
@@ -119,17 +106,48 @@ namespace gs
 	void logVprint(int prio, const char* filename, int lineNumber, const char *tag,
 			const char *fmt, va_list ap);
 
-	// should (NEVER) be used!!! Only if you want to write to log fd without logging functions
+	class LogEntry
+	{
+	public:
+		int mLogPriority;
+		std::string mLogMsg;
+		LogEntry() :mLogPriority(LOG_VERBOSE), mLogMsg() {}
+	};
+
+	class LogBuffer
+	{
+	public:
+		unsigned int mNextIndex = 0;
+		unsigned int mCount = 0;
+		std::array<LogEntry, MAX_LOG_ENTRIES> mLogs;
+
+		void write(int prio, const char* log)
+		{
+			mLogs[mNextIndex].mLogPriority = prio;
+			mLogs[mNextIndex].mLogMsg = log;
+
+			++mNextIndex;
+			mNextIndex %= MAX_LOG_ENTRIES;
+
+			++mCount;
+			if (mCount > MAX_LOG_ENTRIES) {
+				mCount = MAX_LOG_ENTRIES;
+			}
+		}
+	};
+
+
+	// always return a valid log buffer. (never return null)
+	// To access the logs logLockMutex()/logUnlockMutex() should be used.
+	const LogBuffer* getLogBuffer();
+	// should (NEVER) be used!!! Only if you want to write to log fd without logging functions,
+	// or you want to print the LogBuffer
 	void logLockMutex();
 	// should (NEVER) be used!!! Only if you want to write to log fd without logging functions
 	void logUnlockMutex();
 
-	// its something like http://stackoverflow.com/questions/674060/customize-cout
-	// class SMGL_SYSTEM_API Log makes problems for VS2019
-	// if for other platform SMGL_SYSTEM_API is necessary then a special exception with #ifdef must be used
 	template <class T>
 	class Log
-	//class SMGL_SYSTEM_API Log
 	{
 	public:
 		Log(int prio, const char* filename, int lineNumber, const char *tag)

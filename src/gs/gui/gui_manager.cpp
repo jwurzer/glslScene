@@ -32,6 +32,8 @@
 #include <gs/system/log.h>
 #include <gs/common/fs.h>
 
+#include <glm/gtc/type_ptr.hpp>
+
 #ifdef _MSC_VER
 #define strncpy(dst, src, n) strncpy_s(dst, n, src, strlen(src))
 #endif
@@ -87,6 +89,35 @@ namespace gs
 					m[2][3],
 					m[3][3]);
 			IntentText(matStr);
+#if 0 // this would be the same (interpreted as an one dim. array)
+			float* f = glm::value_ptr(m);
+			snprintf(matStr, 256,
+					"%f %f %f %f\n"
+					"%f %f %f %f\n"
+					"%f %f %f %f\n"
+					"%f %f %f %f\n",
+					f[0],
+					f[4],
+					f[8],
+					f[12],
+
+					f[1],
+					f[5],
+					f[9],
+					f[13],
+
+					f[2],
+					f[6],
+					f[10],
+					f[14],
+
+					f[3],
+					f[7],
+					f[11],
+					f[15]
+			);
+			IntentText(matStr);
+#endif
 			ImGui::TreePop();
 		}
 
@@ -355,25 +386,16 @@ namespace gs
 					snprintf(outValueStr, maxLen, "%i", u.mValue.mInt);
 					break;
 				case UniformType::MAT4X4:
+				{
+					const float* f = u.mValue.mMat4.m;
 					snprintf(outValueStr, maxLen,
-							"%f %f %f %f  %f %f %f %f  %f %f %f %f  %f %f %f %f",
-							u.mValue.mMat4.m[0],
-							u.mValue.mMat4.m[1],
-							u.mValue.mMat4.m[2],
-							u.mValue.mMat4.m[3],
-							u.mValue.mMat4.m[4],
-							u.mValue.mMat4.m[5],
-							u.mValue.mMat4.m[6],
-							u.mValue.mMat4.m[7],
-							u.mValue.mMat4.m[8],
-							u.mValue.mMat4.m[9],
-							u.mValue.mMat4.m[10],
-							u.mValue.mMat4.m[11],
-							u.mValue.mMat4.m[12],
-							u.mValue.mMat4.m[13],
-							u.mValue.mMat4.m[14],
-							u.mValue.mMat4.m[15]);
+							"\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n",
+							f[0], f[4], f[8], f[12],
+							f[1], f[5], f[9], f[13],
+							f[2], f[6], f[10], f[14],
+							f[3], f[7], f[11], f[15]);
 					break;
+				}
 			}
 		}
 
@@ -671,12 +693,13 @@ namespace gs
 #endif
 		}
 
-		void createGlslSceneMenu(Renderer &renderer,
-				const RenderPassManager& pm, const SceneManager& sm,
-				const ResourceManager& rm, const ContextProperties& cp,
-				const Properties& properties,
-				const FileChangeMonitoring& fcm,
-				bool* showWindow)
+		void createGlslSceneMenu(bool isFirstShow, Renderer &renderer,
+			const RenderPassManager& pm, const SceneManager& sm,
+			const ResourceManager& rm, const ContextProperties& cp,
+			const Properties& properties,
+			const FileChangeMonitoring& fcm,
+			bool* showWindow,
+			bool& showLogConsole)
 		{
 			ImGuiWindowFlags windowFlags = 0;
 			//windowFlags |= ImGuiWindowFlags_NoTitleBar;
@@ -691,12 +714,21 @@ namespace gs
 
 			char tmpLabel[64];
 
+			if (isFirstShow) {
+				ImGui::SetNextWindowPos(ImVec2(10, 170));
+				ImGui::SetNextWindowSize(ImVec2(400, 420));
+			}
+
 			// Main body of the Demo window starts here.
 			if (!ImGui::Begin("glslScene", showWindow, windowFlags))
 			{
 				// Early out if the window is collapsed, as an optimization.
 				ImGui::End();
 				return;
+			}
+
+			if (ImGui::Button(!showLogConsole ? "Show log console" : "Hide log console")) {
+				showLogConsole = !showLogConsole;
 			}
 
 			if (ImGui::CollapsingHeader("context"))
@@ -775,6 +807,50 @@ namespace gs
 			ImGui::End();
 		}
 
+		void createLogMenu(bool isFirstShow, bool* showWindow)
+		{
+			ImGuiWindowFlags windowFlags = 0;
+			if (isFirstShow) {
+				ImGui::SetNextWindowPos(ImVec2(10, 10));
+				ImGui::SetNextWindowSize(ImVec2(780, 150));
+			}
+			if (!ImGui::Begin("log console", showWindow, windowFlags))
+			{
+				// Early out if the window is collapsed, as an optimization.
+				ImGui::End();
+				return;
+			}
+
+			const ImVec4 col[]{
+				ImVec4(1.0f, 1.0f, 1.0f, 1.0f), // 0
+				ImVec4(1.0f, 1.0f, 1.0f, 1.0f), // 1
+				ImVec4(0.0f, 0.0f, 0.8f, 1.0f), // LOG_VERBOSE = 2
+				ImVec4(0.0f, 0.8f, 0.0f, 1.0f), // LOG_DEBUG
+				ImVec4(1.0f, 1.0f, 1.0f, 1.0f), // LOG_INFO
+				ImVec4(0.9f, 0.9f, 0.0f, 1.0f), // LOG_WARN
+				ImVec4(0.8f, 0.0f, 0.0f, 1.0f), // LOG_ERROR
+				ImVec4(1.0f, 0.0f, 0.0f, 1.0f)  // LOG_FATAL
+			};
+
+			const LogBuffer* lb = getLogBuffer();
+			logLockMutex();
+			if (lb->mCount > lb->mNextIndex) {
+				// --> log buffer is full and overwritten
+				for (unsigned int i = lb->mNextIndex; i < MAX_LOG_ENTRIES; ++i) {
+					ImGui::PushStyleColor(ImGuiCol_Text, col[lb->mLogs[i].mLogPriority]);
+					ImGui::TextWrapped("%s", lb->mLogs[i].mLogMsg.c_str());
+					ImGui::PopStyleColor();
+				}
+			}
+			for (unsigned int i = 0; i < lb->mNextIndex; ++i) {
+				ImGui::PushStyleColor(ImGuiCol_Text, col[lb->mLogs[i].mLogPriority]);
+				ImGui::TextWrapped("%s", lb->mLogs[i].mLogMsg.c_str());
+				ImGui::PopStyleColor();
+			}
+			logUnlockMutex();
+			ImGui::End();
+		}
+
 		void createDemo()
 		{
 			ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -816,7 +892,9 @@ namespace gs
 }
 
 gs::GuiManager::GuiManager()
-		:mShowMainMenu(true), mWindow(nullptr), mContext(nullptr), mUseOpenGl3(false)
+		:mShow(true), mShowMainMenu(true), mShowLogConsole(true),
+		mIsFirstShowMainMenu(true), mIsFirstShowLogConsole(true),
+		mWindow(nullptr), mContext(nullptr), mUseOpenGl3(false)
 {
 }
 
@@ -943,9 +1021,16 @@ void gs::GuiManager::render(Renderer &renderer, const RenderPassManager& pm,
 
 	//createDemo();
 
-	if (mShowMainMenu) {
+	if (mShow) {
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.06f, 0.06f, 0.06f, 0.75f));
-		createGlslSceneMenu(renderer, pm, sm, rm, cp, properties, fcm, &mShowMainMenu);
+		if (mShowLogConsole) {
+			createLogMenu(mIsFirstShowLogConsole, &mShowLogConsole);
+			mIsFirstShowLogConsole = false;
+		}
+		if (mShowMainMenu) {
+			createGlslSceneMenu(mIsFirstShowMainMenu, renderer, pm, sm, rm, cp, properties, fcm, &mShowMainMenu, mShowLogConsole);
+			mIsFirstShowMainMenu = false;
+		}
 		ImGui::PopStyleColor();
 	}
 
@@ -966,5 +1051,16 @@ void gs::GuiManager::render(Renderer &renderer, const RenderPassManager& pm,
 	}
 
 	renderer.switchToTextureUnitForLoading();
+}
+
+void gs::GuiManager::toggleEnableDisable()
+{
+	if (!mShow || (!mShowMainMenu && !mShowLogConsole)) {
+		mShow = true;
+		mShowMainMenu = true;
+	}
+	else {
+		mShow = false;
+	}
 }
 

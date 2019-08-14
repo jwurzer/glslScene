@@ -21,7 +21,9 @@ namespace gs
 		Context();
 		~Context();
 		bool isError() const { return mIsError; }
-		void run();
+		// return true if game loop was running (and scene was loaded)
+		// return false if an error happend (game loop not running). e.g. loading error
+		bool run();
 
 	private:
 		std::unique_ptr<CfgValuePair> mSceneConfig;
