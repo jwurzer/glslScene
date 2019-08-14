@@ -29,9 +29,14 @@ namespace gs
 				const SceneManager& sm, const ResourceManager& rm,
 				const ContextProperties& cp, const Properties& properties,
 				const FileChangeMonitoring& fcm);
-		void toggleEnableDisable() { mShowMainMenu = !mShowMainMenu; }
+		void toggleEnableDisable();
 	private:
+		bool mShow;
 		bool mShowMainMenu;
+		bool mShowLogConsole;
+
+		bool mIsFirstShowMainMenu;
+		bool mIsFirstShowLogConsole;
 
 		SDL_Window* mWindow;
 		SDL_GLContext mContext; // SDL_GLContext is a void* (typedef void *SDL_GLContext)

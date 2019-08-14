@@ -57,10 +57,10 @@ gs::Context::~Context()
 	destroyContext();
 }
 
-void gs::Context::run()
+bool gs::Context::run()
 {
 	if (mIsError) {
-		return;
+		return false;
 	}
 
 	uint32_t prevFpsTick = SDL_GetTicks();
@@ -83,7 +83,7 @@ void gs::Context::run()
 	mPassManager.reset(new RenderPassManager());
 	if (!sceneloader::reload(cfg, *mResourceManager, *mSceneManager, *mPassManager, true, true, true)) {
 		LOGE("Can't load scene file.\n");
-		return;
+		return false;
 	}
 
 	mHotReloadingId = mFileMonitoring->addFile(mSceneFilename, hotReloading, std::shared_ptr<void>(), this);
@@ -196,7 +196,7 @@ void gs::Context::run()
 
 		// tick < prevFpsTick is only possible after ~49 days ;-P
 		if (tick > prevFpsTick + 1000 || tick < prevFpsTick) {
-			//printf("FPS %u\n", frameCnt);
+			//LOGI("FPS %u\n", frameCnt);
 			SDL_SetWindowTitle(mWindow,
 					("glslScene: " + mSceneDirName +
 					", FPS: " + std::to_string(frameCnt) +
@@ -208,6 +208,7 @@ void gs::Context::run()
 		prevTick = tick;
 	}
 	mFileMonitoring->removeFile(mHotReloadingId);
+	return true;
 }
 
 bool gs::Context::selectScene()
