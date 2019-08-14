@@ -12,7 +12,7 @@ Main features of glslScene:
  * OpenGL version can be configured
  * One scene project file (scene.tml) to configure context properties, resources, scenes and rendering passes.
  * Easy to handle and switch between multiple projects. Each scene project has its own subdirectory.
- * Open Source
+ * Open Source, permissive free software license. See: [LICENSE](LICENSE)
 
 Screenshots
 -----------
@@ -29,3 +29,17 @@ For the scenes/selection.tml file and scene.tml files the Tine Markup Language i
 
 For more informations about the creation and configuration of a glslScene project see [Creation and configuration of a scene.tml file](doc/scene-config.md).
 
+License
+-------
+Most parts of glslScene are dual-licensed in public domain and zlib license. Some other parts (e.g. external used libraries) are under different licenses (e.g. ImGui library under MIT License, GLEW library under modified BSD License).
+
+The scene projects of glslScene (scenes subdirectory) can have its own licenses.
+If no own license exists in the directory of the specific scene project or
+no other license information exists, then the corresponding scene project is also
+under the public domain or zlib license (dual license).
+
+For more information about the licences in glslScene see the [LICENSE](LICENSE) file.
+
+External libraries
+------------------
+glslScene use the following libraries: SDL, stb_image, ImGui, GLEW or optional glad, some classes from SFML.
