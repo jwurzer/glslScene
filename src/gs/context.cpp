@@ -198,7 +198,7 @@ bool gs::Context::run()
 		if (tick > prevFpsTick + 1000 || tick < prevFpsTick) {
 			//LOGI("FPS %u\n", frameCnt);
 			SDL_SetWindowTitle(mWindow,
-					("glslScene: " + mSceneDirName +
+					("glslScene: " + mContextProperties.mSceneDirName +
 					", FPS: " + std::to_string(frameCnt) +
 					"   -   ESC for enable/disable menu").c_str());
 			prevFpsTick += 1000;
@@ -230,7 +230,7 @@ bool gs::Context::selectScene()
 			return false;
 		}
 		CfgReadRule cfgRules[] = {
-				CfgReadRule("scene-name", &mSceneDirName, CfgReadRule::RULE_MUST_EXIST),
+				CfgReadRule("scene-name", &mContextProperties.mSceneDirName, CfgReadRule::RULE_MUST_EXIST),
 				CfgReadRule("")
 		};
 		size_t nextPos = 0;
@@ -240,8 +240,8 @@ bool gs::Context::selectScene()
 			LOGE("selection config is wrong, rv %d\n", int(storeCnt));
 			return false;
 		}
-		mSceneDirName = fs::getRemoveEndingSlashes(mSceneDirName, '/');
-		mSceneDirName = fs::getRemoveEndingSlashes(mSceneDirName, '\\');
+		mContextProperties.mSceneDirName = fs::getRemoveEndingSlashes(mContextProperties.mSceneDirName, '/');
+		mContextProperties.mSceneDirName = fs::getRemoveEndingSlashes(mContextProperties.mSceneDirName, '\\');
 	}
 	
 #if 0
@@ -261,10 +261,10 @@ bool gs::Context::selectScene()
 	}
 	LOGI("cwd is changed to %s\n", fs::getCwd().c_str());
 
-	mSceneDirName = fs::getRemoveEndingSlashes(scenes[sceneIndex], '/');
+	mContextProperties.mSceneDirName = fs::getRemoveEndingSlashes(scenes[sceneIndex], '/');
 #else
-	if (!fs::changeCwd(rootDir + "/scenes/" + mSceneDirName)) {
-		LOGE("Can't change to %s\n", (rootDir + "/scenes/" + mSceneDirName).c_str());
+	if (!fs::changeCwd(rootDir + "/scenes/" + mContextProperties.mSceneDirName)) {
+		LOGE("Can't change to %s\n", (rootDir + "/scenes/" + mContextProperties.mSceneDirName).c_str());
 		return false;
 	}
 	LOGI("cwd is changed to %s\n", fs::getCwd().c_str());
@@ -336,7 +336,7 @@ void gs::Context::initContext()
 	}
 
 	// Create window
-	mWindow = SDL_CreateWindow(("glslScene: " + mSceneDirName).c_str(),
+	mWindow = SDL_CreateWindow(("glslScene: " + mContextProperties.mSceneDirName).c_str(),
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 			SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 	if (!mWindow) {

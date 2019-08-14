@@ -276,6 +276,14 @@ namespace gs
 		void getUniformValue(const Uniform& u, char* outValueStr, unsigned int maxLen)
 		{
 			outValueStr[0] = '\0';
+			if (u.mInverse) {
+				if (maxLen < 9) { // 9 = 8 + incl \0
+					return;
+				}
+				strncpy(outValueStr, "inverse-", maxLen);
+				maxLen -= 8; // without \0
+				outValueStr += 8;
+			}
 			switch (u.mSource) {
 				// no value used
 				case UniformSource::INVALID:
@@ -328,10 +336,6 @@ namespace gs
 				// no value used
 				case UniformSource::VIEW_MATRIX:
 					strncpy(outValueStr, "view-matrix", maxLen);
-					break;
-				// no value used
-				case UniformSource::INVERSE_VIEW_MATRIX:
-					strncpy(outValueStr, "inverse-view-matrix", maxLen);
 					break;
 				// no value used
 				case UniformSource::MODEL_MATRIX:
@@ -727,9 +731,14 @@ namespace gs
 				return;
 			}
 
+			IntentText("scene project: %s", cp.mSceneDirName.c_str());
+			IntentText("log console: %s", showLogConsole ? "visible" : "not visible");
+
+			ImGui::Indent();
 			if (ImGui::Button(!showLogConsole ? "Show log console" : "Hide log console")) {
 				showLogConsole = !showLogConsole;
 			}
+			ImGui::Unindent();
 
 			if (ImGui::CollapsingHeader("context"))
 			{

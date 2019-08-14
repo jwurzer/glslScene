@@ -53,8 +53,6 @@ namespace gs
 		// no value used
 		VIEW_MATRIX,
 		// no value used
-		INVERSE_VIEW_MATRIX,
-		// no value used
 		MODEL_MATRIX,
 		// no value used
 		MODEL_VIEW_MATRIX,
@@ -90,6 +88,7 @@ namespace gs
 			} mMat4;
 		} mValue;
 		int mLocation;
+		bool mInverse = false;
 
 		Uniform()
 				:mName(), mType(UniformType::INVALID),
