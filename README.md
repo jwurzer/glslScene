@@ -14,6 +14,13 @@ Main features of glslScene:
  * Easy to handle and switch between multiple projects. Each scene project has its own subdirectory.
  * Open Source
 
+Screenshots
+-----------
+
+![Screenshot from the example scene_001_c_triangles](doc/screenshot-01.png?raw=true)
+
+![Screenshot from the example scene_002_b_3D](doc/screenshot-02.png?raw=true)
+
 Using glslScene
 ---------------
 The individual scene projects are located in the scenes directory. Each scene project has its own subdirectory. The name of the folder is the project name. The project to be used is defined in the file scenes/selection.tml. Each scene project must have the configuration file scene.tml. Several resources, scenes and rendering passes can be created in this scene file. The project folder should also contain all other resources. For example the images for the textures and the source files of the shader programs.
