@@ -47,7 +47,7 @@ A simple scene file for a triangle looks like this:
 Specification
 =============
 
-Sort info to the specification format:
+Short info to the specification format:
 
 Inside `<>` (e.g. `<id-name>`) means that it must be replaced by a value (number or text, etc.).
 
