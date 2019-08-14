@@ -29,6 +29,10 @@ For the scenes/selection.tml file and scene.tml files the Tine Markup Language i
 
 For more informations about the creation and configuration of a glslScene project see [Creation and configuration of a scene.tml file](doc/scene-config.md).
 
+glslScene binaries
+------------------
+Windows builds: Binaries for Windows can be downloaded from the [releases](https://github.com/jwurzer/glslScene/releases) section. Simple download glslScene-win-vX-X.zip extract it and start glslscene-rel.exe (release build) or glslscene.exe (debug build) from the bin subdirectory.
+
 License
 -------
 Most parts of glslScene are dual-licensed in public domain and zlib license. Some other parts (e.g. external used libraries) are under different licenses (e.g. ImGui library under MIT License, GLEW library under modified BSD License).
