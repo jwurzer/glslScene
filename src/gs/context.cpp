@@ -31,7 +31,7 @@
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
 
-gs::Context::Context()
+gs::Context::Context(const std::string& progname)
 		:mIsError(true), mIsSdlInit(false), //mIsSdlImageInit(false),
 		mWindow(nullptr), mContext(nullptr),
 		mResourceManager(), mSceneManager(), mPassManager()
@@ -41,7 +41,7 @@ gs::Context::Context()
 	mProperties.mWindowSize.mWidth = static_cast<float>(mProperties.mWindowSizeI.mWidth);
 	mProperties.mWindowSize.mHeight = static_cast<float>(mProperties.mWindowSizeI.mHeight);
 
-	if (!selectScene()) {
+	if (!selectScene(progname)) {
 		LOGE("Can't load scene file\n");
 		mIsError = true;
 		return;
@@ -211,19 +211,29 @@ bool gs::Context::run()
 	return true;
 }
 
-bool gs::Context::selectScene()
+bool gs::Context::selectScene(const std::string& progname)
 {
+	LOGI("binary: %s\n", progname.c_str());
 	std::string cwd = fs::getCwd();
 	std::string rootDir = fs::findDirectoryOfFile(cwd, "root-dir-of-glsl-scene.txt");
 	if (rootDir != cwd) {
 		LOGI("cwd:\n%s\nroot dir of glslScene:\n%s\n",
 				cwd.c_str(), rootDir.c_str());
+		if (rootDir.empty()) {
+			LOGI("Can't find root-dir-of-glsl-scene.txt. Try it with path from program filename.\n");
+			std::string dirname = fs::getDirnameFromPath(progname);
+			rootDir = fs::findDirectoryOfFile(dirname, "root-dir-of-glsl-scene.txt");
+			if (rootDir.empty()) {
+				LOGE("Can't find root-dir-of-glsl-scene.txt");
+				return false;
+			}
+		}
 		fs::changeCwd(rootDir);
-		LOGI("cwd is changed to %s\n", fs::getCwd().c_str());
+		LOGI("cwd is changed to %s (%s)\n", fs::getCwd().c_str(), rootDir.c_str());
 	}
 
 	{
-		SmlParser selectionParser(rootDir + "/scenes/selection.tml");
+		SmlParser selectionParser("scenes/selection.tml");
 		CfgValuePair selectCfg;
 		if (!selectionParser.getAsValuePairTree(selectCfg)) {
 			LOGE("Can't load selection.tml from scenes correct.\n");
@@ -247,7 +257,7 @@ bool gs::Context::selectScene()
 #if 0
 	unsigned int dirCount = 0;
 	std::vector<std::string> scenes;
-	if (!fs::scanDirectory(rootDir + "/scenes", dirCount, scenes,
+	if (!fs::scanDirectory("scenes", dirCount, scenes,
 			true /* addSubDirs */, false /* addRegularFiles */)) {
 		return false;
 	}
@@ -256,15 +266,15 @@ bool gs::Context::selectScene()
 	if (sceneIndex >= dirCount) {
 		return false;
 	}
-	if (!fs::changeCwd(rootDir + "/scenes/" + scenes[sceneIndex])) {
+	if (!fs::changeCwd("scenes/" + scenes[sceneIndex])) {
 		return false;
 	}
 	LOGI("cwd is changed to %s\n", fs::getCwd().c_str());
 
 	mContextProperties.mSceneDirName = fs::getRemoveEndingSlashes(scenes[sceneIndex], '/');
 #else
-	if (!fs::changeCwd(rootDir + "/scenes/" + mContextProperties.mSceneDirName)) {
-		LOGE("Can't change to %s\n", (rootDir + "/scenes/" + mContextProperties.mSceneDirName).c_str());
+	if (!fs::changeCwd("scenes/" + mContextProperties.mSceneDirName)) {
+		LOGE("Can't change to %s\n", ("scenes/" + mContextProperties.mSceneDirName).c_str());
 		return false;
 	}
 	LOGI("cwd is changed to %s\n", fs::getCwd().c_str());
