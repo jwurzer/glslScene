@@ -52,7 +52,7 @@ namespace gs
 
 		// is calc by glm::inverse(mViewMatrix) each render pass
 		// e.g. Is useful to calculate the eye position in world space
-		glm::mat4 mInverseViewMatrix = glm::mat4(1.0f);
+		//glm::mat4 mInverseViewMatrix = glm::mat4(1.0f);
 
 		std::string toString() const;
 	};

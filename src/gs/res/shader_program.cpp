@@ -289,25 +289,52 @@ namespace gs
 						setUniformFromFloat(u, p.mViewRatio.mWidth, p.mViewRatio.mHeight, 0.0f, 0.0f);
 						break;
 					case UniformSource::PROJECTION_MATRIX:
-						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(p.mProjectionMatrix));
+						if (u.mInverse) {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(glm::inverse(p.mProjectionMatrix)));
+						}
+						else {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(p.mProjectionMatrix));
+						}
 						break;
 					case UniformSource::VIEW_MATRIX:
-						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(p.mViewMatrix));
-						break;
-					case UniformSource::INVERSE_VIEW_MATRIX:
-						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(p.mInverseViewMatrix));
+						if (u.mInverse) {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(glm::inverse(p.mViewMatrix)));
+						}
+						else {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(p.mViewMatrix));
+						}
 						break;
 					case UniformSource::MODEL_MATRIX:
-						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mModelMatrix));
+						if (u.mInverse) {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(glm::inverse(m.mModelMatrix)));
+						}
+						else {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mModelMatrix));
+						}
 						break;
 					case UniformSource::MODEL_VIEW_MATRIX:
-						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mModelViewMatrix));
+						if (u.mInverse) {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(glm::inverse(m.mModelViewMatrix)));
+						}
+						else {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mModelViewMatrix));
+						}
 						break;
 					case UniformSource::ENTITY_MATRIX:
-						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mEntityMatrix));
+						if (u.mInverse) {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(glm::inverse(m.mEntityMatrix)));
+						}
+						else {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mEntityMatrix));
+						}
 						break;
 					case UniformSource::MVP_MATRIX:
-						glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mMvpMatrix));
+						if (u.mInverse) {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(glm::inverse(m.mMvpMatrix)));
+						}
+						else {
+							glUniformMatrix4fv(u.mLocation, 1, GL_FALSE, glm::value_ptr(m.mMvpMatrix));
+						}
 						break;
 					// value is used (which one depends on UniformType)
 					case UniformSource::CUSTOM_VALUE:

@@ -43,6 +43,8 @@ namespace gs
 		int mCreatedMajorVersion = -1; // -1 for not specified
 		int mCreatedMinorVersion = -1; // -1 for not specified
 
+		std::string mSceneDirName;
+
 		void reset()
 		{
 			mRenderApiVersion = RenderingApi::DEFAULT;

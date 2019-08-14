@@ -38,8 +38,6 @@ namespace gs
 		//OpenGL context
 		SDL_GLContext mContext; // SDL_GLContext is a void* (typedef void *SDL_GLContext)
 
-		std::string mSceneDirName;
-
 		std::string mSceneFilename;
 		unsigned int mHotReloadingId = 0;
 		std::shared_ptr<FileChangeMonitoring> mFileMonitoring;

@@ -100,23 +100,44 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 					else if (vp.mValue.mText == "projection-matrix") {
 						uniform.mSource = UniformSource::PROJECTION_MATRIX;
 					}
+					else if (vp.mValue.mText == "inverse-projection-matrix") {
+						uniform.mSource = UniformSource::PROJECTION_MATRIX;
+						uniform.mInverse = true;
+					}
 					else if (vp.mValue.mText == "view-matrix") {
 						uniform.mSource = UniformSource::VIEW_MATRIX;
 					}
 					else if (vp.mValue.mText == "inverse-view-matrix") {
-						uniform.mSource = UniformSource::INVERSE_VIEW_MATRIX;
+						uniform.mSource = UniformSource::VIEW_MATRIX;
+						uniform.mInverse = true;
 					}
 					else if (vp.mValue.mText == "model-matrix") {
 						uniform.mSource = UniformSource::MODEL_MATRIX;
 					}
+					else if (vp.mValue.mText == "inverse-model-matrix") {
+						uniform.mSource = UniformSource::MODEL_MATRIX;
+						uniform.mInverse = true;
+					}
 					else if (vp.mValue.mText == "model-view-matrix") {
 						uniform.mSource = UniformSource::MODEL_VIEW_MATRIX;
+					}
+					else if (vp.mValue.mText == "inverse-model-view-matrix") {
+						uniform.mSource = UniformSource::MODEL_VIEW_MATRIX;
+						uniform.mInverse = true;
 					}
 					else if (vp.mValue.mText == "entity-matrix") {
 						uniform.mSource = UniformSource::ENTITY_MATRIX;
 					}
+					else if (vp.mValue.mText == "inverse-entity-matrix") {
+						uniform.mSource = UniformSource::ENTITY_MATRIX;
+						uniform.mInverse = true;
+					}
 					else if (vp.mValue.mText == "mvp-matrix") {
 						uniform.mSource = UniformSource::MVP_MATRIX;
+					}
+					else if (vp.mValue.mText == "inverse-mvp-matrix") {
+						uniform.mSource = UniformSource::MVP_MATRIX;
+						uniform.mInverse = true;
 					}
 					else {
 						LOGE("Doesn't support value '%s'\n", vp.mValue.mText.c_str());
