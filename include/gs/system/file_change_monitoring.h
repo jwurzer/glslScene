@@ -168,7 +168,7 @@ namespace gs
 #else
 		private:
 			int mWatchId;
-			std::string mWatchname;
+			std::set<std::string> mWatchnames;
 #endif
 			// watch count is the count how often inotify_add_watch() return the
 			// same watch id
