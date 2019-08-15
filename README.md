@@ -1,9 +1,9 @@
 glslScene
 =========
 
-glslScene is a value tool that supports learning and training of GLSL programming. It provides an environment for testing and developing GLSL shader programs. Loads any type of shaders (frag/vertex/…), images as textures and geometries. It will reload automatically resources on changes. Support of multiple framebuffers and rendering passes for postprocessing.
+glslScene is a tool that supports learning and training of GLSL programming. It provides an environment for testing and developing GLSL shader programs. Loads any type of shaders (frag/vertex/…), images as textures and geometries. It will reload automatically resources on changes. Support of multiple framebuffers and  multiple rendering passes for postprocessing.
 
-Supported OS: Windows, Linux
+Supported platforms: Windows, Linux
 
 Main features of glslScene:
  * Hot Reloading
