@@ -9,7 +9,7 @@ includes an explicit dual-license for you to choose from.
 glslScene scene projects (scenes subdirectory):
 If no own license exists in the directory of the specific scene project or
 no other license information exists, then the corresponding scene project is also
-under the public domain or zlib license (dual license).
+under the public domain or zlib license (dual licensed).
 
 
 zlib license
@@ -34,7 +34,8 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 
 
-Licenes of external libraries used by glslScene:
+Licenses of external libraries used by glslScene:
+
 	Simple DirectMedia Layer (SDL) under zlib License
 	- https://www.libsdl.org/license.php
 
@@ -56,6 +57,7 @@ Licenes of external libraries used by glslScene:
 
 
 External libraries are stored in this project at:
+
 	Simple DirectMedia Layer (SDL) under zlib License
 	- Source files are not included, excepted one modified file:
 	- src/gs/common/sdl_events_trace.cpp
@@ -72,7 +74,7 @@ External libraries are stored in this project at:
 	- include/gs/common/size2.inl
 
 	stb_image dual-licensed under public domain and MIT License
-	- https://github.com/nothings/stb/blob/master/stb_image.h
+	- include/stb/stb_image.h
 
 	glad under MIT License
 	- Generated files from glad generator at:
