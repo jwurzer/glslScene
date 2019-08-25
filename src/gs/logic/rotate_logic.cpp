@@ -1,4 +1,4 @@
-#include <gs/scene/rotate_logic.h>
+#include "gs/logic/rotate_logic.h"
 #include <gs/system/log.h>
 #include <gs/ecs/entity.h>
 #include <gs/ecs/transform_component.h>

@@ -8,9 +8,12 @@
 #include <gs/ecs/texture_component.h>
 #include <gs/ecs/shader_component.h>
 #include <gs/ecs/mesh_component.h>
-#include <gs/scene/glsl_sandbox_logic.h>
-#include <gs/scene/rotate_logic.h>
-#include <gs/scene/light_matrix_logic.h>
+#include <gs/logic/glsl_sandbox_logic.h>
+#include "gs/logic/rotate_logic.h"
+#include <gs/logic/light_matrix_logic.h>
+#include <gs/logic/script_logic.h>
+#include <gs/logic/c_wrapper_logic.h>
+#include <gs/logic/capi_example_logic.h>
 #include <gs/configloader/uniform_attr_loader.h>
 #include <gs/configloader/res_loader.h>
 #include <gs/configloader/render_pass_loader.h>
@@ -22,8 +25,8 @@ namespace gs
 {
 	namespace
 	{
-		bool addLogic(const CfgValue& cfgValue,
-				LogicComponent& logic) {
+		bool addLogic(const CfgValue& cfgValue, LogicComponent& logic,
+				const std::weak_ptr<FileChangeMonitoring>& fcm ) {
 			for (const auto &vp : cfgValue.mArray) { // vp ... value pair
 				std::string logicName = vp.mName.mText;
 				if (vp.mName.mArray.size()) {
@@ -52,6 +55,22 @@ namespace gs
 					logic.addLogic(std::unique_ptr<LightMatrixLogic>(new LightMatrixLogic(
 							vp.mName.mArray[1].mValue.mText,
 							vp.mName.mArray[2].mValue.mInteger)));
+				}
+				else if (logicName == "script-logic") {
+					if (vp.mName.mArray.size() != 2) {
+						LOGE("Wrong script-logic format.\n");
+						return false;
+					}
+					logic.addLogic(std::unique_ptr<ScriptLogic>(new ScriptLogic(
+							vp.mName.mArray[1].mValue.mText, fcm)));
+				}
+				else if (logicName == "capi-example-logic") {
+					std::unique_ptr<::Logic> clogic(new ::Logic());
+					clogic->logicInstance = new CapiExample();
+					clogic->logicInit = capiExampleInit;
+					clogic->logicUpdate = capiExampleUpdate;
+					clogic->logicDestroy = capiExampleDestroy;
+					logic.addLogic(std::unique_ptr<CWrapperLogic>(new CWrapperLogic(std::move(clogic))));
 				}
 				else {
 					LOGE("Logic %s is not supported.\n", logicName.c_str());
@@ -242,6 +261,7 @@ namespace gs
 				unsigned int startIndex,
 				const std::shared_ptr<Entity>& oe,
 				Scene::TIdMap& idMap,
+				const std::weak_ptr<FileChangeMonitoring>& fcm,
 				ResourceManager& rm,
 				bool isTkObjectAllowed)
 		{
@@ -332,7 +352,7 @@ namespace gs
 					child->setActive(isActive);
 				}
 				if (compLogicCount) {
-					if (!addLogic(*compLogic, child->logic())) {
+					if (!addLogic(*compLogic, child->logic(), fcm)) {
 						LOGE("Add logic component failed\n");
 						return false;
 					}
@@ -362,7 +382,7 @@ namespace gs
 					}
 				}
 				if (nextPos < vp.mValue.mArray.size()) {
-					if (!loadEntities(vp.mValue, nextPos, child, idMap, rm, isTkObjectAllowed)) {
+					if (!loadEntities(vp.mValue, nextPos, child, idMap, fcm, rm, isTkObjectAllowed)) {
 						LOGE("Child entity error\n");
 						return false;
 					}
@@ -374,6 +394,7 @@ namespace gs
 }
 
 bool gs::sceneloader::reload(const CfgValuePair& cfg,
+		const std::weak_ptr<FileChangeMonitoring>& fcm,
 		ResourceManager& rm, SceneManager& sm, RenderPassManager& pm,
 		bool reloadResourceManager, bool reloadSceneManager, bool reloadRenderPassManager)
 {
@@ -403,7 +424,7 @@ bool gs::sceneloader::reload(const CfgValuePair& cfg,
 	}
 
 	if (reloadSceneManager) {
-		if (!sceneloader::updateAndLoad(*scenesCfg, sm, rm)) {
+		if (!sceneloader::updateAndLoad(*scenesCfg, fcm, sm, rm)) {
 			LOGW("Warning: Can't load scenes successful!\n");
 		}
 	}
@@ -509,6 +530,7 @@ bool gs::sceneloader::addTransform(const CfgValue& cfgValue,
 }
 
 bool gs::sceneloader::updateAndLoad(const CfgValuePair& cfg,
+		const std::weak_ptr<FileChangeMonitoring>& fcm,
 		SceneManager& sm, ResourceManager& rm)
 {
 	if (!cfg.mValue.isArray()) {
@@ -519,7 +541,7 @@ bool gs::sceneloader::updateAndLoad(const CfgValuePair& cfg,
 	for (const CfgValuePair& vp : array) {
 		if (vp.mName.mText == "scene") {
 			std::shared_ptr<Scene> scene = std::make_shared<Scene>();
-			if (!scene->updateAndLoad(vp, rm)) {
+			if (!scene->updateAndLoad(fcm, vp, rm)) {
 				LOGE("Load scene failed.\n");
 				rv = false;
 				continue;
@@ -537,6 +559,7 @@ bool gs::sceneloader::updateAndLoad(const CfgValuePair& cfg,
 bool gs::sceneloader::updateAndLoad(std::string& sceneIdName,
 		std::shared_ptr<Entity>& root,
 		Scene::TIdMap& idMap, const CfgValuePair& cfg,
+		const std::weak_ptr<FileChangeMonitoring>& fcm,
 		ResourceManager& rm)
 {
 	const CfgValuePair* sceneCfg = &cfg;
@@ -549,7 +572,7 @@ bool gs::sceneloader::updateAndLoad(std::string& sceneIdName,
 	}
 	std::string tmpSceneIdName;
 	if (!root->getConstChildEntities()) {
-		if (!sceneloader::reloadScene(root, *sceneCfg, idMap, true /* alwaysAddExtraRootEntity */, rm, tmpSceneIdName)) {
+		if (!sceneloader::reloadScene(root, *sceneCfg, idMap, true /* alwaysAddExtraRootEntity */, fcm, rm, tmpSceneIdName)) {
 			return false;
 		}
 		sceneIdName = tmpSceneIdName;
@@ -559,7 +582,7 @@ bool gs::sceneloader::updateAndLoad(std::string& sceneIdName,
 	LOGI("reload scene\n");
 	std::shared_ptr<Entity> tmpRoot;
 	Scene::TIdMap tmpIdMap;
-	if (!sceneloader::reloadScene(tmpRoot, *sceneCfg, tmpIdMap, true /* alwaysAddExtraRootEntity */, rm, tmpSceneIdName)) {
+	if (!sceneloader::reloadScene(tmpRoot, *sceneCfg, tmpIdMap, true /* alwaysAddExtraRootEntity */, fcm, rm, tmpSceneIdName)) {
 		return false;
 	}
 	idMap.swap(tmpIdMap);
@@ -585,18 +608,13 @@ bool gs::sceneloader::updateAndLoad(std::string& sceneIdName,
 }
 
 std::shared_ptr<gs::Entity> gs::sceneloader::loadScene(const CfgValuePair& cfg,
-		bool alwaysAddExtraRootEntity, ResourceManager& rm)
-{
-	Scene::TIdMap idMap;
-	return loadScene(cfg, idMap, alwaysAddExtraRootEntity, rm);
-}
-
-std::shared_ptr<gs::Entity> gs::sceneloader::loadScene(const CfgValuePair& cfg,
-		Scene::TIdMap& idMap, bool alwaysAddExtraRootEntity, ResourceManager& rm)
+		Scene::TIdMap& idMap, bool alwaysAddExtraRootEntity,
+		const std::weak_ptr<FileChangeMonitoring>& fcm,
+		ResourceManager& rm)
 {
 	std::shared_ptr<Entity> root;
 	std::string sceneIdName;
-	if (!reloadScene(root, cfg, idMap, alwaysAddExtraRootEntity, rm, sceneIdName)) {
+	if (!reloadScene(root, cfg, idMap, alwaysAddExtraRootEntity, fcm, rm, sceneIdName)) {
 		return std::shared_ptr<Entity>();
 	}
 	return root;
@@ -611,6 +629,7 @@ bool gs::sceneloader::reloadScene(std::shared_ptr<Entity>& root,
 		const CfgValuePair& cfg,
 		Scene::TIdMap& idMap,
 		bool alwaysAddExtraRootEntity,
+		const std::weak_ptr<FileChangeMonitoring>& fcm,
 		ResourceManager& rm, std::string& sceneIdName)
 {
 	if (!cfg.isSection()) {
@@ -646,7 +665,7 @@ bool gs::sceneloader::reloadScene(std::shared_ptr<Entity>& root,
 			root->childEntities().clear();
 		}
 	}
-	if (!loadEntities(cfg.mValue, firstEntityIndex, root, idMap, rm, true)) {
+	if (!loadEntities(cfg.mValue, firstEntityIndex, root, idMap, fcm, rm, true)) {
 		LOGE("Load scene failed.\n");
 		return false;
 	}

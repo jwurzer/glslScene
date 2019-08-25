@@ -85,10 +85,12 @@ namespace gs
 	class CfgValue;
 	class CfgValuePair;
 	class TransformComponent;
+	class FileChangeMonitoring;
 
 	namespace sceneloader
 	{
 		bool reload(const CfgValuePair& cfg,
+				const std::weak_ptr<FileChangeMonitoring>& fcm,
 				ResourceManager& rm, SceneManager& sm, RenderPassManager& pm,
 				bool reloadResourceManager, bool reloadSceneManager, bool reloadRenderPassManager);
 
@@ -96,21 +98,19 @@ namespace gs
 				TransformComponent& transform2d);
 
 		bool updateAndLoad(const CfgValuePair& cfg,
+				const std::weak_ptr<FileChangeMonitoring>& fcm,
 				SceneManager& sm, ResourceManager& rm);
 
 		bool updateAndLoad(std::string& sceneIdName,
 				std::shared_ptr<Entity>& root,
 				Scene::TIdMap& idMap, const CfgValuePair& cfg,
-				ResourceManager& rm);
-
-		std::shared_ptr<Entity> loadScene(
-				const CfgValuePair& cfg,
-				bool alwaysAddExtraRootEntity,
+				const std::weak_ptr<FileChangeMonitoring>& fcm,
 				ResourceManager& rm);
 
 		std::shared_ptr<Entity> loadScene(
 				const CfgValuePair& cfg,
 				Scene::TIdMap& idMap, bool alwaysAddExtraRootEntity,
+				const std::weak_ptr<FileChangeMonitoring>& fcm,
 				ResourceManager& rm);
 
 		/**
@@ -122,6 +122,7 @@ namespace gs
 				const CfgValuePair& cfg,
 				Scene::TIdMap& idMap,
 				bool alwaysAddExtraRootEntity,
+				const std::weak_ptr<FileChangeMonitoring>& fcm,
 				ResourceManager& rm, std::string& sceneIdName);
 	}
 }

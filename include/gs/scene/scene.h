@@ -11,6 +11,7 @@ namespace gs
 	class Entity;
 	class ResourceManager;
 	class CfgValuePair;
+	class FileChangeMonitoring;
 
 	/**
 	 * For the scene format see at the end of this file.
@@ -23,7 +24,9 @@ namespace gs
 		Scene();
 		~Scene();
 
-		bool updateAndLoad(const CfgValuePair& cfg, ResourceManager& rm);
+		bool updateAndLoad(
+				const std::weak_ptr<FileChangeMonitoring>& fcm,
+				const CfgValuePair& cfg, ResourceManager& rm);
 
 		void setIdNumber(unsigned int idNumber) { mIdNumber = idNumber; }
 		unsigned int getIdNumber() const { return mIdNumber; }

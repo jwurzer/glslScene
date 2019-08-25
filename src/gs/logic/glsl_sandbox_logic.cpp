@@ -1,4 +1,4 @@
-#include <gs/scene/glsl_sandbox_logic.h>
+#include <gs/logic/glsl_sandbox_logic.h>
 #include <gs/system/log.h>
 #include <gs/ecs/entity.h>
 #include <gs/ecs/mesh_component.h>

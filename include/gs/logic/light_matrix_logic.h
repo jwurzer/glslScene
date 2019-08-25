@@ -1,7 +1,7 @@
 #ifndef GLSLSCENE_LIGHT_MATRIX_LOGIC_H
 #define GLSLSCENE_LIGHT_MATRIX_LOGIC_H
 
-#include <gs/ecs/logic.h>
+#include <gs/logic/logic.h>
 #include <gs/common/vector2.h>
 #include <string>
 

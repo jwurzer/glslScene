@@ -14,11 +14,13 @@
 
 #scene-name = scene_001_b_triangles
 
-scene-name = scene_001_c_triangles
+#scene-name = scene_001_c_triangles
 
 #scene-name = scene_001_d_triangles_mod
 
 #scene-name = scene_001_e_triangles_fb_mod
+
+scene-name = scene_001_f_triangles_script
 
 # ===================== 002 examples =========================
 
