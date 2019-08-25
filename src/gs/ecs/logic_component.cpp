@@ -1,5 +1,5 @@
 #include <gs/ecs/logic_component.h>
-#include <gs/ecs/logic.h>
+#include <gs/logic/logic.h>
 #include <gs/system/log.h>
 
 gs::LogicComponent::LogicComponent(const std::weak_ptr<gs::Entity> &entity)

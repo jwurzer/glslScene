@@ -36,12 +36,33 @@ endif ()
 
 file(GLOB_RECURSE PRJ_HEADERFILES include/*.h)
 file(GLOB_RECURSE PRJ_SOURCEFILES src/*.cpp)
-file(GLOB_RECURSE PRJ_C_SOURCEFILES src/*.c)
 
+file(GLOB PRJ_PICOC_ROOT_SOURCEFILES src/picoc/*.c)
+file(GLOB PRJ_PICOC_CSTDLIB_SOURCEFILES src/picoc/cstdlib/*.c)
+set(PRJ_PICOC_SOURCEFILES ${PRJ_PICOC_ROOT_SOURCEFILES} ${PRJ_PICOC_CSTDLIB_SOURCEFILES})
+if (WIN32)
+	set(PRJ_PICOC_SOURCEFILES
+			${PRJ_PICOC_SOURCEFILES}
+			"src/picoc/platform/platform_msvc.c"
+			"src/picoc/platform/library_msvc.c")
+else()
+	set(PRJ_PICOC_SOURCEFILES
+			${PRJ_PICOC_SOURCEFILES}
+			"src/picoc/platform/platform_unix.c"
+			"src/picoc/platform/library_unix.c")
+endif()
+add_definitions( -DPICOC_SKIP_MAIN )
+
+set(PRJ_C_SOURCEFILES
+		${PRJ_PICOC_SOURCEFILES}
+		"src/gs/logic/capi_example_logic.c"
+		)
 
 add_executable(${PRJ_EXENAME} ${PRJ_HEADERFILES} ${PRJ_SOURCEFILES} ${PRJ_C_SOURCEFILES})
 
 target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/include")
+
+target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/picoc")
 
 target_include_directories(${PRJ_EXENAME} PRIVATE
 	${SDL2_INCLUDE_DIR}
@@ -76,7 +97,8 @@ endif()
 
 if (UNIX)
 # dl lib is necessary for glad/opengl under linux
-target_link_libraries(${PRJ_EXENAME} dl)
+# readline is for picoc
+target_link_libraries(${PRJ_EXENAME} dl readline)
 endif()
 
 if (WIN32)

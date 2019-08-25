@@ -14,9 +14,11 @@ gs::Scene::~Scene()
 	mRoot->removeMeFromParent();
 }
 
-bool gs::Scene::updateAndLoad(const CfgValuePair& cfg, ResourceManager& rm)
+bool gs::Scene::updateAndLoad(
+		const std::weak_ptr<FileChangeMonitoring>& fcm,
+		const CfgValuePair& cfg, ResourceManager& rm)
 {
-	return sceneloader::updateAndLoad(mIdName, mRoot, mIdMap, cfg, rm);
+	return sceneloader::updateAndLoad(mIdName, mRoot, mIdMap, cfg, fcm, rm);
 }
 
 std::shared_ptr<gs::Entity> gs::Scene::getEntity(const std::string& entityIdName) const

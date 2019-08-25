@@ -1,0 +1,3 @@
+[submodule "src/picoc"]
+	path = src/picoc
+	url = git@github.com:jwurzer/picoc.git

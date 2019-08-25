@@ -81,7 +81,7 @@ bool gs::Context::run()
 	mResourceManager.reset(new ResourceManager(mFileMonitoring, mContextProperties.useVaoVersionForMesh()));
 	mSceneManager.reset(new SceneManager());
 	mPassManager.reset(new RenderPassManager());
-	if (!sceneloader::reload(cfg, *mResourceManager, *mSceneManager, *mPassManager, true, true, true)) {
+	if (!sceneloader::reload(cfg, mFileMonitoring, *mResourceManager, *mSceneManager, *mPassManager, true, true, true)) {
 		LOGE("Can't load scene file.\n");
 		return false;
 	}
@@ -519,7 +519,7 @@ void gs::Context::reload()
 		pm = passManager.get();
 	}
 	LOGI("Start reloading scene.\n");
-	if (!sceneloader::reload(*sceneConfig, *rm, *sm, *pm,
+	if (!sceneloader::reload(*sceneConfig, fileMonitoring, *rm, *sm, *pm,
 			reloadResourceManager, reloadSceneManager, reloadRenderPassManager)) {
 		LOGE("Can't load scene file.\n");
 		return;
