@@ -42,87 +42,87 @@ namespace
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformTranslate2f(Param[0]->Val->Pointer,
-				Param[1]->Val->FP, Param[2]->Val->FP);
+				float(Param[1]->Val->FP), float(Param[2]->Val->FP));
 	}
 
 	void picocTransformTranslate3f(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformTranslate3f(Param[0]->Val->Pointer,
-				Param[1]->Val->FP, Param[2]->Val->FP, Param[3]->Val->FP);
+				float(Param[1]->Val->FP), float(Param[2]->Val->FP), float(Param[3]->Val->FP));
 	}
 
 	void picocTransformRotateDegree(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformRotateDegree(Param[0]->Val->Pointer,
-				Param[1]->Val->FP);
+				float(Param[1]->Val->FP));
 	}
 
 	void picocTransformRotateDegreeCenter(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformRotateDegreeCenter(Param[0]->Val->Pointer,
-				Param[1]->Val->FP, Param[2]->Val->FP, Param[3]->Val->FP);
+				float(Param[1]->Val->FP), float(Param[2]->Val->FP), float(Param[3]->Val->FP));
 	}
 
 	void picocTransformRotateDegreeAxis(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformRotateDegreeAxis(Param[0]->Val->Pointer,
-				Param[1]->Val->FP, Param[2]->Val->FP, Param[3]->Val->FP, Param[4]->Val->FP);
+				float(Param[1]->Val->FP), float(Param[2]->Val->FP), float(Param[3]->Val->FP), float(Param[4]->Val->FP));
 	}
 
 	void picocTransformRotateRadian(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformRotateRadian(Param[0]->Val->Pointer,
-				Param[1]->Val->FP);
+				float(Param[1]->Val->FP));
 	}
 
 	void picocTransformRotateRadianCenter(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformRotateRadianCenter(Param[0]->Val->Pointer,
-				Param[1]->Val->FP, Param[2]->Val->FP, Param[3]->Val->FP);
+				float(Param[1]->Val->FP), float(Param[2]->Val->FP), float(Param[3]->Val->FP));
 	}
 
 	void picocTransformRotateRadianAxis(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformRotateRadianAxis(Param[0]->Val->Pointer,
-				Param[1]->Val->FP, Param[2]->Val->FP, Param[3]->Val->FP,
-				Param[4]->Val->FP);
+				float(Param[1]->Val->FP), float(Param[2]->Val->FP), float(Param[3]->Val->FP),
+				float(Param[4]->Val->FP));
 	}
 
 	void picocTransformScale2f(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformScale2f(Param[0]->Val->Pointer,
-				Param[1]->Val->FP, Param[2]->Val->FP);
+				float(Param[1]->Val->FP), float(Param[2]->Val->FP));
 	}
 
 	void picocTransformScaleCenter2f(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformScaleCenter2f(Param[0]->Val->Pointer,
-				Param[1]->Val->FP, Param[2]->Val->FP, Param[3]->Val->FP,
-				Param[4]->Val->FP);
+				float(Param[1]->Val->FP), float(Param[2]->Val->FP), float(Param[3]->Val->FP),
+				float(Param[4]->Val->FP));
 	}
 
 	void picocTransformScale3f(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformScale3f(Param[0]->Val->Pointer,
-				Param[1]->Val->FP, Param[2]->Val->FP, Param[3]->Val->FP);
+				float(Param[1]->Val->FP), float(Param[2]->Val->FP), float(Param[3]->Val->FP));
 	}
 
 	void picocTransformScaleCenter3f(struct ParseState *Parser,
 			struct Value *ReturnValue, struct Value **Param, int NumArgs)
 	{
 		transformScaleCenter3f(Param[0]->Val->Pointer,
-				Param[1]->Val->FP, Param[2]->Val->FP, Param[3]->Val->FP,
-				Param[4]->Val->FP, Param[5]->Val->FP, Param[6]->Val->FP);
+				float(Param[1]->Val->FP), float(Param[2]->Val->FP), float(Param[3]->Val->FP),
+				float(Param[4]->Val->FP), float(Param[5]->Val->FP), float(Param[6]->Val->FP));
 	}
 
 
