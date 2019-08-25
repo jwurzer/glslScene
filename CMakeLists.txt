@@ -40,6 +40,9 @@ file(GLOB_RECURSE PRJ_SOURCEFILES src/*.cpp)
 file(GLOB PRJ_PICOC_ROOT_SOURCEFILES src/picoc/*.c)
 file(GLOB PRJ_PICOC_CSTDLIB_SOURCEFILES src/picoc/cstdlib/*.c)
 set(PRJ_PICOC_SOURCEFILES ${PRJ_PICOC_ROOT_SOURCEFILES} ${PRJ_PICOC_CSTDLIB_SOURCEFILES})
+
+file(GLOB PRJ_PICOC_HEADERFILES src/picoc/*.h)
+
 if (WIN32)
 	set(PRJ_PICOC_SOURCEFILES
 			${PRJ_PICOC_SOURCEFILES}
@@ -58,7 +61,9 @@ set(PRJ_C_SOURCEFILES
 		"src/gs/logic/capi_example_logic.c"
 		)
 
-add_executable(${PRJ_EXENAME} ${PRJ_HEADERFILES} ${PRJ_SOURCEFILES} ${PRJ_C_SOURCEFILES})
+set(PRJ_C_HEADERFILES ${PRJ_PICOC_HEADERFILES})
+
+add_executable(${PRJ_EXENAME} ${PRJ_HEADERFILES} ${PRJ_C_HEADERFILES} ${PRJ_SOURCEFILES} ${PRJ_C_SOURCEFILES})
 
 target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
@@ -112,6 +117,28 @@ foreach(_source IN ITEMS ${PRJ_SOURCEFILES})
 endforeach()
 
 foreach(_source IN ITEMS ${PRJ_HEADERFILES})
+    get_filename_component(_source_path "${_source}" PATH)
+    file(RELATIVE_PATH _source_path_rel "${_src_root_path}" "${_source_path}")
+    string(REPLACE "/" "\\" _group_path "${_source_path_rel}")
+    source_group("${_group_path}" FILES "${_source}")
+endforeach()
+
+foreach(_source IN ITEMS ${PRJ_PICOC_ROOT_SOURCEFILES})
+    get_filename_component(_source_path "${_source}" PATH)
+    file(RELATIVE_PATH _source_path_rel "${_src_root_path}" "${_source_path}")
+    #set(_source_path_rel "${_source_path}")
+    string(REPLACE "/" "\\" _group_path "${_source_path_rel}")
+    source_group("${_group_path}" FILES "${_source}")
+endforeach()
+
+foreach(_source IN ITEMS ${PRJ_PICOC_CSTDLIB_SOURCEFILES})
+    get_filename_component(_source_path "${_source}" PATH)
+    file(RELATIVE_PATH _source_path_rel "${_src_root_path}" "${_source_path}")
+    string(REPLACE "/" "\\" _group_path "${_source_path_rel}")
+    source_group("${_group_path}" FILES "${_source}")
+endforeach()
+
+foreach(_source IN ITEMS ${PRJ_C_HEADERFILES})
     get_filename_component(_source_path "${_source}" PATH)
     file(RELATIVE_PATH _source_path_rel "${_src_root_path}" "${_source_path}")
     string(REPLACE "/" "\\" _group_path "${_source_path_rel}")

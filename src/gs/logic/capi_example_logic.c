@@ -5,6 +5,7 @@
 int capiExampleInit(void* logicInstance)
 {
 	LOGI("Call init for capiExample");
+	return 1;
 }
 
 void capiExampleUpdate(void* logicInstance, Entity* e, Properties* p)
