@@ -20,7 +20,7 @@
 
 #scene-name = scene_001_e_triangles_fb_mod
 
-scene-name = scene_001_f_triangles_script
+#scene-name = scene_001_f_triangles_script
 
 # ===================== 002 examples =========================
 
@@ -46,8 +46,10 @@ scene-name = scene_001_f_triangles_script
 # Using gl 3.3 core. Using attributes in scene.tml to find the locations
 #scene-name = scene_003_e_transform_gl33
 
-# Using gl 3.3 core. Using attributes in scene.tml to find the locations
+# Using gl 3.3 core. Using geometry shader
 #scene-name = scene_003_f_geo_gl33
+
+#scene-name = scene_003_g_tess_gl41
 
 # ===================== 004 examples =========================
 
@@ -70,7 +72,7 @@ scene-name = scene_001_f_triangles_script
 #scene-name = scene_006_b_texture_shader
 
 # Two textures with shaders, no matrices
-#scene-name = scene_006_c_texture_no-matrix
+scene-name = scene_006_c_texture_no-matrix
 
 # Two textures with shaders, no matrices for gl 3.3 core
 #scene-name = scene_006_d_texture_gl33
