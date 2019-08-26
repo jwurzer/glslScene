@@ -189,6 +189,7 @@ bool gs::Context::run()
 		mPassManager->updateCameras(mProperties.mTsSec);
 
 		mPassManager->renderAllPasses(renderer, *mSceneManager, *mResourceManager, mProperties);
+		//glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		mGuiManager->render(renderer, *mPassManager, *mSceneManager, *mResourceManager,
 				mContextProperties, mProperties, *mFileMonitoring);
 

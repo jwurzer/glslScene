@@ -61,7 +61,11 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 				else if (uniformType == "vec4") {
 					uniform.mType = UniformType::VEC4;
 				}
-				else if (uniformType == "sampler2d") {
+				else if (uniformType == "sampler2d" ||
+						uniformType == "sampler2D") {
+					if (uniformType == "sampler2d") {
+						LOGW("Warning: sampler2D instead of sampler2d should be used!\n");
+					}
 					uniform.mType = UniformType::SAMPLER2D;
 				}
 				else if (uniformType == "mat4" ||

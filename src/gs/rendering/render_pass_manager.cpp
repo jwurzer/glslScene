@@ -121,6 +121,8 @@ void gs::RenderPassManager::renderAllPasses(Renderer &renderer,
 			glDisable(GL_DEPTH_TEST);
 		}
 
+		renderer.getTextureUnitStack().bindForRendering();
+		renderer.getShaderStack().bindForRendering();
 		renderer.switchToTextureUnitForLoading();
 	}
 }
