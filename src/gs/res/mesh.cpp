@@ -304,11 +304,13 @@ void gs::Mesh::bindNoVaoVersion(const ShaderProgram* shaderProgram)
 				mVertices.data() + mPosCount + mNormalCount + mTexCount * 2);
 	}
 
-	for (unsigned int i = 0; i < mTexCount; ++i) {
-		glClientActiveTexture(GL_TEXTURE0 + i);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2, GL_FLOAT, mVertexSize,
+	if (mTexCount) {
+		for (unsigned int i = 0; i < mTexCount; ++i) {
+			glClientActiveTexture(GL_TEXTURE0 + i);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glTexCoordPointer(2, GL_FLOAT, mVertexSize,
 				mVertices.data() + mPosCount + mNormalCount + i * 2);
+		}
 	}
 }
 
@@ -335,9 +337,14 @@ void gs::Mesh::unbindNoVaoVersion(const ShaderProgram* shaderProgram)
 		glDisableClientState(GL_COLOR_ARRAY);
 	}
 
-	for (unsigned int i = 0; i < mTexCount; ++i) {
-		glClientActiveTexture(GL_TEXTURE0 + i);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	if (mTexCount) {
+		for (unsigned int i = 0; i < mTexCount; ++i) {
+			glClientActiveTexture(GL_TEXTURE0 + i);
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		}
+		// now always reset to client texture unit 0
+		// This is important for ImGui. Otherwise only boxes instead of characters are visible.
+		glClientActiveTexture(GL_TEXTURE0 + 0);
 	}
 }
 
