@@ -1,0 +1,43 @@
+context
+	rendering-api = opengl 3.3 core
+
+resources
+	mesh
+		id = MESH1
+		custom-vertex-layout
+			x	y	r	g	b	a	sides
+		points
+			-0.45	0.45	1.0	0.0	0.0	1.0	4.0
+			0.45	0.45	0.0	1.0	0.0	1.0	8.0
+			0.45	-0.45	0.0	1.0	0.0	1.0	16.0
+			-0.45	-0.45	0.0	0.0	1.0	1.0	32.0
+	shader
+		id = SHADER1
+		vertex = shaders/example.vert
+		fragment = shaders/example.frag
+		geometry = shaders/example.geom
+		uniform float uSideFactor = 1.0
+		attribute aPosition = 0 2
+		attribute aColor = 2 4
+		attribute aSides = 6 1
+
+scenes
+	scene
+		id = SCENE-ONE
+		entity
+			shader-component
+				shader-program-id = SHADER1
+			mesh-component
+				mesh-id = MESH1
+rendering
+	render-pass
+		framebuffer-id = default
+		clear-color = 0.2 0.2 0.2 1.0
+		#projection-matrix
+		#	ortho = -500 500 -500 500 -500 500 shrink-to-fit
+		#view-matrix
+		#	transform
+		#		translate -200 0
+		scene-id = SCENE-ONE
+
+
