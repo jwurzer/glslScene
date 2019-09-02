@@ -15,6 +15,9 @@ glslScene 0.x
 * Fix binding bug for re-used shader programs
 * Various small bug fixes
 
+**Known Bugs**
+
+* Framebuffer resource doesn't work with Intel graphics cards
 
 glslScene 0.1
 -------------
