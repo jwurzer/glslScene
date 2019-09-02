@@ -573,7 +573,7 @@ void gs::ShaderProgram::bind(const Properties& p, const Matrices& m)
 
 void gs::ShaderProgram::bindMatricesOnly(const Matrices& m)
 {
-	glUseProgram(mShaderProgramId);
+	//glUseProgram(mShaderProgramId);
 	applyUniformMatricesOnly(mShaderProgramLoadInfo.mUniforms, m);
 }
 

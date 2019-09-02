@@ -48,24 +48,19 @@ void gs::ShaderStack::pushShaderProgram(ShaderProgram* shader)
 	bindInfo.shader = shader;
 	mShaderToBind = shader;
 #if 0
-	// version with mMustBeBinded - binding happend later
-	if (mCurrentBindedShader != shader) {
-		// set bit to true
-		//mMustBeBinded |= lookUpSet[textureUnit];
-	}
-	else {
-		// set bit to false --> reset bit
-		//mMustBeBinded &= lookUpReset[textureUnit];
-	}
+	// version with binding happend later
 #else
-	// version without mMustBeBinded - binding happend immediately
+	// version wit binding happend immediately
 	if (mCurrentBindedShader != shader) {
 		bindShaderProgram(shader);
 		mCurrentBindedShader = shader;
 		INCREASE_BIND_CALLS_COUNT
 	}
-	// set bit to false --> reset bit
-	//mMustBeBinded &= lookUpReset[textureUnit];
+	else if (mCurrentBindedShader) {
+		// If correct shader is already binded then maybe the matrices has changed
+		// If a shader is current binded --> rebind matrices
+		mCurrentBindedShader->bindMatricesOnly(mMatrices);
+	}
 #endif
 }
 
@@ -89,25 +84,15 @@ void gs::ShaderStack::popShaderProgram()
 	// if index is negative then no "previous layer" exist --> set nullptr (no shader)
 	ShaderProgram* shader = (index >= 0) ? mLayers[index].shader : nullptr;
 	mShaderToBind = shader;
-#if 1
-	// version with mMustBeBinded - binding happend later
-	if (mCurrentBindedShader != shader) {
-		// set bit to true
-		//mMustBeBinded |= lookUpSet[textureUnit];
-	}
-	else {
-		// set bit to false --> reset bit
-		//mMustBeBinded &= lookUpReset[textureUnit];
-	}
+#if 0
+	// version with binding happend later
 #else
-	// version without mMustBeBinded - binding happend immediately
+	// version with binding happend immediately
 	if (mCurrentBindedShader != shader) {
 		bindShaderProgram(shader);
 		mCurrentBindedShader = shader;
 		INCREASE_BIND_CALLS_COUNT
 	}
-	// set bit to false --> reset bit
-	//mMustBeBinded &= lookUpReset[textureUnit];
 #endif
 }
 
