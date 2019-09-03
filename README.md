@@ -8,6 +8,7 @@ Supported platforms: Windows, Linux
 Main features of glslScene:
  * Hot Reloading
  * GUI to edit uniform values on the fly
+ * C Scripting support with PicoC interpreter
  * Entity-Component-System
  * OpenGL version can be configured
  * One scene project file (scene.tml) to configure context properties, resources, scenes and rendering passes.
@@ -46,4 +47,4 @@ For more information about the licences in glslScene see the [LICENSE](LICENSE) 
 
 External libraries
 ------------------
-glslScene use the following libraries: SDL, stb_image, ImGui, GLEW or optional glad, some classes from SFML.
+glslScene use the following libraries: SDL, GLM, stb_image, ImGui, GLEW or optional glad, some classes from SFML.
