@@ -176,17 +176,14 @@ A mesh in glslScene corresponds to a draw call. A mesh is internally a vertex ar
 A mesh is specified as follow:
 
 	mesh
-		id = MESH1
+		id = <id-name>
+		scale-for-show-normals = <normal-scale-factor>            (optional)
 		vertex-layout      (or custom-vertex-layout)
-			x	y	[z]	[s0	t0]	[s1	t1]	[[r	g	b]	a]
-		triangles
-			... values of 1. vertex of 1. triangle ...
-			... values of 2. vertex of 1. triangle ...
-			... values of 3. vertex of 1. triangle ...
-			... values of 1. vertex of 2. triangle ...
-			... values of 2. vertex of 2. triangle ...
-			... values of 3. vertex of 2. triangle ...
-			... values for more triangles ...
+			x	y	[z]	[nx	ny	nz]	[s0	t0]	[s1	t1]	[[r	g	b]	a]
+		<primitive-type>
+			... values of 1. vertex of 1. primitive ...
+			... values of 2. vertex of 1. or 2. primitive ...
+			... values for more vertices and primitives ...
 
 An example would be:
 
@@ -204,9 +201,15 @@ An example would be:
 
 `<id-name>` must be a text. Simple a number is not ok!
 
-`vertex-layout` defines the layout of the vertices. A vertex must always have a position. x and y must exist. z is optional. Then none, one or more s,t texture coordinates can follow. Must have the name `s<N>`, `t<N>` (N can be 0 - 7). The color is optional. If a color is used then r, g, b or r, g, b, a must be used in this order.
+`<normal-scale-factor>` must be a floating point. Is optional. Is used to set the value for `scale-for-show-normals` and is only used for rendering the normals (if 'rendering normals' is enabled). Has no effect to calculations with normals.
+
+`vertex-layout` defines the layout of the vertices. A vertex must always have a position. x and y must exist. z is optional. Then optinal nx, ny and nz can follow for normals. Then none, one or more s,t texture coordinates can follow. Must have the name `s<N>`, `t<N>` (N can be 0 - 7). The color is optional. If a color is used then r, g, b or r, g, b, a must be used in this order.
 
 If `custom-vertex-layout` is used instead of `vertex-layout` then other additional components can follow at the end of a vertex layout specification. In this case **all** components of the vertex must be specified by the shader as attributes. No automatic attribute binding is done.
+
+`<primitive-type>` must be one of the following options (except the additional options): `points`, `lines`, `line-loop`, `triangles`, `triangle-strip`, `triangle-fan`, `quads`, `quad-strip` or `polygon`
+
+There are some additional options for `<primitive-type>` which can be used to create some complex/big meshes. The additional options for `<primitive-type>` are the following: `point-mesh`, `triangle-mesh`, `quad-mesh` or `rects` (TODO rects must be implemented)
 
 framebuffer
 -----------
@@ -519,17 +522,14 @@ Overview:
 			uniform sampler2d <var-name> = <texture-unit-index>              (optionalm, mult. t., texture unit 0 - 7)
 			attribute <var-name> = <component-offset> <component-count>
 		mesh
-			id = MESH1
+			id = <id-name>
+			scale-for-show-normals = <normal-scale-factor>            (optional)
 			vertex-layout      (or custom-vertex-layout)
-				x	y	[z]	[s0	t0]	[s1	t1]	[[r	g	b]	a]
-			triangles
-				... values of 1. vertex of 1. triangle ...
-				... values of 2. vertex of 1. triangle ...
-				... values of 3. vertex of 1. triangle ...
-				... values of 1. vertex of 2. triangle ...
-				... values of 2. vertex of 2. triangle ...
-				... values of 3. vertex of 2. triangle ...
-				... values for more triangles ...
+				x	y	[z]	[nx	ny	nz]	[s0	t0]	[s1	t1]	[[r	g	b]	a]
+			<primitive-type>
+				... values of 1. vertex of 1. primitive ...
+				... values of 2. vertex of 1. or 2. primitive ...
+				... values for more vertices and primitives ...
 		framebuffer
 			id = <id-name>                            (must exist)
 			size = <width> <height>  or  window-size  (must exist)
