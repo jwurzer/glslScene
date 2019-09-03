@@ -221,7 +221,7 @@ A framebuffer is only useful if multi-pass rendering is used (see rendering sect
 
 `<id-name>` must be a text. Simple a number is not ok!
 
-`<width>` and `<height>` define the size of the framebuffer in pixels. Or instead of values for width and height also the keyword `window-size` can be use. If `window-size` is used and the window is resized then also the framebuffer is automatic resized. window-size is currently not implemented :-( **TODO: implement window-size**
+`<width>` and `<height>` define the size of the framebuffer in pixels. Or instead of values for width and height also the keyword `window-size` can be use. If `window-size` is used and the window is resized then also the framebuffer is automatic resized.
 
 
 scenes
