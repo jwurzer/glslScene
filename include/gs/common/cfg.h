@@ -260,14 +260,14 @@ namespace gs
 				mUsedCount(nullptr) {}
 
 		CfgReadRule(const char* name, bool* boolPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_BOOL, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_BOOL, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_BOOL), mRule(rule),
 				mAllowedTypes(typeFlags),
 				mUsedCount(usedCount)
 				{ mStorePtr.mBool = boolPtr; }
 		CfgReadRule(const std::string& name, bool* boolPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_BOOL, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_BOOL, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_BOOL), mRule(rule),
 				mAllowedTypes(typeFlags),
@@ -275,14 +275,14 @@ namespace gs
 				{ mStorePtr.mBool = boolPtr; }
 
 		CfgReadRule(const char* name, float* floatPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_NUMBER, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_NUMBER, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_FLOAT), mRule(rule),
 				mAllowedTypes(typeFlags),
 				mUsedCount(usedCount)
 				{ mStorePtr.mFloat = floatPtr; }
 		CfgReadRule(const std::string& name, float* floatPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_NUMBER, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_NUMBER, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_FLOAT), mRule(rule),
 				mAllowedTypes(typeFlags),
@@ -290,14 +290,14 @@ namespace gs
 				{ mStorePtr.mFloat = floatPtr; }
 
 		CfgReadRule(const char* name, double* doublePtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_NUMBER, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_NUMBER, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_DOUBLE), mRule(rule),
 				mAllowedTypes(typeFlags),
 				mUsedCount(usedCount)
 				{ mStorePtr.mDouble = doublePtr; }
 		CfgReadRule(const std::string& name, double* doublePtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_NUMBER, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_NUMBER, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_DOUBLE), mRule(rule),
 				mAllowedTypes(typeFlags),
@@ -305,14 +305,14 @@ namespace gs
 				{ mStorePtr.mDouble = doublePtr; }
 
 		CfgReadRule(const char* name, int* intPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_INT, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_INT, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_INT), mRule(rule),
 				mAllowedTypes(typeFlags),
 				mUsedCount(usedCount)
 				{ mStorePtr.mInt = intPtr; }
 		CfgReadRule(const std::string& name, int* intPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_INT, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_INT, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_INT), mRule(rule),
 				mAllowedTypes(typeFlags),
@@ -320,14 +320,14 @@ namespace gs
 				{ mStorePtr.mInt = intPtr; }
 
 		CfgReadRule(const char* name, unsigned int* uintPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_INT, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_INT, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_UINT), mRule(rule),
 				mAllowedTypes(typeFlags),
 				mUsedCount(usedCount)
 				{ mStorePtr.mUInt = uintPtr; }
 		CfgReadRule(const std::string& name, unsigned int* uintPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_INT, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_INT, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_UINT), mRule(rule),
 				mAllowedTypes(typeFlags),
@@ -335,14 +335,14 @@ namespace gs
 				{ mStorePtr.mUInt = uintPtr; }
 
 		CfgReadRule(const char* name, std::string* strPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_TEXT, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_TEXT, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_STRING), mRule(rule),
 				mAllowedTypes(typeFlags),
 				mUsedCount(usedCount)
 				{ mStorePtr.mStr = strPtr; }
 		CfgReadRule(const std::string& name, std::string* strPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_TEXT, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_TEXT, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_STRING), mRule(rule),
 				mAllowedTypes(typeFlags),
@@ -350,14 +350,14 @@ namespace gs
 				{ mStorePtr.mStr = strPtr; }
 
 		CfgReadRule(const char* name, const std::vector<CfgValuePair>** arrayPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_ARRAY), mRule(rule),
 				mAllowedTypes(typeFlags),
 				mUsedCount(usedCount)
 				{ mStorePtr.mArray = arrayPtr; }
 		CfgReadRule(const std::string& name, const std::vector<CfgValuePair>** arrayPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_ARRAY), mRule(rule),
 				mAllowedTypes(typeFlags),
@@ -365,14 +365,14 @@ namespace gs
 				{ mStorePtr.mArray = arrayPtr; }
 
 		CfgReadRule(const char* name, const CfgValue** arrayPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_VALUE_FOR_ARRAY), mRule(rule),
 				mAllowedTypes(typeFlags),
 				mUsedCount(usedCount)
 		{ mStorePtr.mValueForArray = arrayPtr; }
 		CfgReadRule(const std::string& name, const CfgValue** arrayPtr, ERule rule,
-				EAllowedTypes typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
+				unsigned int typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
 				:mName(name),
 				mType(TYPE_VALUE_FOR_ARRAY), mRule(rule),
 				mAllowedTypes(typeFlags),
@@ -380,14 +380,14 @@ namespace gs
 		{ mStorePtr.mValueForArray = arrayPtr; }
 
 		CfgReadRule(const char* name, const CfgValuePair** valuePairPtr, ERule rule,
-					EAllowedTypes typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
+					unsigned int typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
 				:mName(name),
 				 mType(TYPE_VALUE_PAIR), mRule(rule),
 				 mAllowedTypes(typeFlags),
 				 mUsedCount(usedCount)
 		{ mStorePtr.mValuePair = valuePairPtr; }
 		CfgReadRule(const std::string& name, const CfgValuePair** valuePairPtr, ERule rule,
-					EAllowedTypes typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
+					unsigned int typeFlags = ALLOW_ARRAY, unsigned int* usedCount = nullptr)
 				:mName(name),
 				 mType(TYPE_VALUE_PAIR), mRule(rule),
 				 mAllowedTypes(typeFlags),

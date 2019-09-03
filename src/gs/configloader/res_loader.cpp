@@ -645,7 +645,7 @@ gs::TFramebufferId gs::resloader::addFramebuffer(ResourceManager& rm, const CfgV
 	const CfgValue* sizeValue = nullptr;
 	CfgReadRule cfgRules[] = {
 			CfgReadRule("id", &idName, CfgReadRule::RULE_MUST_EXIST),
-			CfgReadRule("size", &sizeValue, CfgReadRule::RULE_MUST_EXIST),
+			CfgReadRule("size", &sizeValue, CfgReadRule::RULE_MUST_EXIST, CfgReadRule::ALLOW_ARRAY | CfgReadRule::ALLOW_TEXT),
 			CfgReadRule("")
 	};
 

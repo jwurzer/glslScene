@@ -64,7 +64,7 @@ void gs::RenderPassManager::renderAllPasses(Renderer &renderer,
 				LOGE("Can't find frame buffer!\n");
 				continue;
 			}
-			fb->bind(); // also set the viewport!!!
+			fb->bind(p.mWindowSizeI.mWidth, p.mWindowSizeI.mHeight); // also set the viewport!!!
 			resolution = Size2u(fb->getWidth(), fb->getHeight());
 		}
 		p.mViewportPosPixelI = Vector2i(0, 0);

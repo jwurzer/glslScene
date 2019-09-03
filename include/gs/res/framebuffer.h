@@ -20,7 +20,7 @@ namespace gs
 
 		const std::shared_ptr<Texture>& getTexRes() const { return mTexRes; };
 
-		void bind();
+		void bind(int windowWidth, int windowHeight);
 		unsigned int getWidth() const { return mWidth; }
 		unsigned int getHeight() const { return mHeight; }
 	private:
@@ -35,6 +35,7 @@ namespace gs
 		GLuint mRbo; // render buffer object
 
 		bool createFramebuffer();
+		bool recreateFramebuffer();
 		void deleteFramebuffer();
 	};
 }
