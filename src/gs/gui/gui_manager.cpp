@@ -59,14 +59,9 @@ namespace gs
 			va_end(args);
 		}
 
-		void addTransformCompToMenu(const TransformComponent& tc)
+		void addMatrix(const glm::mat4& m)
 		{
-			if (!ImGui::TreeNode("transform-component"))
-			{
-				return; // no ImGui::TreePop() here!
-			}
 			char matStr[256];
-			glm::mat4 m = tc.getMatrix();
 			snprintf(matStr, 256,
 					"%f %f %f %f\n"
 					"%f %f %f %f\n"
@@ -118,6 +113,15 @@ namespace gs
 			);
 			IntentText(matStr);
 #endif
+		}
+
+		void addTransformCompToMenu(const TransformComponent& tc)
+		{
+			if (!ImGui::TreeNode("transform-component"))
+			{
+				return; // no ImGui::TreePop() here!
+			}
+			addMatrix(tc.getMatrix());
 			ImGui::TreePop();
 		}
 
@@ -509,7 +513,17 @@ namespace gs
 			if (!addResToMenu(mesh, "mesh")) {
 				return; // no ImGui::TreePop() here!
 			}
+			IntentText("primitive type: %s", mesh.getPrimitiveTypeAsString());
 			IntentText("vertex: count: %u", mesh.getVertexCount());
+			if (ImGui::TreeNode("vertices:")) {
+				const std::vector<std::string>& vertexStrings = mesh.verticesToStrings();
+				size_t vCnt = vertexStrings.size();
+				for (size_t vi = 0; vi < vCnt; ++vi) {
+					IntentText("%5zu: %s", vi, vertexStrings[vi].c_str());
+				}
+				ImGui::TreePop();
+			}
+			IntentText("has normals: %s", mesh.hasNormals() ? "yes" : "no");
 			ImGui::TreePop();
 		}
 
@@ -786,15 +800,23 @@ namespace gs
 					snprintf(strId, 32, "render-pass_%u", i);
 					if (ImGui::TreeNode(strId, "render-pass"))
 					{
-						// TODO... print all infos...
 						IntentText("framebuffer-id (number): %u", p.mFramebufferId);
+						IntentText("framebuffer resolution: %ux%u", p.mResolution.mWidth, p.mResolution.mHeight);
 						IntentText("clear-color: %f %f %f %f",
 								p.mClearColor.r,
 								p.mClearColor.g,
 								p.mClearColor.b,
 								p.mClearColor.a);
-						IntentText("projection-matrix: TODO...");
-						IntentText("view-matrix: TODO...");
+						if (ImGui::TreeNode("projection-matrix:"))
+						{
+							addMatrix(p.mProjection.getProjectionMatrix());
+							ImGui::TreePop();
+						}
+						if (ImGui::TreeNode("view-matrix:"))
+						{
+							addMatrix(p.mViewMatrix);
+							ImGui::TreePop();
+						}
 						IntentText("camera: %s", p.mCamera ? "is used" : "not used");
 						IntentText("scene-id (number): %u", p.mSceneId);
 						IntentText("depth-test: %s", p.mDepthTest ? "true" : "false");

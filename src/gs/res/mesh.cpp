@@ -73,6 +73,7 @@ gs::Mesh::~Mesh()
 void gs::Mesh::clear()
 {
 	mChanged = true;
+	mChangedForString = true;
 	mVertices.clear();
 	mVertexSize = 0;
 	mVertexCount = 0;
@@ -130,6 +131,7 @@ bool gs::Mesh::addVertices(const void* vertices,
 	const float* buf = static_cast<const float*>(vertices);
 	mVertices.insert(mVertices.end(), buf, buf + bufSizeAsFloats);
 	mChanged = true;
+	mChangedForString = true;
 	return true;
 }
 
@@ -138,6 +140,35 @@ bool gs::Mesh::addVertices(const VertexV3C4* vertices,
 {
 	return addVertices(vertices, sizeof(VertexV3C4), vertexCount, 3, 0, 0, 4, 0);
 }
+
+const char* gs::Mesh::getPrimitiveTypeAsString() const
+{
+	switch (mPrimitiveType)
+	{
+	case PrimitiveType::POINTS:
+		return "GL_POINTS";
+	case PrimitiveType::LINES:
+		return "GL_LINES";
+	case PrimitiveType::LINE_LOOP:
+		return "GL_LINE_LOOP";
+	case PrimitiveType::LINE_STRIP:
+		return "GL_LINE_STRIP";
+	case PrimitiveType::TRIANGLES:
+		return "GL_TRIANGLES";
+	case PrimitiveType::TRIANGLE_STRIP:
+		return "GL_TRIANGLE_STRIP";
+	case PrimitiveType::TRIANGLE_FAN:
+		return "GL_TRIANGLE_FAN";
+	case PrimitiveType::QUADS:
+		return "GL_QUADS";
+	case PrimitiveType::QUAD_STRIP:
+		return "GL_QUAD_STRIP";
+	case PrimitiveType::POLYGON:
+		return "GL_POLYGON";
+	}
+	return "unknown";
+}
+
 void gs::Mesh::bind(const ShaderProgram* shaderProgram)
 {
 	if (!mVertexCount) {
@@ -266,6 +297,33 @@ std::string gs::Mesh::toString() const
 	}
 
 	return s.str();
+}
+
+const std::vector<std::string>& gs::Mesh::verticesToStrings() const
+{
+	if (!mChangedForString) {
+		return mVerticesAsStrings;
+	}
+	mChangedForString = false;
+	mVerticesAsStrings.clear();
+	if (mVertices.size() * sizeof(float) != mVertexCount * mVertexSize) {
+		mVerticesAsStrings.push_back("invalid");
+		return mVerticesAsStrings;
+	}
+	unsigned int floatsPerVertex = mVertexSize / sizeof(float);
+	mVerticesAsStrings.reserve(mVertexCount);
+	std::vector<char> vertexStr;
+	vertexStr.resize(mVertexCount * 16 + 2); // +2 for '\n' and '\0'
+	for (unsigned int vi = 0, i = 0; vi < mVertexCount; ++vi) {
+		char* nextFloatStrStart = vertexStr.data();
+		for (unsigned int fi = 0; fi < floatsPerVertex; ++fi, ++i) {
+			int len = snprintf(nextFloatStrStart, 16, " %9.3f", mVertices[i]);
+			nextFloatStrStart += len;
+		}
+		*nextFloatStrStart = '\0';
+		mVerticesAsStrings.push_back(vertexStr.data());
+	}
+	return mVerticesAsStrings;
 }
 
 void gs::Mesh::bindNoVaoVersion(const ShaderProgram* shaderProgram)
