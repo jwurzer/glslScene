@@ -56,22 +56,10 @@ bool gs::Framebuffer::createFramebuffer()
 	glGenFramebuffers(1, &mFbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
 
-#if 0
-	// The texture we're going to render to
-	glGenTextures(1, &mTex);
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, mTex);
-	// Give an empty image to OpenGL ( the last "0" )
-	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, mWidth, mHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-	// Poor filtering. Needed !
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-#else
 	mTexRes = std::make_shared<Texture>(std::weak_ptr<FileChangeMonitoring>(), "",
 			TexMipmap::NO_MIPMAP, TexFilter::NEAREST, TexFilter::NEAREST);
 	mTexRes->create(mWidth, mHeight, ColorU32::white());
 	mTexRes->load();
-#endif
 
 #if 1
 	// The depth buffer
@@ -83,8 +71,6 @@ bool gs::Framebuffer::createFramebuffer()
 #endif
 
 	// Set "renderedTexture" as our colour attachement #0
-	//glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mTex, 0);
-	//glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mTexRes->getGlTexId(), 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexRes->getGlTexId(), 0);
 
 	// Set the list of draw buffers.
@@ -115,8 +101,7 @@ bool gs::Framebuffer::recreateFramebuffer()
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mRbo);
 
 	// Set "renderedTexture" as our colour attachement #0
-	//glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mTex, 0);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mTexRes->getGlTexId(), 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexRes->getGlTexId(), 0);
 
 	// Set the list of draw buffers.
 	GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
@@ -138,13 +123,7 @@ void gs::Framebuffer::deleteFramebuffer()
 	if (mFbo) {
 		glDeleteFramebuffers(1, &mFbo);
 	}
-#if 0
-	if (mTex) {
-		glDeleteTextures(1, &mTex);
-	}
-#else
 	mTexRes.reset();
-#endif
 	if (mRbo) {
 		glDeleteRenderbuffers(1, &mRbo);
 	}
