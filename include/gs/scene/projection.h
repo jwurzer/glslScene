@@ -70,8 +70,14 @@ namespace gs
 		void setFrustum(float left, float right, float bottom, float top, float nearVal, float farVal);
 
 		glm::mat4 applyProjection(const Properties& properties, float width, float height,
-				glm::vec3& viewSize) const;
+				glm::vec3& viewSize);
+		// get the last calculate projection matrix from applyProjection()
+		const glm::mat4& getProjectionMatrix() const {
+			return mProjectionMatrix;
+		}
 	private:
+		glm::mat4 mProjectionMatrix = glm::mat4(1.0f);
+
 		void setOrtho(float left, float right, float bottom, float top,
 				float nearVal, float farVal, ProjectionMode mode);
 	};

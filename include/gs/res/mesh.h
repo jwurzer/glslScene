@@ -46,6 +46,8 @@ namespace gs
 				unsigned int vertexCount);
 
 		void setPrimitiveType(PrimitiveType primitiveType) { mPrimitiveType = primitiveType; }
+		PrimitiveType getPrimitiveType() const { return mPrimitiveType; }
+		const char* getPrimitiveTypeAsString() const;
 
 		unsigned int getVertexCount() const { return mVertexCount; }
 
@@ -57,9 +59,11 @@ namespace gs
 		void draw();
 		void unbind(const ShaderProgram* shaderProgram);
 
+		bool hasNormals() const { return mNormalCount == 3; }
 		void drawNormals();
 
 		std::string toString() const;
+		const std::vector<std::string>& verticesToStrings() const;
 	private:
 		PrimitiveType mPrimitiveType;
 
@@ -72,6 +76,9 @@ namespace gs
 		unsigned int mTexCount;
 		unsigned int mColorCount;
 		unsigned int mCustomCount;
+
+		mutable bool mChangedForString = false;
+		mutable std::vector<std::string> mVerticesAsStrings;
 
 		struct VertexNormal
 		{

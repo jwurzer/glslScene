@@ -4,6 +4,7 @@
 #include <gs/res/resource_id.h>
 #include <gs/scene/projection.h>
 #include <gs/common/color.h>
+#include <gs/common/size2.h>
 #include <glm/mat4x4.hpp>
 #include <memory>
 
@@ -15,6 +16,7 @@ namespace gs
 	{
 	public:
 		TResourceId mFramebufferId;
+		Size2u mResolution; // is set by render pass manager, resolution of framebuffer
 		// TODO: viewport size could be also added here. Now always use resolution of the framebuffer for viewport
 		Color mClearColor;
 		Projection mProjection;

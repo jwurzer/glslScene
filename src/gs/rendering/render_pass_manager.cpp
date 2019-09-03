@@ -50,7 +50,7 @@ void gs::RenderPassManager::renderAllPasses(Renderer &renderer,
 
 	size_t passCount = mPasses.size();
 	for (size_t i = 0; i < passCount; ++i) {
-		const RenderPass& pass = mPasses[i];
+		RenderPass& pass = mPasses[i];
 
 		Size2u resolution;
 		if (!pass.mFramebufferId) {
@@ -67,6 +67,7 @@ void gs::RenderPassManager::renderAllPasses(Renderer &renderer,
 			fb->bind(p.mWindowSizeI.mWidth, p.mWindowSizeI.mHeight); // also set the viewport!!!
 			resolution = Size2u(fb->getWidth(), fb->getHeight());
 		}
+		pass.mResolution = resolution;
 		p.mViewportPosPixelI = Vector2i(0, 0);
 		p.mViewportSizePixelU = resolution;
 		p.mViewportPosPixel = Vector2f(0.0f, 0.0f);
@@ -98,12 +99,12 @@ void gs::RenderPassManager::renderAllPasses(Renderer &renderer,
 		p.mViewSize = viewSize;
 		p.mViewRatio = Size2f(viewSize.x / viewSize.y, 1.0f);
 
-		p.mViewMatrix = pass.mViewMatrix;
 		if (pass.mCamera) {
 			glm::vec3 eye, center, up;
 			pass.mCamera->getPropertiesForLookAt(eye, center, up);
-			p.mViewMatrix = glm::lookAt(eye, center, up);
+			pass.mViewMatrix = glm::lookAt(eye, center, up);
 		}
+		p.mViewMatrix = pass.mViewMatrix;
 
 		if (p.mUseGlTransforms) {
 			glMatrixMode(GL_MODELVIEW);

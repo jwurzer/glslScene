@@ -91,7 +91,7 @@ void gs::Projection::setFrustum(float left, float right, float bottom,
 }
 
 glm::mat4 gs::Projection::applyProjection(const gs::Properties &p, float width, float height,
-		glm::vec3& viewSize) const
+		glm::vec3& viewSize)
 {
 	glm::mat4 projectionMatrix(1.0f);
 	viewSize = glm::vec3(2.0f, 2.0f, 2.0f); // for identity projection
@@ -247,6 +247,7 @@ glm::mat4 gs::Projection::applyProjection(const gs::Properties &p, float width, 
 					mValue.mFrustum.mNearVal, mValue.mFrustum.mFarVal);
 			break;
 	}
+	mProjectionMatrix = projectionMatrix;
 	return projectionMatrix;
 }
 
