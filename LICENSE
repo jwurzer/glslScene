@@ -54,6 +54,8 @@ Licenses of external libraries used by glslScene:
 	GLEW under modified BSD License
 	- http://glew.sourceforge.net/glew.txt
 
+	GLM under The Happy Bunny License and MIT License
+	- http://glm.g-truc.net/copying.txt
 
 
 External libraries are stored in this project at:
@@ -89,4 +91,7 @@ External libraries are stored in this project at:
 	- src/imgui/*
 
 	GLEW under modified BSD License
+	- Source files are not included
+
+	GLM under The Happy Bunny License and MIT License
 	- Source files are not included
