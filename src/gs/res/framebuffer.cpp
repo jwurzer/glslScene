@@ -30,8 +30,21 @@ gs::Framebuffer::~Framebuffer()
 	deleteFramebuffer();
 }
 
-void gs::Framebuffer::bind()
+void gs::Framebuffer::bind(int windowWidth, int windowHeight)
 {
+	bool recreate = false;
+	if (mUseWindowWidth && windowWidth != mWidth) {
+		mWidth = windowWidth;
+		recreate = true;
+	}
+	if (mUseWindowHeight && windowHeight != mHeight) {
+		mHeight = windowHeight;
+		recreate = true;
+	}
+	if (recreate) {
+		recreateFramebuffer();
+	}
+
 	// Render to our framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
 	glViewport(0, 0, mWidth, mHeight); // Render on the whole framebuffer, complete from the lower left corner to the upper right
@@ -83,6 +96,38 @@ bool gs::Framebuffer::createFramebuffer()
 		LOGE("Wrong framebuffer status\n");
 		return false;
 	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return true;
+}
+
+bool gs::Framebuffer::recreateFramebuffer()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, mFbo);
+
+	mTexRes->create(mWidth, mHeight, ColorU32::white());
+	mTexRes->load();
+
+
+	glBindRenderbuffer(GL_RENDERBUFFER, mRbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, mWidth, mHeight);
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mWidth, mHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mRbo);
+
+	// Set "renderedTexture" as our colour attachement #0
+	//glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mTex, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mTexRes->getGlTexId(), 0);
+
+	// Set the list of draw buffers.
+	GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+	// Always check that our framebuffer is ok
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		LOGE("Wrong framebuffer status\n");
+		return false;
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return true;
 }
