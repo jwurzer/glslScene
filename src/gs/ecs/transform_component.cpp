@@ -213,7 +213,7 @@ gs::TransformComponent& gs::TransformComponent::matrix(float a, float b, float c
 	return *this;
 }
 
-void gs::TransformComponent::getTransform2d(glm::mat4& out) const
+void gs::TransformComponent::getTransform(glm::mat4 &out) const
 {
 	out *= mTransform;
 }

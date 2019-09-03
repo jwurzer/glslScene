@@ -15,7 +15,7 @@
 # active = <true-or-false> (property, type: bool, optional, default: true)
 # logic
 # transform
-# transform2d-ex
+# transform-ex
 # transform3d
 # clipping2d
 # texture
