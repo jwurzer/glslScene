@@ -5,6 +5,7 @@
 #include <gs/rendering/properties.h>
 #include <gs/rendering/matrices.h>
 #include <memory>
+#include <array>
 
 //#define ENABLE_SHADER_STACK_STATISTIC
 
