@@ -5,6 +5,6 @@
 TransformComponent* entityTransformComponent(Entity* e)
 {
 	gs::Entity* entity = static_cast<gs::Entity*>(e);
-	return &entity->transform2d();
+	return &entity->transform();
 }
 

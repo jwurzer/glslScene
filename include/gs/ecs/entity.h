@@ -88,8 +88,8 @@ namespace gs
 		 */
 		const MeshComponent* getConstMesh() const;
 
-		// transform2d() and transform2dEx() can be used also for audio
-		TransformComponent& transform2d();
+		// transform() can be used also for audio
+		TransformComponent& transform();
 		const TransformComponent* getConstTransform() const;
 
 		ChildEntities& childEntities();
@@ -99,7 +99,7 @@ namespace gs
 		void removeShader();
 		void removeTexture();
 		void removeMesh();
-		void removeTransform2d();
+		void removeTransform();
 		void removeChildEntities();
 		void removeAllComponents();
 
@@ -124,7 +124,7 @@ namespace gs
          * @param out
 		 * @return Return false if no transform is used --> out unchanged
          */
-		bool getTransform2d(int64_t ts, const RectFloat& scrSize, glm::mat4& out) const;
+		bool getTransform(int64_t ts, const RectFloat &scrSize, glm::mat4 &out) const;
 
 		unsigned int getTransformInclParrents(int64_t ts,
 				const RectFloat& scrSize, glm::mat4& out) const;

@@ -136,7 +136,7 @@ const gs::MeshComponent* gs::Entity::getConstMesh() const
 	return mMesh.get();
 }
 
-gs::TransformComponent& gs::Entity::transform2d()
+gs::TransformComponent& gs::Entity::transform()
 {
 	if (!mTransform) {
 		mTransform.reset(new TransformComponent(mThis));
@@ -200,7 +200,7 @@ void gs::Entity::removeMesh()
 	setChanged();
 }
 
-void gs::Entity::removeTransform2d()
+void gs::Entity::removeTransform()
 {
 	if (!mTransform) {
 		return; // nothing to do
@@ -224,7 +224,7 @@ void gs::Entity::removeAllComponents()
 	removeShader();
 	removeTexture();
 	removeMesh();
-	removeTransform2d();
+	removeTransform();
 	removeChildEntities();
 }
 
@@ -260,11 +260,12 @@ void gs::Entity::resetMutableChanged() const
 	}
 }
 
-bool gs::Entity::getTransform2d(int64_t ts, const RectFloat& scrSize, glm::mat4& out) const
+bool gs::Entity::getTransform(int64_t ts, const RectFloat &scrSize,
+		glm::mat4 &out) const
 {
 	bool rv = false;
 	if (mTransform) {
-		mTransform->getTransform2d(out);
+		mTransform->getTransform(out);
 		rv = true;
 	}
 	return rv;
@@ -278,12 +279,12 @@ unsigned int gs::Entity::getTransformInclParrents(int64_t ts,
 	if (!(parent = mParent.lock()) || !(entity = parent->mEntity.lock())) {
 		// no parent --> the root output entity --> reset transform
 		out = glm::mat4(1.0f);
-		getTransform2d(ts, scrSize, out);
+		getTransform(ts, scrSize, out);
 		return 1;
 	}
 	unsigned int count =
 			entity->getTransformInclParrents(ts, scrSize, out);
-	getTransform2d(ts, scrSize, out);
+	getTransform(ts, scrSize, out);
 	return count + 1;
 }
 
