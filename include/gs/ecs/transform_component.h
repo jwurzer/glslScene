@@ -1,5 +1,5 @@
-#ifndef GLSLSCENE_TRANSFORM2D_COMPONENT_H
-#define GLSLSCENE_TRANSFORM2D_COMPONENT_H
+#ifndef GLSLSCENE_TRANSFORM_COMPONENT_H
+#define GLSLSCENE_TRANSFORM_COMPONENT_H
 
 #include <gs/ecs/component.h>
 #include <glm/detail/type_mat4x4.hpp>
@@ -54,7 +54,7 @@ namespace gs
          * @param scrPos
          * @param out
          */
-		void getTransform2d(glm::mat4& out) const;
+		void getTransform(glm::mat4 &out) const;
 		const glm::mat4& getMatrix() const { return mTransform; }
 	private:
 		glm::mat4 mTransform;
