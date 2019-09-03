@@ -2,12 +2,13 @@ Changelog
 =========
 
 
-glslScene 0.x
+glslScene 0.2
 -------------
 
 **Features**
 
 * C Scripting support with PicoC interpreter
+* Show more informations at GUI menu
 
 **Bugfixes**
 
@@ -15,8 +16,6 @@ glslScene 0.x
 * Fix binding bug for re-used shader programs
 * Various small bug fixes
 * Framebuffer now also works with Intel graphics cards
-
-**Known Bugs**
 
 
 glslScene 0.1
