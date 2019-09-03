@@ -24,5 +24,5 @@ void gs::RotateLogic::handleEvent(const std::shared_ptr<Entity>& e, ResourceMana
 void gs::RotateLogic::update(const std::shared_ptr<Entity>& e, ResourceManager& rm,
 		const Properties& p)
 {
-	e->transform2d().rotateDegree(mAngleSpeed * p.mDeltaTimeSec, mRotateAxisX, mRotateAxisY, mRotateAxisZ);
+	e->transform().rotateDegree(mAngleSpeed * p.mDeltaTimeSec, mRotateAxisX, mRotateAxisY, mRotateAxisZ);
 }

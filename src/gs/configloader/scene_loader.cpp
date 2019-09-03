@@ -271,7 +271,7 @@ namespace gs
 			name (property, type: text, optional, doesn't have to be unique)
 			active (property, type: bool, optional, default: true)
 			transform2d
-			transform2d-ex
+			transform-ex
 			transform3d
 			clipping2d
 			texture
@@ -310,7 +310,7 @@ namespace gs
 					CfgReadRule("active", &isActive, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &isActiveCount),
 					CfgReadRule("logic-component", &compLogic, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compLogicCount),
 					CfgReadRule("transform-component", &compTransform, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compTransformCount),
-					//CfgReadRule("transform2d-ex-component", &compTransform2dEx, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compTransform2dExCount),
+					//CfgReadRule("transform-ex-component", &compTransform2dEx, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compTransform2dExCount),
 					//CfgReadRule("transform3d-component", &compTransform3d, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compTransform3dCount),
 					//CfgReadRule("clipping2d-component", &compClipping2d, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compClipping2dCount),
 					CfgReadRule("texture-component", &compTexture, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compTextureCount),
@@ -358,7 +358,8 @@ namespace gs
 					}
 				}
 				if (compTransformCount) {
-					if (!sceneloader::addTransform(*compTransform, child->transform2d())) {
+					if (!sceneloader::addTransform(*compTransform,
+							child->transform())) {
 						LOGE("Add transform component failed\n");
 						return false;
 					}
