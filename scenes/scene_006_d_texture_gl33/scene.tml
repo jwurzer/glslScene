@@ -32,8 +32,8 @@ resources
 		id = SHADER1
 		vertex = shaders/test1.vert
 		fragment = shaders/test1.frag
-		uniform sampler2d texSmiley = 0
-		uniform sampler2d texBg = 1
+		uniform sampler2D texSmiley = 0
+		uniform sampler2D texBg = 1
 
 scenes
 	scene

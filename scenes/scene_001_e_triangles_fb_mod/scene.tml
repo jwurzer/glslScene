@@ -4,7 +4,7 @@ context
 resources
 	framebuffer
 		id = FB1
-		size = 1024 1024
+		size = window-size
 	mesh
 		id = MESH1
 		vertex-layout
@@ -36,7 +36,7 @@ resources
 		fragment = shaders/triangle.frag
 		uniform float uTime = time
 		uniform float uSpeed = 4
-		uniform sampler2d uTexture = 5
+		uniform sampler2D uTexture = 5
 		attribute aPosition = 0 2
 		attribute aTexCoord0 = 2 2
 		attribute aColor = 4 4
@@ -45,7 +45,7 @@ resources
 		vertex = shaders/fb.vert
 		fragment = shaders/fb.frag
 		uniform float uTime = time
-		uniform sampler2d uTexFb = 3
+		uniform sampler2D uTexFb = 3
 		attribute aPosition = 0 2
 		attribute aTexCoord0 = 2 2
 	texture
