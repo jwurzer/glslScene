@@ -1,17 +1,21 @@
 #ifndef GLSLSCENE_RENDER_PASS_LOADER_H
 #define GLSLSCENE_RENDER_PASS_LOADER_H
 
+namespace cfg
+{
+	class NameValuePair;
+}
+
 namespace gs
 {
 	class SceneManager;
 	class RenderPassManager;
 	class ResourceManager;
-	class CfgValuePair;
 
 	namespace renderpassloader
 	{
-		bool addRenderPasses(RenderPassManager& pm, const SceneManager& sm,
-				const ResourceManager& rm, const CfgValuePair& cfg);
+		bool addRenderPasses(gs::RenderPassManager& pm, const gs::SceneManager& sm,
+				const gs::ResourceManager& rm, const cfg::NameValuePair& cfg);
 	}
 }
 

@@ -1,7 +1,6 @@
 #include <gs/configloader/res_loader.h>
 
 #include <gs/configloader/uniform_attr_loader.h>
-#include <gs/common/cfg.h>
 #include <gs/common/str.h>
 #include <gs/system/log.h>
 #include <gs/res/texture.h>
@@ -10,17 +9,21 @@
 #include <gs/res/framebuffer.h>
 #include <gs/res/creation.h>
 #include <gs/res/shader_info.h>
+#include <cfg/cfg.h>
 
-bool gs::resloader::addResources(ResourceManager& rm, const CfgValuePair& cfgValue)
+bool gs::resloader::addResources(gs::ResourceManager& rm, const cfg::NameValuePair& cfgValue)
 {
-	if (!cfgValue.mValue.isArray()) {
+	if (!cfgValue.mValue.isObject()) {
+		LOGE("%s: No object for resources.\n",
+				cfgValue.mValue.getFilenameAndPosition().c_str());
 		return false;
 	}
 	bool rv = true;
 	if (cfgValue.mName.mText == "resources") {
-		for (const CfgValuePair& vpRes : cfgValue.mValue.mArray) {
+		for (const cfg::NameValuePair& vpRes : cfgValue.mValue.mObject) {
 			if (!addResource(rm, vpRes)) {
-				LOGE("Can't add resource '%s' to resource manager.\n",
+				LOGE("%s: Can't add resource '%s' to resource manager.\n",
+						vpRes.mName.getFilenameAndPosition().c_str(),
 						vpRes.mName.mText.c_str());
 				rv = false;
 			}
@@ -29,7 +32,7 @@ bool gs::resloader::addResources(ResourceManager& rm, const CfgValuePair& cfgVal
 	return rv;
 }
 
-gs::TResourceId gs::resloader::addResource(ResourceManager& rm, const CfgValuePair& cfgValue)
+gs::TResourceId gs::resloader::addResource(ResourceManager& rm, const cfg::NameValuePair& cfgValue)
 {
 	if (cfgValue.mName.mText == "texture") {
 		return addTexture(rm, cfgValue);
@@ -46,32 +49,32 @@ gs::TResourceId gs::resloader::addResource(ResourceManager& rm, const CfgValuePa
 	return 0;
 }
 
-gs::TTextureId gs::resloader::addTexture(ResourceManager& rm, const CfgValuePair& cfgValuePair)
+gs::TTextureId gs::resloader::addTexture(ResourceManager& rm, const cfg::NameValuePair& cfgValuePair)
 {
 	if (cfgValuePair.mName.mText != "texture") {
 		return 0;
 	}
 	std::string idName;
 	std::string resFilename;
-	const std::vector<CfgValuePair>* resPairArray = nullptr;
+	const std::vector<cfg::NameValuePair>* resPairArray = nullptr;
 	unsigned int resFilenameCount = 0;
 	unsigned int resPairArrayCount = 0;
 	bool useMipmap = false;
 	std::string minFilter;
 	std::string magFilter;
 
-	CfgReadRule cfgRules[] = {
-			CfgReadRule("id", &idName, CfgReadRule::RULE_MUST_EXIST),
-			CfgReadRule("filename", &resFilename, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &resFilenameCount),
-			CfgReadRule("filenames", &resPairArray, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &resPairArrayCount),
-			CfgReadRule("mipmap", &useMipmap, CfgReadRule::RULE_MUST_EXIST),
-			CfgReadRule("min-filter", &minFilter, CfgReadRule::RULE_MUST_EXIST),
-			CfgReadRule("mag-filter", &magFilter, CfgReadRule::RULE_MUST_EXIST),
-			CfgReadRule("")
+	cfg::SelectRule cfgRules[] = {
+			cfg::SelectRule("id", &idName, cfg::SelectRule::RULE_MUST_EXIST),
+			cfg::SelectRule("filename", &resFilename, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &resFilenameCount),
+			cfg::SelectRule("filenames", &resPairArray, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &resPairArrayCount),
+			cfg::SelectRule("mipmap", &useMipmap, cfg::SelectRule::RULE_MUST_EXIST),
+			cfg::SelectRule("min-filter", &minFilter, cfg::SelectRule::RULE_MUST_EXIST),
+			cfg::SelectRule("mag-filter", &magFilter, cfg::SelectRule::RULE_MUST_EXIST),
+			cfg::SelectRule("")
 	};
 
 	size_t nextPos = 0;
-	ssize_t storeCnt = cfgValuePair.mValue.sectionGet(
+	ssize_t storeCnt = cfgValuePair.mValue.objectGet(
 			cfgRules, false, false, false, false, false, 0, &nextPos);
 	if (storeCnt != 5) {
 		LOGE("texture config is wrong\n");
@@ -117,7 +120,7 @@ gs::TTextureId gs::resloader::addTexture(ResourceManager& rm, const CfgValuePair
 			LOGE("No valid pointer for filenames\n");
 			return 0;
 		}
-		const std::vector<CfgValuePair>& arr = *resPairArray;
+		const std::vector<cfg::NameValuePair>& arr = *resPairArray;
 		unsigned int removeCount = 0;
 		std::string idSubName = str::getStringAndRemoveEndingWithCh(
 				idName, '*', true, &removeCount);
@@ -144,28 +147,28 @@ gs::TTextureId gs::resloader::addTexture(ResourceManager& rm, const CfgValuePair
 	return 1;
 }
 
-gs::TShaderId gs::resloader::addShaderProgram(ResourceManager& rm, const CfgValuePair& cfgValuePair)
+gs::TShaderId gs::resloader::addShaderProgram(ResourceManager& rm, const cfg::NameValuePair& cfgValuePair)
 {
 	if (cfgValuePair.mName.mText != "shader") {
 		return 0;
 	}
-	const CfgValue& cfgValue = cfgValuePair.mValue;
-	size_t cnt = cfgValue.mArray.size();
+	const cfg::Value& cfgValue = cfgValuePair.mValue;
+	size_t cnt = cfgValue.mObject.size();
 	if (!cnt) {
 		LOGE("Empty section for shader resource is not allowed.\n");
 		return 0;
 	}
-	if (cfgValue.mArray[0].mName.mText != "id") {
+	if (cfgValue.mObject[0].mName.mText != "id") {
 		LOGE("id must be the first attribute of the shader section.\n");
 		return 0;
 	}
-	std::string idName = cfgValue.mArray[0].mValue.mText;
+	std::string idName = cfgValue.mObject[0].mValue.mText;
 	ShaderProgramLoadInfo shaderProgramInfos;
 	shaderProgramInfos.mShaderInfos.reserve(cnt - 1);
 	bool noMoreShaderIsAllowed = false;
 	size_t uniformStartIndex = cnt; // will be reset to a correct value if uniforms are used
 	for (size_t i = 1; i < cnt; ++i) {
-		const CfgValuePair& vp = cfgValue.mArray[i];
+		const cfg::NameValuePair& vp = cfgValue.mObject[i];
 		std::string name = vp.mName.mText;
 		ShaderType shaderType = ShaderType::FRAGMENT_SHADER;
 		if (name == "compute") {
@@ -217,69 +220,69 @@ gs::TShaderId gs::resloader::addShaderProgram(ResourceManager& rm, const CfgValu
 	return shaderId;
 }
 
-gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgValuePair)
+gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const cfg::NameValuePair& cfgValuePair)
 {
 	if (cfgValuePair.mName.mText != "mesh") {
 		return 0;
 	}
-	const char* nameForErr = "mesh";
-	const CfgValue& cfgValue = cfgValuePair.mValue;
-	if (cfgValue.mArray.size() < 1) {
+	const cfg::Value& cfgValue = cfgValuePair.mValue;
+	if (cfgValue.mObject.size() < 1) {
 		LOGE("Wrong size. Must be at least 1 for id.\n");
 		//LOGE("Wrong size. Must be at least 1 for vertex-layout and one more attribute.\n");
 		return 0;
 	}
 	std::string idName;
 	unsigned int startIndex = 0; // index of vertex-layout
-	if (cfgValue.mArray[0].mName.mText == "id") {
-		idName = cfgValue.mArray[0].mValue.mText;
+	if (cfgValue.mObject[0].mName.mText == "id") {
+		idName = cfgValue.mObject[0].mValue.mText;
 		startIndex = 1;
 	}
 	float scaleForShowNormals = 1.0f;
-	if (cfgValue.mArray.size() > startIndex &&
-			cfgValue.mArray[startIndex].mName.mText == "scale-for-show-normals") {
-		scaleForShowNormals = cfgValue.mArray[startIndex].mValue.mFloatingPoint;
+	if (cfgValue.mObject.size() > startIndex &&
+			cfgValue.mObject[startIndex].mName.mText == "scale-for-show-normals") {
+		scaleForShowNormals = cfgValue.mObject[startIndex].mValue.mFloatingPoint;
 		++startIndex;
 	}
-	if ((startIndex == 1 || startIndex == 2) && cfgValue.mArray.size() == startIndex) {
+	if ((startIndex == 1 || startIndex == 2) && cfgValue.mObject.size() == startIndex) {
 		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(rm.useVaoVersionForMesh(), scaleForShowNormals);
 		LOGW("Create a empty mesh!\n");
 		return rm.addResource(idName, mesh);
 	}
-	if ((startIndex == 1 || startIndex == 2) && cfgValue.mArray.size() < startIndex + 2) {
+	if ((startIndex == 1 || startIndex == 2) && cfgValue.mObject.size() < startIndex + 2) {
 		LOGE("Wrong size. Must be at least %u if id is used.\n", startIndex + 2);
 		return 0;
 	}
 
-	if (cfgValue.mArray[startIndex].mName.mText != "vertex-layout" &&
-			cfgValue.mArray[startIndex].mName.mText != "custom-vertex-layout") {
-		LOGE("%s%s: No vertex-layout or custom-vertex-layout attribute.\n", nameForErr,
-				cfgValue.mArray[startIndex].mName.getFilePosition().c_str());
+	if (cfgValue.mObject[startIndex].mName.mText != "vertex-layout" &&
+			cfgValue.mObject[startIndex].mName.mText != "custom-vertex-layout") {
+		LOGE("%s: No vertex-layout or custom-vertex-layout attribute.\n",
+				cfgValue.mObject[startIndex].mName.getFilenameAndPosition().c_str());
 		return 0;
 	}
-	if (cfgValue.mArray[startIndex].mValue.mArray.size() != 1) {
-		LOGE("%s%s: Only exactly one array entry is allowed for the vertex-layout\n",
-				nameForErr, cfgValue.mArray[startIndex].mValue.getFilePosition().c_str());
+	if (cfgValue.mObject[startIndex].mValue.mObject.size() != 1) {
+		LOGE("%s: Only exactly one array entry is allowed for the vertex-layout\n",
+				cfgValue.mObject[startIndex].mValue.getFilenameAndPosition().c_str());
 		return 0;
 	}
-	const std::vector<CfgValuePair>& layout = cfgValue.mArray[startIndex].mValue.mArray[0].mName.mArray;
+	const std::vector<cfg::Value>& layout = cfgValue.mObject[startIndex].mValue.mObject[0].mName.mArray;
 	size_t layoutSize = layout.size();
 	if (layoutSize < 2) {
-		LOGE("Wrong size. Must be at least 2 for x and y.\n");
+		LOGE("%s: Wrong size. Must be at least 2 for x and y.\n",
+				cfgValue.mObject[startIndex].mValue.mObject[0].mName.getFilenameAndPosition().c_str());
 		return 0;
 	}
-	if (layout[0].mValue.mText != "x" ||
-			layout[1].mValue.mText != "y") {
+	if (layout[0].mText != "x" ||
+			layout[1].mText != "y") {
 		return 0;
 	}
-	unsigned int layoutPosCount = (layoutSize > 2 && layout[2].mValue.mText == "z") ? 3 : 2;
+	unsigned int layoutPosCount = (layoutSize > 2 && layout[2].mText == "z") ? 3 : 2;
 	size_t i = layoutPosCount;
 
 	unsigned int layoutNormalCount = 0;
 	if (layoutSize - i >= 3) {
-		if (layout[i].mValue.mText == "nx" &&
-				layout[i + 1].mValue.mText == "ny" &&
-				layout[i + 2].mValue.mText == "nz") {
+		if (layout[i].mText == "nx" &&
+				layout[i + 1].mText == "ny" &&
+				layout[i + 2].mText == "nz") {
 			layoutNormalCount = 3;
 			i += 3;
 		}
@@ -287,22 +290,22 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 
 	unsigned int layoutTexCount = 0;
 	for (; i + 1 < layoutSize; i += 2) {
-		if (layout[i + 0].mValue.mText != "s" + std::to_string(layoutTexCount) ||
-				layout[i + 1].mValue.mText != "t" + std::to_string(layoutTexCount)) {
+		if (layout[i + 0].mText != "s" + std::to_string(layoutTexCount) ||
+				layout[i + 1].mText != "t" + std::to_string(layoutTexCount)) {
 			break;
 		}
 		++layoutTexCount;
 	}
 	unsigned int layoutColorCount = 0;
 	if (layoutSize - i >= 3) {
-		if (layout[i].mValue.mText == "r" &&
-				layout[i + 1].mValue.mText == "g" &&
-				layout[i + 2].mValue.mText == "b") {
+		if (layout[i].mText == "r" &&
+				layout[i + 1].mText == "g" &&
+				layout[i + 2].mText == "b") {
 			layoutColorCount = 3;
 			i += 3;
 		}
 		if (layoutSize - i >= 1) {
-			if (layout[i].mValue.mText == "a") {
+			if (layout[i].mText == "a") {
 				layoutColorCount = 4;
 				++i;
 			}
@@ -316,7 +319,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 	unsigned int layoutCustomCount = 0;
 	if (i != layoutSize) {
 		layoutCustomCount = layoutSize - i;
-		if (cfgValue.mArray[startIndex].mName.mText != "custom-vertex-layout") {
+		if (cfgValue.mObject[startIndex].mName.mText != "custom-vertex-layout") {
 			LOGE("Custom count of %u is only allowed for a custom-vertex-layout.\n",
 					layoutCustomCount);
 			return 0;
@@ -324,28 +327,27 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 	}
 	std::vector<float> vertex(layoutSize, 0.0f);
 	std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(rm.useVaoVersionForMesh(), scaleForShowNormals);
-	size_t cnt = cfgValue.mArray.size();
+	size_t cnt = cfgValue.mObject.size();
 	for (size_t i = startIndex + 1; i < cnt; ++i) {
-		size_t vertexCnt = cfgValue.mArray[i].mValue.mArray.size();
+		size_t vertexCnt = cfgValue.mObject[i].mValue.mObject.size();
 		if (!vertexCnt) {
-			LOGE("%s%s: %s has not vertices\n", nameForErr,
-					cfgValue.mArray[i].mName.getFilePosition().c_str(),
-					cfgValue.mArray[i].mName.mText.c_str());
+			LOGE("%s: %s has not vertices\n",
+					cfgValue.mObject[i].mName.getFilenameAndPosition().c_str(),
+					cfgValue.mObject[i].mName.mText.c_str());
 			return 0;
 		}
 		std::vector<float> vertices;
-		for (const auto& vpair : cfgValue.mArray[i].mValue.mArray) {
+		for (const auto& vpair : cfgValue.mObject[i].mValue.mObject) {
 			unsigned int vertexAttrCount = vpair.mName.mArray.size();
 			if (vertexAttrCount != layoutSize) {
-				LOGE("%s%s: Size of array has a wrong size (%u != %zu)\n",
-						nameForErr,
-						vpair.mName.getFilePosition().c_str(),
+				LOGE("%s: Size of array has a wrong size (%u != %zu)\n",
+						vpair.mName.getFilenameAndPosition().c_str(),
 						vertexAttrCount, layoutSize);
 				return 0;
 			}
 			const auto &vAttrs = vpair.mName.mArray;
 			for (unsigned int i = 0; i < vertexAttrCount; ++i) {
-				vertex[i] = vAttrs[i].mValue.mFloatingPoint;
+				vertex[i] = vAttrs[i].mFloatingPoint;
 			}
 			// now the vertex has the correct values
 			vertices.insert(vertices.end(), vertex.begin(), vertex.end());
@@ -355,8 +357,8 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			return 0;
 		}
 
-		if (cfgValue.mArray[i].mName.mArray.size() == 3 &&
-				cfgValue.mArray[i].mName.mArray[0].mValue.mText == "point-mesh") {
+		if (cfgValue.mObject[i].mName.mArray.size() == 3 &&
+				cfgValue.mObject[i].mName.mArray[0].mText == "point-mesh") {
 			if (vertexCnt != 3) {
 				LOGE("Must be 3 vertices\n");
 				return 0;
@@ -368,15 +370,15 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount,
-					cfgValue.mArray[i].mName.mArray[1].mValue.mInteger,
-					cfgValue.mArray[i].mName.mArray[2].mValue.mInteger
+					cfgValue.mObject[i].mName.mArray[1].mInteger,
+					cfgValue.mObject[i].mName.mArray[2].mInteger
 				)) {
 				LOGE("Can't add point-mesh\n");
 				return 0;
 			}
 		}
-		else if (cfgValue.mArray[i].mName.mArray.size() == 3 &&
-				cfgValue.mArray[i].mName.mArray[0].mValue.mText == "triangle-mesh") {
+		else if (cfgValue.mObject[i].mName.mArray.size() == 3 &&
+				cfgValue.mObject[i].mName.mArray[0].mText == "triangle-mesh") {
 			if (vertexCnt != 3) {
 				LOGE("Must be 3 vertices\n");
 				return 0;
@@ -388,15 +390,15 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount,
-					cfgValue.mArray[i].mName.mArray[1].mValue.mInteger,
-					cfgValue.mArray[i].mName.mArray[2].mValue.mInteger
+					cfgValue.mObject[i].mName.mArray[1].mInteger,
+					cfgValue.mObject[i].mName.mArray[2].mInteger
 				)) {
 				LOGE("Can't add triangle-mesh\n");
 				return 0;
 			}
 		}
-		else if (cfgValue.mArray[i].mName.mArray.size() == 3 &&
-				cfgValue.mArray[i].mName.mArray[0].mValue.mText == "quad-mesh") {
+		else if (cfgValue.mObject[i].mName.mArray.size() == 3 &&
+				cfgValue.mObject[i].mName.mArray[0].mText == "quad-mesh") {
 			if (vertexCnt != 3) {
 				LOGE("Must be 3 vertices\n");
 				return 0;
@@ -408,14 +410,14 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 					layoutTexCount,
 					layoutColorCount,
 					layoutCustomCount,
-					cfgValue.mArray[i].mName.mArray[1].mValue.mInteger,
-					cfgValue.mArray[i].mName.mArray[2].mValue.mInteger
+					cfgValue.mObject[i].mName.mArray[1].mInteger,
+					cfgValue.mObject[i].mName.mArray[2].mInteger
 				)) {
 				LOGE("Can't add quad-mesh\n");
 				return 0;
 			}
 		}
-		else if (cfgValue.mArray[i].mName.mText == "points") {
+		else if (cfgValue.mObject[i].mName.mText == "points") {
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
@@ -428,7 +430,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			}
 			mesh->setPrimitiveType(PrimitiveType::POINTS);
 		}
-		else if (cfgValue.mArray[i].mName.mText == "lines") {
+		else if (cfgValue.mObject[i].mName.mText == "lines") {
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
@@ -441,7 +443,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			}
 			mesh->setPrimitiveType(PrimitiveType::LINES);
 		}
-		else if (cfgValue.mArray[i].mName.mText == "line-loop") {
+		else if (cfgValue.mObject[i].mName.mText == "line-loop") {
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
@@ -454,7 +456,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			}
 			mesh->setPrimitiveType(PrimitiveType::LINES);
 		}
-		else if (cfgValue.mArray[i].mName.mText == "line-strip") {
+		else if (cfgValue.mObject[i].mName.mText == "line-strip") {
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
@@ -467,7 +469,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			}
 			mesh->setPrimitiveType(PrimitiveType::LINE_STRIP);
 		}
-		else if (cfgValue.mArray[i].mName.mText == "triangles") {
+		else if (cfgValue.mObject[i].mName.mText == "triangles") {
 			if (vertexCnt % 3) {
 				LOGE("Must be a muliple of 3 for triangles\n");
 				return 0;
@@ -483,7 +485,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 				return 0;
 			}
 		}
-		else if (cfgValue.mArray[i].mName.mText == "triangle-strip") {
+		else if (cfgValue.mObject[i].mName.mText == "triangle-strip") {
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
@@ -496,7 +498,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			}
 			mesh->setPrimitiveType(PrimitiveType::TRIANGLE_STRIP);
 		}
-		else if (cfgValue.mArray[i].mName.mText == "triangle-fan") {
+		else if (cfgValue.mObject[i].mName.mText == "triangle-fan") {
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
@@ -509,7 +511,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			}
 			mesh->setPrimitiveType(PrimitiveType::TRIANGLE_FAN);
 		}
-		else if (cfgValue.mArray[i].mName.mText == "quads") {
+		else if (cfgValue.mObject[i].mName.mText == "quads") {
 			if (vertices.size() % 4) {
 				LOGE("Must be a muliple of 4 for quads\n");
 				return 0;
@@ -525,7 +527,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 				return 0;
 			}
 		}
-		else if (cfgValue.mArray[i].mName.mText == "quad-strip") {
+		else if (cfgValue.mObject[i].mName.mText == "quad-strip") {
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
@@ -538,7 +540,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			}
 			mesh->setPrimitiveType(PrimitiveType::QUAD_STRIP);
 		}
-		else if (cfgValue.mArray[i].mName.mText == "polygon") {
+		else if (cfgValue.mObject[i].mName.mText == "polygon") {
 			if (!mesh->addVertices(vertices.data(),
 					layoutSize * sizeof(float), vertexCnt,
 					layoutPosCount,
@@ -551,7 +553,7 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 			}
 			mesh->setPrimitiveType(PrimitiveType::POLYGON);
 		}
-		else if (cfgValue.mArray[i].mName.mText == "rects") {
+		else if (cfgValue.mObject[i].mName.mText == "rects") {
 			if (vertices.size() % 2) {
 				LOGE("Must be a muliple of 2 for rects\n");
 				return 0;
@@ -624,9 +626,9 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 #endif
 		}
 		else {
-			LOGE("%s%s: %s is not supported\n", nameForErr,
-					cfgValue.mArray[i].mName.getFilePosition().c_str(),
-					cfgValue.mArray[i].mName.mText.c_str());
+			LOGE("%s: %s is not supported\n",
+					cfgValue.mObject[i].mName.getFilenameAndPosition().c_str(),
+					cfgValue.mObject[i].mName.mText.c_str());
 			return 0;
 		}
 	}
@@ -636,21 +638,21 @@ gs::TMeshId gs::resloader::addMesh(ResourceManager& rm, const CfgValuePair& cfgV
 	return rm.addResource(idName, mesh);
 }
 
-gs::TFramebufferId gs::resloader::addFramebuffer(ResourceManager& rm, const CfgValuePair& cfgValuePair)
+gs::TFramebufferId gs::resloader::addFramebuffer(ResourceManager& rm, const cfg::NameValuePair& cfgValuePair)
 {
 	if (cfgValuePair.mName.mText != "framebuffer") {
 		return 0;
 	}
 	std::string idName;
-	const CfgValue* sizeValue = nullptr;
-	CfgReadRule cfgRules[] = {
-			CfgReadRule("id", &idName, CfgReadRule::RULE_MUST_EXIST),
-			CfgReadRule("size", &sizeValue, CfgReadRule::RULE_MUST_EXIST, CfgReadRule::ALLOW_ARRAY | CfgReadRule::ALLOW_TEXT),
-			CfgReadRule("")
+	const cfg::Value* sizeValue = nullptr;
+	cfg::SelectRule cfgRules[] = {
+			cfg::SelectRule("id", &idName, cfg::SelectRule::RULE_MUST_EXIST),
+			cfg::SelectRule("size", &sizeValue, cfg::SelectRule::RULE_MUST_EXIST, cfg::SelectRule::ALLOW_OBJECT | cfg::SelectRule::ALLOW_TEXT),
+			cfg::SelectRule("")
 	};
 
 	size_t nextPos = 0;
-	ssize_t storeCnt = cfgValuePair.mValue.sectionGet(
+	ssize_t storeCnt = cfgValuePair.mValue.objectGet(
 			cfgRules, false, false, false, false, false, 0, &nextPos);
 	if (storeCnt < 0) {
 		LOGE("framebuffer config is wrong\n");
@@ -662,22 +664,23 @@ gs::TFramebufferId gs::resloader::addFramebuffer(ResourceManager& rm, const CfgV
 		height = -1;
 	}
 	else if (sizeValue->mArray.size() == 2) {
-		const std::vector<CfgValuePair>& arr = sizeValue->mArray;
-		if (arr[0].mValue.mText == "window-size") {
+		const std::vector<cfg::Value>& arr = sizeValue->mArray;
+		if (arr[0].mText == "window-size") {
 			width = -1;
 		}
 		else {
-			width = arr[0].mValue.mInteger;
+			width = arr[0].mInteger;
 		}
-		if (arr[1].mValue.mText == "window-size") {
+		if (arr[1].mText == "window-size") {
 			height = -1;
 		}
 		else {
-			height = arr[1].mValue.mInteger;
+			height = arr[1].mInteger;
 		}
 	}
 	else {
-		LOGE("Wrong value for array\n");
+		LOGE("%s: Wrong value for array\n",
+				sizeValue->getFilenameAndPosition().c_str());
 		return 0;
 	}
 	std::shared_ptr<Framebuffer> fb = std::make_shared<Framebuffer>(width, height);

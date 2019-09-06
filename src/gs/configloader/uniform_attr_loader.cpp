@@ -1,16 +1,16 @@
 #include <gs/configloader/uniform_attr_loader.h>
 
 #include <gs/system/log.h>
-#include <gs/common/cfg.h>
 #include <gs/res/uniform.h>
+#include <cfg/cfg.h>
 
 bool gs::uniformattrloader::loadUniformsAndAttributes(
 		std::vector<Uniform> &outUniforms,
 		std::vector<Attribute> &outAttributes,
-		const CfgValue &cfgValue, unsigned int startIndex,
+		const cfg::Value &cfgValue, unsigned int startIndex,
 		const std::string &nameForErrorMsg)
 {
-	size_t arraySize = cfgValue.mArray.size();
+	size_t arraySize = cfgValue.mObject.size();
 	if (startIndex >= arraySize) {
 		return true;
 	}
@@ -18,7 +18,7 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 	size_t uniformCount = 0;
 	size_t attrCount = 0;
 	for (size_t i = startIndex; i < arraySize; ++i) {
-		const CfgValuePair& vp = cfgValue.mArray[i];
+		const cfg::NameValuePair& vp = cfgValue.mObject[i];
 		if (vp.mName.mText.empty()) {
 			continue;
 		}
@@ -35,17 +35,17 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 
 	LOGI("uniforms begin %u, (maybe max) end %zu\n", startIndex, arraySize);
 	for (size_t i = startIndex; i < arraySize; ++i) {
-		const CfgValuePair& vp = cfgValue.mArray[i];
+		const cfg::NameValuePair& vp = cfgValue.mObject[i];
 		if (vp.mName.isArray()) {
 			if (vp.mName.mArray.size() == 3) {
-				const std::vector<CfgValuePair>& arr = vp.mName.mArray;
-				if (arr[0].mValue.mText != "uniform") {
+				const std::vector<cfg::Value>& arr = vp.mName.mArray;
+				if (arr[0].mText != "uniform") {
 					LOGE("%s: Must start with 'uniform'\n", nameForErrorMsg.c_str());
 					return false;
 				}
 				Uniform uniform;
-				uniform.mName = arr[2].mValue.mText;
-				const std::string& uniformType = arr[1].mValue.mText;
+				uniform.mName = arr[2].mText;
+				const std::string& uniformType = arr[1].mText;
 				if (uniformType == "int") {
 					uniform.mType = UniformType::INT;
 				}
@@ -76,7 +76,7 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 					LOGE("Type %s is not supported.\n", uniformType.c_str());
 					return false;
 				}
-				if (vp.mValue.mType == CfgValue::TYPE_TEXT) {
+				if (vp.mValue.mType == cfg::Value::TYPE_TEXT) {
 					if (vp.mValue.mText == "time") {
 						uniform.mSource = UniformSource::ABSOLUTE_TIME_SEC;
 					}
@@ -151,13 +151,13 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 				else if (vp.mValue.isArray()) {
 					switch (vp.mValue.mArray.size()) {
 						case 2:
-							if (vp.mValue.mArray[0].mValue.mType == CfgValue::TYPE_TEXT) {
-								if (vp.mValue.mArray[0].mValue.mText == "relative-time") {
+							if (vp.mValue.mArray[0].mType == cfg::Value::TYPE_TEXT) {
+								if (vp.mValue.mArray[0].mText == "relative-time") {
 									uniform.mSource = UniformSource::RELATIVE_TIME_SEC;
-									uniform.mValue.mFloat = vp.mValue.mArray[1].mValue.mFloatingPoint;
+									uniform.mValue.mFloat = vp.mValue.mArray[1].mFloatingPoint;
 								}
 								else {
-									LOGE("Doesn't support value '%s'\n", vp.mValue.mArray[0].mValue.mText.c_str());
+									LOGE("Doesn't support value '%s'\n", vp.mValue.mArray[0].mText.c_str());
 									return false;
 								}
 								break;
@@ -167,8 +167,8 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 								return false;
 							}
 							uniform.mSource = UniformSource::CUSTOM_VALUE;
-							uniform.mValue.mVec2.x = vp.mValue.mArray[0].mValue.mFloatingPoint;
-							uniform.mValue.mVec2.y = vp.mValue.mArray[1].mValue.mFloatingPoint;
+							uniform.mValue.mVec2.x = vp.mValue.mArray[0].mFloatingPoint;
+							uniform.mValue.mVec2.y = vp.mValue.mArray[1].mFloatingPoint;
 							break;
 						case 3:
 							if (uniform.mType != UniformType::VEC3) {
@@ -176,9 +176,9 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 								return false;
 							}
 							uniform.mSource = UniformSource::CUSTOM_VALUE;
-							uniform.mValue.mVec3.x = vp.mValue.mArray[0].mValue.mFloatingPoint;
-							uniform.mValue.mVec3.y = vp.mValue.mArray[1].mValue.mFloatingPoint;
-							uniform.mValue.mVec3.z = vp.mValue.mArray[2].mValue.mFloatingPoint;
+							uniform.mValue.mVec3.x = vp.mValue.mArray[0].mFloatingPoint;
+							uniform.mValue.mVec3.y = vp.mValue.mArray[1].mFloatingPoint;
+							uniform.mValue.mVec3.z = vp.mValue.mArray[2].mFloatingPoint;
 							break;
 						case 4:
 							if (uniform.mType != UniformType::VEC4) {
@@ -186,10 +186,10 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 								return false;
 							}
 							uniform.mSource = UniformSource::CUSTOM_VALUE;
-							uniform.mValue.mVec4.x = vp.mValue.mArray[0].mValue.mFloatingPoint;
-							uniform.mValue.mVec4.y = vp.mValue.mArray[1].mValue.mFloatingPoint;
-							uniform.mValue.mVec4.z = vp.mValue.mArray[2].mValue.mFloatingPoint;
-							uniform.mValue.mVec4.w = vp.mValue.mArray[3].mValue.mFloatingPoint;
+							uniform.mValue.mVec4.x = vp.mValue.mArray[0].mFloatingPoint;
+							uniform.mValue.mVec4.y = vp.mValue.mArray[1].mFloatingPoint;
+							uniform.mValue.mVec4.z = vp.mValue.mArray[2].mFloatingPoint;
+							uniform.mValue.mVec4.w = vp.mValue.mArray[3].mFloatingPoint;
 							break;
 						case 16:
 							if (uniform.mType != UniformType::MAT4X4) {
@@ -198,7 +198,7 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 							}
 							uniform.mSource = UniformSource::CUSTOM_VALUE;
 							for (int i = 0; i < 16; ++i) {
-								uniform.mValue.mMat4.m[i] = vp.mValue.mArray[i].mValue.mFloatingPoint;
+								uniform.mValue.mMat4.m[i] = vp.mValue.mArray[i].mFloatingPoint;
 							}
 							break;
 						default:
@@ -229,8 +229,8 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 				outUniforms.push_back(uniform);
 			}
 			else if (vp.mName.mArray.size() == 2) {
-				const std::vector<CfgValuePair>& arr = vp.mName.mArray;
-				if (arr[0].mValue.mText != "attribute") {
+				const std::vector<cfg::Value>& arr = vp.mName.mArray;
+				if (arr[0].mText != "attribute") {
 					LOGE("%s: Must start with 'attribute'\n", nameForErrorMsg.c_str());
 					return false;
 				}
@@ -238,9 +238,9 @@ bool gs::uniformattrloader::loadUniformsAndAttributes(
 					LOGE("%s: Attribute must have two values. <comp-offset> and <comp-count>\n", nameForErrorMsg.c_str());
 					return false;
 				}
-				Attribute attribute(arr[1].mValue.mText,
-						vp.mValue.mArray[0].mValue.mInteger,
-						vp.mValue.mArray[1].mValue.mInteger);
+				Attribute attribute(arr[1].mText,
+						vp.mValue.mArray[0].mInteger,
+						vp.mValue.mArray[1].mInteger);
 				outAttributes.push_back(attribute);
 			}
 			else {

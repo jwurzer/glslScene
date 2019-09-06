@@ -4,19 +4,23 @@
 #include <gs/res/resource_id.h>
 #include <memory>
 
+namespace cfg
+{
+	class NameValuePair;
+}
+
 namespace gs
 {
 	class ResourceManager;
-	class CfgValuePair;
 
 	namespace resloader
 	{
-		bool addResources(ResourceManager& rm, const CfgValuePair& cfgValue);
-		TResourceId addResource(ResourceManager& rm, const CfgValuePair& cfgValue);
-		TTextureId addTexture(ResourceManager& rm, const CfgValuePair& cfgValuePair);
-		TShaderId addShaderProgram(ResourceManager& rm, const CfgValuePair& cfgValuePair);
-		TMeshId addMesh(ResourceManager& rm, const CfgValuePair& cfgValuePair);
-		TFramebufferId addFramebuffer(ResourceManager& rm, const CfgValuePair& cfgValuePair);
+		bool addResources(gs::ResourceManager& rm, const cfg::NameValuePair& cfgValue);
+		TResourceId addResource(gs::ResourceManager& rm, const cfg::NameValuePair& cfgValue);
+		TTextureId addTexture(gs::ResourceManager& rm, const cfg::NameValuePair& cfgValuePair);
+		TShaderId addShaderProgram(gs::ResourceManager& rm, const cfg::NameValuePair& cfgValuePair);
+		TMeshId addMesh(gs::ResourceManager& rm, const cfg::NameValuePair& cfgValuePair);
+		TFramebufferId addFramebuffer(gs::ResourceManager& rm, const cfg::NameValuePair& cfgValuePair);
 	}
 }
 

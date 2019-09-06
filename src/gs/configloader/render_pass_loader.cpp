@@ -5,9 +5,9 @@
 #include <gs/scene/scene_manager.h>
 #include <gs/res/resource_manager.h>
 #include <gs/ecs/transform_component.h>
-#include <gs/common/cfg.h>
 #include <gs/system/log.h>
 #include <gs/camera.h>
+#include <cfg/cfg.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace gs
@@ -36,24 +36,24 @@ namespace gs
 			return v2;
 		}
 
-		bool setViewMatrix(RenderPass& pass, const gs::CfgValuePair& cfgValue)
+		bool setViewMatrix(RenderPass& pass, const cfg::NameValuePair& cfgValue)
 		{
 			if (cfgValue.mName.mText != "view-matrix") {
 				LOGE("no projection section! '%s'\n",
 						cfgValue.mName.mText.c_str());
 				return false;
 			}
-			const CfgValue* lookAt = nullptr;
-			const CfgValue* transformCfg= nullptr;
-			const CfgValue* cameraCfg = nullptr;
-			CfgReadRule cfgRules[] = {
-					CfgReadRule("look-at", &lookAt, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ALL),
-					CfgReadRule("transform", &transformCfg, CfgReadRule::RULE_OPTIONAL),
-					CfgReadRule("camera", &cameraCfg, CfgReadRule::RULE_OPTIONAL),
-					CfgReadRule("")
+			const cfg::Value* lookAt = nullptr;
+			const cfg::Value* transformCfg= nullptr;
+			const cfg::Value* cameraCfg = nullptr;
+			cfg::SelectRule cfgRules[] = {
+					cfg::SelectRule("look-at", &lookAt, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_ALL),
+					cfg::SelectRule("transform", &transformCfg, cfg::SelectRule::RULE_OPTIONAL),
+					cfg::SelectRule("camera", &cameraCfg, cfg::SelectRule::RULE_OPTIONAL),
+					cfg::SelectRule("")
 			};
 			size_t nextPos = 0;
-			ssize_t storeCnt = cfgValue.mValue.sectionGet(
+			ssize_t storeCnt = cfgValue.mValue.objectGet(
 					cfgRules, false, false, false, false, false, 0, &nextPos);
 			if (storeCnt < 0) {
 				LOGE("projection config is wrong, rv %d\n", int(storeCnt));
@@ -64,19 +64,19 @@ namespace gs
 					LOGE("Wrong camera value format.\n");
 					return false;
 				}
-				if (!cameraCfg->mArray[0].mValue.isBool()) {
+				if (!cameraCfg->mArray[0].isBool()) {
 					LOGE("First camera value must be a boolean.\n");
 					return false;
 				}
-				if (cameraCfg->mArray[0].mValue.mBool) {
+				if (cameraCfg->mArray[0].mBool) {
 					if (transformCfg) {
 						LOGE("camera can't be combined.\n");
 						return false;
 					}
 					pass.mCamera = std::make_shared<Camera>();
-					pass.mCamera->setSpeed(cameraCfg->mArray[1].mValue.mFloatingPoint);
+					pass.mCamera->setSpeed(cameraCfg->mArray[1].mFloatingPoint);
 					if (cameraCfg->mArray.size() >= 3) {
-						pass.mCamera->setRotateDistance(cameraCfg->mArray[2].mValue.mFloatingPoint);
+						pass.mCamera->setRotateDistance(cameraCfg->mArray[2].mFloatingPoint);
 					}
 				}
 			}
@@ -87,20 +87,20 @@ namespace gs
 					LOGE("Wrong value format for look-at\n");
 					return false;
 				}
-				glm::vec3 eye(lookAt->mArray[0].mValue.mFloatingPoint,
-						lookAt->mArray[1].mValue.mFloatingPoint,
-						lookAt->mArray[2].mValue.mFloatingPoint);
+				glm::vec3 eye(lookAt->mArray[0].mFloatingPoint,
+						lookAt->mArray[1].mFloatingPoint,
+						lookAt->mArray[2].mFloatingPoint);
 				glm::vec3 center(0.0f, 0.0f, 0.0f);
 				if (cnt >= 6) {
-					center.x = lookAt->mArray[3].mValue.mFloatingPoint;
-					center.y = lookAt->mArray[4].mValue.mFloatingPoint;
-					center.z = lookAt->mArray[5].mValue.mFloatingPoint;
+					center.x = lookAt->mArray[3].mFloatingPoint;
+					center.y = lookAt->mArray[4].mFloatingPoint;
+					center.z = lookAt->mArray[5].mFloatingPoint;
 				}
 				glm::vec3 up(0.0f, 0.0f, 0.0f);
 				if (cnt == 9) {
-					up.x = lookAt->mArray[6].mValue.mFloatingPoint;
-					up.y = lookAt->mArray[7].mValue.mFloatingPoint;
-					up.z = lookAt->mArray[8].mValue.mFloatingPoint;
+					up.x = lookAt->mArray[6].mFloatingPoint;
+					up.y = lookAt->mArray[7].mFloatingPoint;
+					up.z = lookAt->mArray[8].mFloatingPoint;
 				}
 				else {
 					glm::vec3 viewVec = center - eye;
@@ -121,25 +121,25 @@ namespace gs
 			return true;
 		}
 
-		bool setProjection(Projection& projection, const gs::CfgValuePair& cfgValue)
+		bool setProjection(Projection& projection, const cfg::NameValuePair& cfgValue)
 		{
 			if (cfgValue.mName.mText != "projection-matrix") {
 				LOGE("no projection section! '%s'\n", cfgValue.mName.mText.c_str());
 				return false;
 			}
-			const CfgValue* ortho = nullptr;
-			const CfgValue* perspectiveDegree = nullptr;
-			const CfgValue* perspective = nullptr;
-			const CfgValue* frustum = nullptr;
-			CfgReadRule cfgRules[] = {
-					CfgReadRule("ortho", &ortho, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ALL),
-					CfgReadRule("perspective", &perspective, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ALL),
-					CfgReadRule("perspective-degree", &perspectiveDegree, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ALL),
-					CfgReadRule("frustum", &frustum, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ALL),
-					CfgReadRule("")
+			const cfg::Value* ortho = nullptr;
+			const cfg::Value* perspectiveDegree = nullptr;
+			const cfg::Value* perspective = nullptr;
+			const cfg::Value* frustum = nullptr;
+			cfg::SelectRule cfgRules[] = {
+					cfg::SelectRule("ortho", &ortho, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_ALL),
+					cfg::SelectRule("perspective", &perspective, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_ALL),
+					cfg::SelectRule("perspective-degree", &perspectiveDegree, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_ALL),
+					cfg::SelectRule("frustum", &frustum, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_ALL),
+					cfg::SelectRule("")
 			};
 			size_t nextPos = 0;
-			ssize_t storeCnt = cfgValue.mValue.sectionGet(
+			ssize_t storeCnt = cfgValue.mValue.objectGet(
 					cfgRules, false, false, false, false, false, 0, &nextPos);
 			if (storeCnt < 0) {
 				LOGE("projection config is wrong, rv %d\n", int(storeCnt));
@@ -153,19 +153,19 @@ namespace gs
 					projection.setOrthoWindowSizeCenter();
 				}
 				else if (ortho->mArray.size() == 6 || ortho->mArray.size() == 7) {
-					const std::vector<CfgValuePair>& v = ortho->mArray;
-					float l = v[0].mValue.mFloatingPoint;
-					float r = v[1].mValue.mFloatingPoint;
-					float b = v[2].mValue.mFloatingPoint;
-					float t = v[3].mValue.mFloatingPoint;
-					float n = v[4].mValue.mFloatingPoint;
-					float f = v[5].mValue.mFloatingPoint;
+					const std::vector<cfg::Value>& v = ortho->mArray;
+					float l = v[0].mFloatingPoint;
+					float r = v[1].mFloatingPoint;
+					float b = v[2].mFloatingPoint;
+					float t = v[3].mFloatingPoint;
+					float n = v[4].mFloatingPoint;
+					float f = v[5].mFloatingPoint;
 					if (ortho->mArray.size() == 6) {
 						projection.setOrtho(l, r, b, t, n, f);
 					}
 					else {
 						// --> size is 7
-						std::string fitMode = v[6].mValue.mText;
+						std::string fitMode = v[6].mText;
 						if (fitMode == "stretch") {
 							projection.setOrtho(l, r, b, t, n, f);
 						}
@@ -194,20 +194,20 @@ namespace gs
 			}
 			if (perspectiveDegree) {
 				if (perspectiveDegree->mArray.size() == 4) {
-					const std::vector<CfgValuePair>& v = perspectiveDegree->mArray;
-					if (v[1].mValue.mText == "window-ratio") {
+					const std::vector<cfg::Value>& v = perspectiveDegree->mArray;
+					if (v[1].mText == "window-ratio") {
 						// index 1 is not used. only 0, 2 and 3 because 1 is window-ratio
 						projection.setPerspectiveDegreeWithWindowRatio(
-								v[0].mValue.mFloatingPoint,
-								v[2].mValue.mFloatingPoint,
-								v[3].mValue.mFloatingPoint);
+								v[0].mFloatingPoint,
+								v[2].mFloatingPoint,
+								v[3].mFloatingPoint);
 					}
 					else {
 						projection.setPerspectiveDegree(
-								v[0].mValue.mFloatingPoint,
-								v[1].mValue.mFloatingPoint,
-								v[2].mValue.mFloatingPoint,
-								v[3].mValue.mFloatingPoint);
+								v[0].mFloatingPoint,
+								v[1].mFloatingPoint,
+								v[2].mFloatingPoint,
+								v[3].mFloatingPoint);
 					}
 				}
 				else {
@@ -217,20 +217,20 @@ namespace gs
 			}
 			if (perspective) {
 				if (perspective->mArray.size() == 4) {
-					const std::vector<CfgValuePair>& v = perspective->mArray;
-					if (v[1].mValue.mText == "window-ratio") {
+					const std::vector<cfg::Value>& v = perspective->mArray;
+					if (v[1].mText == "window-ratio") {
 						// index 1 is not used. only 0, 2 and 3 because 1 is window-ratio
 						projection.setPerspectiveWithWindowRatio(
-								v[0].mValue.mFloatingPoint,
-								v[2].mValue.mFloatingPoint,
-								v[3].mValue.mFloatingPoint);
+								v[0].mFloatingPoint,
+								v[2].mFloatingPoint,
+								v[3].mFloatingPoint);
 					}
 					else {
 						projection.setPerspective(
-								v[0].mValue.mFloatingPoint,
-								v[1].mValue.mFloatingPoint,
-								v[2].mValue.mFloatingPoint,
-								v[3].mValue.mFloatingPoint);
+								v[0].mFloatingPoint,
+								v[1].mFloatingPoint,
+								v[2].mFloatingPoint,
+								v[3].mFloatingPoint);
 					}
 				}
 				else {
@@ -240,14 +240,14 @@ namespace gs
 			}
 			if (frustum) {
 				if (frustum->mArray.size() == 6) {
-					const std::vector<CfgValuePair>& v = frustum->mArray;
+					const std::vector<cfg::Value>& v = frustum->mArray;
 					projection.setFrustum(
-							v[0].mValue.mFloatingPoint,
-							v[1].mValue.mFloatingPoint,
-							v[2].mValue.mFloatingPoint,
-							v[3].mValue.mFloatingPoint,
-							v[4].mValue.mFloatingPoint,
-							v[5].mValue.mFloatingPoint);
+							v[0].mFloatingPoint,
+							v[1].mFloatingPoint,
+							v[2].mFloatingPoint,
+							v[3].mFloatingPoint,
+							v[4].mFloatingPoint,
+							v[5].mFloatingPoint);
 				}
 				else {
 					LOGE("wrong value for frustum\n");
@@ -257,9 +257,9 @@ namespace gs
 			return true;
 		}
 
-		bool addRenderPass(gs::RenderPassManager &pm,
-				const gs::SceneManager &sm, const gs::ResourceManager &rm,
-				const gs::CfgValuePair &cfgValue)
+		bool addRenderPass(RenderPassManager &pm,
+				const SceneManager &sm, const ResourceManager &rm,
+				const cfg::NameValuePair &cfgValue)
 		{
 			if (cfgValue.mName.mText != "render-pass") {
 				LOGE("no render-pass section!\n");
@@ -267,22 +267,22 @@ namespace gs
 			}
 			std::string fbIdName;
 			std::string sceneIdName;
-			const CfgValue* clearColor;
-			const CfgValuePair* projectionCfg = nullptr;
-			const CfgValuePair* viewCfg = nullptr;
+			const cfg::Value* clearColor;
+			const cfg::NameValuePair* projectionCfg = nullptr;
+			const cfg::NameValuePair* viewCfg = nullptr;
 			bool depthTest = false;
-			CfgReadRule cfgRules[] = {
-					CfgReadRule("framebuffer-id", &fbIdName, CfgReadRule::RULE_MUST_EXIST),
-					CfgReadRule("clear-color", &clearColor, CfgReadRule::RULE_MUST_EXIST),
-					CfgReadRule("projection-matrix", &projectionCfg, CfgReadRule::RULE_OPTIONAL),
-					CfgReadRule("view-matrix", &viewCfg, CfgReadRule::RULE_OPTIONAL),
-					CfgReadRule("scene-id", &sceneIdName, CfgReadRule::RULE_MUST_EXIST),
-					CfgReadRule("depth-test", &depthTest, CfgReadRule::RULE_OPTIONAL),
-					CfgReadRule("")
+			cfg::SelectRule cfgRules[] = {
+					cfg::SelectRule("framebuffer-id", &fbIdName, cfg::SelectRule::RULE_MUST_EXIST),
+					cfg::SelectRule("clear-color", &clearColor, cfg::SelectRule::RULE_MUST_EXIST),
+					cfg::SelectRule("projection-matrix", &projectionCfg, cfg::SelectRule::RULE_OPTIONAL),
+					cfg::SelectRule("view-matrix", &viewCfg, cfg::SelectRule::RULE_OPTIONAL),
+					cfg::SelectRule("scene-id", &sceneIdName, cfg::SelectRule::RULE_MUST_EXIST),
+					cfg::SelectRule("depth-test", &depthTest, cfg::SelectRule::RULE_OPTIONAL),
+					cfg::SelectRule("")
 			};
 
 			size_t nextPos = 0;
-			ssize_t storeCnt = cfgValue.mValue.sectionGet(
+			ssize_t storeCnt = cfgValue.mValue.objectGet(
 					cfgRules, false, false, false, false, false, 0, &nextPos);
 			if (storeCnt < 0) {
 				LOGE("render-pass config is wrong\n");
@@ -311,10 +311,10 @@ namespace gs
 				LOGE("clear-color need four values for rgba.\n");
 				return false;
 			}
-			Color col(clearColor->mArray[0].mValue.mFloatingPoint,
-					clearColor->mArray[1].mValue.mFloatingPoint,
-					clearColor->mArray[2].mValue.mFloatingPoint,
-					clearColor->mArray[3].mValue.mFloatingPoint);
+			Color col(clearColor->mArray[0].mFloatingPoint,
+					clearColor->mArray[1].mFloatingPoint,
+					clearColor->mArray[2].mFloatingPoint,
+					clearColor->mArray[3].mFloatingPoint);
 			unsigned int sceneId = sm.getSceneIdByIdName(sceneIdName);
 			if (!sceneId) {
 				LOGE("scene with id name '%s' can't be found.\n", sceneIdName.c_str());
@@ -339,9 +339,9 @@ namespace gs
 			return true;
 		}
 
-		bool addRenderPassesFromRenderingSection(gs::RenderPassManager &pm,
-				const gs::SceneManager &sm, const gs::ResourceManager &rm,
-				const gs::CfgValuePair &cfgValue)
+		bool addRenderPassesFromRenderingSection(RenderPassManager &pm,
+				const SceneManager &sm, const ResourceManager &rm,
+				const cfg::NameValuePair &cfgValue)
 		{
 			if (cfgValue.mName.mText != "rendering") {
 				return false;
@@ -349,7 +349,7 @@ namespace gs
 			int nr = 1;
 			bool rv = true;
 			int successCount = 0;
-			for (const CfgValuePair& vp : cfgValue.mValue.mArray) {
+			for (const cfg::NameValuePair& vp : cfgValue.mValue.mObject) {
 				if (!addRenderPass(pm, sm, rm, vp)) {
 					LOGE("Can't add the %d. renderpass to render pass manager.\n", nr);
 					rv = false;
@@ -367,12 +367,16 @@ namespace gs
 
 bool gs::renderpassloader::addRenderPasses(gs::RenderPassManager &pm,
 		const gs::SceneManager &sm, const gs::ResourceManager &rm,
-		const gs::CfgValuePair &cfg)
+		const cfg::NameValuePair &cfg)
 {
-	if (!cfg.mValue.isArray()) {
+	if (!cfg.mValue.isObject()) {
+		LOGE("%s: No object for rendering.\n",
+				cfg.mValue.getFilenameAndPosition().c_str());
 		return false;
 	}
 	if (cfg.mName.mText != "rendering") {
+		LOGE("%s: No rendering keyword.\n",
+				cfg.mName.getFilenameAndPosition().c_str());
 		return false;
 	}
 	if (!addRenderPassesFromRenderingSection(pm, sm, rm, cfg)) {

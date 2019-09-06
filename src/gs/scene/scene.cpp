@@ -16,7 +16,7 @@ gs::Scene::~Scene()
 
 bool gs::Scene::updateAndLoad(
 		const std::weak_ptr<FileChangeMonitoring>& fcm,
-		const CfgValuePair& cfg, ResourceManager& rm)
+		const cfg::NameValuePair& cfg, ResourceManager& rm)
 {
 	return sceneloader::updateAndLoad(mIdName, mRoot, mIdMap, cfg, fcm, rm);
 }
