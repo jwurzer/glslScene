@@ -34,8 +34,28 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 	set (CMAKE_CXX_FLAGS_RELEASE  "-O3")
 endif ()
 
-file(GLOB_RECURSE PRJ_HEADERFILES include/*.h external/tml/include/*.h)
-file(GLOB_RECURSE PRJ_SOURCEFILES src/*.cpp external/tml/src/cfg/*.cpp external/tml/src/tml/*.cpp)
+file(GLOB_RECURSE PRJ_HEADERFILES include/*.h external/tml/include/*.h
+		external/imgui/imconfig.h
+		external/imgui/imgui.h
+		external/imgui/examples/imgui_impl_opengl2.h
+		external/imgui/examples/imgui_impl_opengl3.h
+		external/imgui/examples/imgui_impl_sdl.h
+		external/imgui/imgui_internal.h
+		external/imgui/imstb_rectpack.h
+		external/imgui/imstb_textedit.h
+		external/imgui/imstb_truetype.h
+		)
+
+file(GLOB_RECURSE PRJ_SOURCEFILES src/*.cpp external/tml/src/cfg/*.cpp external/tml/src/tml/*.cpp
+		external/imgui/imgui.cpp
+		external/imgui/imgui_demo.cpp
+		external/imgui/imgui_draw.cpp
+		external/imgui/examples/imgui_impl_opengl2.cpp
+		external/imgui/examples/imgui_impl_opengl3.cpp
+		external/imgui/examples/imgui_impl_sdl.cpp
+		external/imgui/imgui_widgets.cpp
+		)
+
 
 file(GLOB PRJ_PICOC_ROOT_SOURCEFILES external/picoc/*.c)
 file(GLOB PRJ_PICOC_CSTDLIB_SOURCEFILES external/picoc/cstdlib/*.c)
@@ -55,6 +75,7 @@ else()
 			"external/picoc/platform/library_unix.c")
 endif()
 add_definitions( -DPICOC_SKIP_MAIN )
+add_definitions( -DIMGUI_IMPL_OPENGL_LOADER_GLEW )
 
 set(PRJ_C_SOURCEFILES
 		${PRJ_PICOC_SOURCEFILES}
@@ -68,8 +89,8 @@ add_executable(${PRJ_EXENAME} ${PRJ_HEADERFILES} ${PRJ_C_HEADERFILES} ${PRJ_SOUR
 target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
 target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/external/tml/include")
-
 target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/external/picoc")
+target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/external/imgui")
 
 target_include_directories(${PRJ_EXENAME} PRIVATE
 	${SDL2_INCLUDE_DIR}

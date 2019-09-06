@@ -4,3 +4,6 @@
 [submodule "external/picoc"]
 	path = external/picoc
 	url = https://github.com/jwurzer/picoc.git
+[submodule "external/imgui"]
+	path = external/imgui
+	url = https://github.com/jwurzer/imgui.git

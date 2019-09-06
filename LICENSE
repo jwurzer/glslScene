@@ -89,9 +89,7 @@ External libraries are stored in this project at:
 	- src/KHR/*
 
 	ImGui under MIT License
-	- The essential source files for ImGui are stored at:
-	- include/imgui/*
-	- src/imgui/*
+	- as git submodule under external/imgui
 
 	GLEW under modified BSD License
 	- Source files are not included
