@@ -6,11 +6,15 @@
 #include <vector>
 #include <string>
 
+namespace cfg
+{
+	class Value;
+}
+
 namespace gs
 {
 	class Uniform;
 	class Attribute;
-	class CfgValue;
 
 	namespace uniformattrloader
 	{
@@ -45,7 +49,7 @@ namespace gs
 		 */
 		bool loadUniformsAndAttributes(std::vector<Uniform> &outUniforms,
 				std::vector<Attribute> &outAttributes,
-				const CfgValue &cfgValue, unsigned int startIndex,
+				const cfg::Value &cfgValue, unsigned int startIndex,
 				const std::string &nameForErrorMsg);
 	}
 }

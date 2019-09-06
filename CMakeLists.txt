@@ -34,8 +34,8 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 	set (CMAKE_CXX_FLAGS_RELEASE  "-O3")
 endif ()
 
-file(GLOB_RECURSE PRJ_HEADERFILES include/*.h)
-file(GLOB_RECURSE PRJ_SOURCEFILES src/*.cpp)
+file(GLOB_RECURSE PRJ_HEADERFILES include/*.h external/tml/include/*.h)
+file(GLOB_RECURSE PRJ_SOURCEFILES src/*.cpp external/tml/src/cfg/*.cpp external/tml/src/tml/*.cpp)
 
 file(GLOB PRJ_PICOC_ROOT_SOURCEFILES src/picoc/*.c)
 file(GLOB PRJ_PICOC_CSTDLIB_SOURCEFILES src/picoc/cstdlib/*.c)
@@ -66,6 +66,8 @@ set(PRJ_C_HEADERFILES ${PRJ_PICOC_HEADERFILES})
 add_executable(${PRJ_EXENAME} ${PRJ_HEADERFILES} ${PRJ_C_HEADERFILES} ${PRJ_SOURCEFILES} ${PRJ_C_SOURCEFILES})
 
 target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/include")
+
+target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/external/tml/include")
 
 target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/picoc")
 

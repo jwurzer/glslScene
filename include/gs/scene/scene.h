@@ -6,11 +6,15 @@
 #include <string>
 #include <map>
 
+namespace cfg
+{
+	class NameValuePair;
+}
+
 namespace gs
 {
 	class Entity;
 	class ResourceManager;
-	class CfgValuePair;
 	class FileChangeMonitoring;
 
 	/**
@@ -26,7 +30,7 @@ namespace gs
 
 		bool updateAndLoad(
 				const std::weak_ptr<FileChangeMonitoring>& fcm,
-				const CfgValuePair& cfg, ResourceManager& rm);
+				const cfg::NameValuePair& cfg, ResourceManager& rm);
 
 		void setIdNumber(unsigned int idNumber) { mIdNumber = idNumber; }
 		unsigned int getIdNumber() const { return mIdNumber; }

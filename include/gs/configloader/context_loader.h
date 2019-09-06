@@ -15,15 +15,19 @@ version = gles [<major>.<minor>]
 profile can be core or compatibility (or short version compat)
 */
 
+namespace cfg
+{
+	class NameValuePair;
+}
+
 namespace gs
 {
-	class CfgValuePair;
 	class ContextProperties;
 
 	namespace contextloader
 	{
-		bool getContextParameters(const CfgValuePair& cfgValue,
-				ContextProperties& p);
+		bool getContextParameters(const cfg::NameValuePair& cfgValue,
+				gs::ContextProperties& p);
 	}
 }
 

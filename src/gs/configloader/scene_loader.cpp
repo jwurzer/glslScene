@@ -1,5 +1,4 @@
 #include <gs/configloader/scene_loader.h>
-#include <gs/common/cfg.h>
 #include <gs/system/log.h>
 #include <gs/ecs/entity.h>
 #include <gs/ecs/child_entities.h>
@@ -20,17 +19,18 @@
 #include <gs/res/resource_manager.h>
 #include <gs/rendering/render_pass_manager.h>
 #include <gs/scene/scene_manager.h>
+#include <cfg/cfg.h>
 
 namespace gs
 {
 	namespace
 	{
-		bool addLogic(const CfgValue& cfgValue, LogicComponent& logic,
+		bool addLogic(const cfg::Value& cfgValue, LogicComponent& logic,
 				const std::weak_ptr<FileChangeMonitoring>& fcm ) {
-			for (const auto &vp : cfgValue.mArray) { // vp ... value pair
+			for (const auto &vp : cfgValue.mObject) { // vp ... value pair
 				std::string logicName = vp.mName.mText;
 				if (vp.mName.mArray.size()) {
-					logicName = vp.mName.mArray[0].mValue.mText;
+					logicName = vp.mName.mArray[0].mText;
 				}
 
 				if (logicName == "glsl-sandbox-logic") {
@@ -42,10 +42,10 @@ namespace gs
 						return false;
 					}
 					logic.addLogic(std::unique_ptr<RotateLogic>(new RotateLogic(
-							vp.mName.mArray[1].mValue.mFloatingPoint,
-							vp.mName.mArray[2].mValue.mFloatingPoint,
-							vp.mName.mArray[3].mValue.mFloatingPoint,
-							vp.mName.mArray[4].mValue.mFloatingPoint)));
+							vp.mName.mArray[1].mFloatingPoint,
+							vp.mName.mArray[2].mFloatingPoint,
+							vp.mName.mArray[3].mFloatingPoint,
+							vp.mName.mArray[4].mFloatingPoint)));
 				}
 				else if (logicName == "light-matrix-logic") {
 					if (vp.mName.mArray.size() != 3) {
@@ -53,8 +53,8 @@ namespace gs
 						return false;
 					}
 					logic.addLogic(std::unique_ptr<LightMatrixLogic>(new LightMatrixLogic(
-							vp.mName.mArray[1].mValue.mText,
-							vp.mName.mArray[2].mValue.mInteger)));
+							vp.mName.mArray[1].mText,
+							vp.mName.mArray[2].mInteger)));
 				}
 				else if (logicName == "script-logic") {
 					if (vp.mName.mArray.size() != 2) {
@@ -62,7 +62,7 @@ namespace gs
 						return false;
 					}
 					logic.addLogic(std::unique_ptr<ScriptLogic>(new ScriptLogic(
-							vp.mName.mArray[1].mValue.mText, fcm)));
+							vp.mName.mArray[1].mText, fcm)));
 				}
 				else if (logicName == "capi-example-logic") {
 					std::unique_ptr<::Logic> clogic(new ::Logic());
@@ -80,7 +80,7 @@ namespace gs
 			return true;
 		}
 
-		bool addTexture(const CfgValue& cfgValue,
+		bool addTexture(const cfg::Value& cfgValue,
 				TextureComponent& texture,
 				const ResourceManager& rm)
 		{
@@ -88,27 +88,27 @@ namespace gs
 			unsigned int texIdNameCount[8] = {};
 			bool texNull[8];
 			unsigned int texNullCount[8] = {};
-			CfgReadRule cfgRules[] = {
-					CfgReadRule("tex-id-unit-0", &texIdName[0], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &texIdNameCount[0]),
-					CfgReadRule("tex-id-unit-0", &texNull[0], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_NULL, &texNullCount[0]),
-					CfgReadRule("tex-id-unit-1", &texIdName[1], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &texIdNameCount[1]),
-					CfgReadRule("tex-id-unit-1", &texNull[1], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_NULL, &texNullCount[1]),
-					CfgReadRule("tex-id-unit-2", &texIdName[2], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &texIdNameCount[2]),
-					CfgReadRule("tex-id-unit-2", &texNull[2], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_NULL, &texNullCount[2]),
-					CfgReadRule("tex-id-unit-3", &texIdName[3], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &texIdNameCount[3]),
-					CfgReadRule("tex-id-unit-3", &texNull[3], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_NULL, &texNullCount[3]),
-					CfgReadRule("tex-id-unit-4", &texIdName[4], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &texIdNameCount[4]),
-					CfgReadRule("tex-id-unit-4", &texNull[4], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_NULL, &texNullCount[4]),
-					CfgReadRule("tex-id-unit-5", &texIdName[5], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &texIdNameCount[5]),
-					CfgReadRule("tex-id-unit-5", &texNull[5], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_NULL, &texNullCount[5]),
-					CfgReadRule("tex-id-unit-6", &texIdName[6], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &texIdNameCount[6]),
-					CfgReadRule("tex-id-unit-6", &texNull[6], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_NULL, &texNullCount[6]),
-					CfgReadRule("tex-id-unit-7", &texIdName[7], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &texIdNameCount[7]),
-					CfgReadRule("tex-id-unit-7", &texNull[7], CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_NULL, &texNullCount[7]),
-					CfgReadRule("")
+			cfg::SelectRule cfgRules[] = {
+					cfg::SelectRule("tex-id-unit-0", &texIdName[0], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &texIdNameCount[0]),
+					cfg::SelectRule("tex-id-unit-0", &texNull[0], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_NULL, &texNullCount[0]),
+					cfg::SelectRule("tex-id-unit-1", &texIdName[1], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &texIdNameCount[1]),
+					cfg::SelectRule("tex-id-unit-1", &texNull[1], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_NULL, &texNullCount[1]),
+					cfg::SelectRule("tex-id-unit-2", &texIdName[2], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &texIdNameCount[2]),
+					cfg::SelectRule("tex-id-unit-2", &texNull[2], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_NULL, &texNullCount[2]),
+					cfg::SelectRule("tex-id-unit-3", &texIdName[3], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &texIdNameCount[3]),
+					cfg::SelectRule("tex-id-unit-3", &texNull[3], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_NULL, &texNullCount[3]),
+					cfg::SelectRule("tex-id-unit-4", &texIdName[4], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &texIdNameCount[4]),
+					cfg::SelectRule("tex-id-unit-4", &texNull[4], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_NULL, &texNullCount[4]),
+					cfg::SelectRule("tex-id-unit-5", &texIdName[5], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &texIdNameCount[5]),
+					cfg::SelectRule("tex-id-unit-5", &texNull[5], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_NULL, &texNullCount[5]),
+					cfg::SelectRule("tex-id-unit-6", &texIdName[6], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &texIdNameCount[6]),
+					cfg::SelectRule("tex-id-unit-6", &texNull[6], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_NULL, &texNullCount[6]),
+					cfg::SelectRule("tex-id-unit-7", &texIdName[7], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &texIdNameCount[7]),
+					cfg::SelectRule("tex-id-unit-7", &texNull[7], cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_NULL, &texNullCount[7]),
+					cfg::SelectRule("")
 			};
 			size_t nextPos = 0;
-			ssize_t storeCnt = cfgValue.sectionGet(
+			ssize_t storeCnt = cfgValue.objectGet(
 					cfgRules, false, false, true, false, false, 0, &nextPos);
 			if (storeCnt < 0) {
 				LOGE("Can't read texture section correct! Wrong format! error: %zd\n", storeCnt);
@@ -138,7 +138,7 @@ namespace gs
 			return true;
 		}
 
-		bool addShader(const CfgValue& cfgValue,
+		bool addShader(const cfg::Value& cfgValue,
 				ShaderComponent& shader,
 				const ResourceManager& rm)
 		{
@@ -153,15 +153,15 @@ namespace gs
 			bool shaderIdNull;
 			unsigned int shaderIdNullCount;
 
-			CfgReadRule cfgRules[] = {
-					CfgReadRule("shader-program-id", &shaderProgramIdName, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &shaderProgramIdNameCount),
-					CfgReadRule("shader-program-id", &shaderProgramIdNull, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_NULL, &shaderProgramIdNullCount),
-					CfgReadRule("shader-id", &shaderIdName, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &shaderIdNameCount),
-					CfgReadRule("shader-id", &shaderIdNull, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_NULL, &shaderIdNullCount),
-					CfgReadRule("")
+			cfg::SelectRule cfgRules[] = {
+					cfg::SelectRule("shader-program-id", &shaderProgramIdName, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &shaderProgramIdNameCount),
+					cfg::SelectRule("shader-program-id", &shaderProgramIdNull, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_NULL, &shaderProgramIdNullCount),
+					cfg::SelectRule("shader-id", &shaderIdName, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &shaderIdNameCount),
+					cfg::SelectRule("shader-id", &shaderIdNull, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_NULL, &shaderIdNullCount),
+					cfg::SelectRule("")
 			};
 			size_t nextPos = 0;
-			ssize_t storeCnt = cfgValue.sectionGet(
+			ssize_t storeCnt = cfgValue.objectGet(
 					cfgRules, false, false, true, false, false, 0, &nextPos);
 			if (storeCnt < 0) {
 				LOGE("Can't read shader section correct! Wrong format! error: %zd\n", storeCnt);
@@ -201,7 +201,7 @@ namespace gs
 			return true;
 		}
 
-		bool addMesh(const CfgValue& cfgValue,
+		bool addMesh(const cfg::Value& cfgValue,
 				MeshComponent& mesh,
 				ResourceManager& rm)
 		{
@@ -209,27 +209,32 @@ namespace gs
 			unsigned int meshIdNameCount = 0;
 			int pageIndex = 0;
 			unsigned int pageIndexCount = 0;
-			const CfgValuePair* vgArray = nullptr;
+			const cfg::NameValuePair* vgArray = nullptr;
 			unsigned int vgArrayCount = 0;
-			const std::vector<CfgValuePair>* color = nullptr;
+			const std::vector<cfg::NameValuePair>* color = nullptr;
 			unsigned int colorCount = 0;
-			CfgReadRule cfgRulesGraphic[] = {
-					CfgReadRule("mesh-id", &meshIdName, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &meshIdNameCount),
-					CfgReadRule("mesh", &vgArray, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &vgArrayCount),
-					CfgReadRule("color", &color, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &colorCount),
-					CfgReadRule("")
+			cfg::SelectRule cfgRulesGraphic[] = {
+					cfg::SelectRule("mesh-id", &meshIdName, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &meshIdNameCount),
+					cfg::SelectRule("mesh", &vgArray, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &vgArrayCount),
+					cfg::SelectRule("color", &color, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &colorCount),
+					cfg::SelectRule("")
 			};
 			size_t nextPos = 0;
-			ssize_t storeCnt = cfgValue.sectionGet(
-					cfgRulesGraphic, false, false, true, false, false, 0, &nextPos);
+			ssize_t storeCnt = cfgValue.objectGet(
+					cfgRulesGraphic, false, false, true, false, false, 0,
+					&nextPos);
 			if (storeCnt < 0) {
-				LOGE("Can't read mesh section correct! Wrong format! error: %zd\n", storeCnt);
+				LOGE("%s: Can't read mesh section correct! Wrong format! error: %zd\n",
+						cfgValue.getFilenameAndPosition().c_str(),
+						storeCnt);
 				return false;
 			}
 			if (meshIdNameCount) {
 				TResourceId id = rm.getResourceId(meshIdName);
 				if (!id) {
-					LOGE("Can't find graphic id name %s for graphic-id.\n", meshIdName.c_str());
+					LOGE("%s: Can't find graphic id name %s for graphic-id.\n",
+							cfgValue.getFilenameAndPosition().c_str(),
+							meshIdName.c_str());
 					return false;
 				}
 				mesh.setGraphicId(id);
@@ -237,14 +242,18 @@ namespace gs
 			if (vgArray) {
 				TResourceId id = resloader::addMesh(rm, *vgArray);
 				if (!id) {
-					LOGE("Can't create mesh for graphic id %s.\n", meshIdName.c_str());
+					LOGE("%s: Can't create mesh for graphic id %s.\n",
+							cfgValue.getFilenameAndPosition().c_str(),
+							meshIdName.c_str());
 					return false;
 				}
 				mesh.setGraphicId(id);
 			}
 			if (colorCount) {
-				const std::vector<CfgValuePair>& arr = *color;
+				const std::vector<cfg::NameValuePair>& arr = *color;
 				if (arr.size() != 4) {
+					LOGE("%s: Wrong array size for color.\n",
+							cfgValue.getFilenameAndPosition().c_str());
 					return false;
 				}
 				mesh.setColor(arr[0].mValue.mFloatingPoint,
@@ -257,7 +266,7 @@ namespace gs
 		/**
 		 * @param startIndex Index of the first sub-entity
 		 */
-		bool loadEntities(const CfgValue& cfgValue,
+		bool loadEntities(const cfg::Value& cfgValue,
 				unsigned int startIndex,
 				const std::shared_ptr<Entity>& oe,
 				Scene::TIdMap& idMap,
@@ -282,15 +291,15 @@ namespace gs
 			std::string idName;
 			std::string name;
 			bool isActive = false;
-			const CfgValue* compLogic = nullptr;
-			const CfgValue* compTransform = nullptr;
-			//const CfgValue* compTransform2dEx = nullptr;
-			//const CfgValue* compTransform3d = nullptr;
-			//const CfgValue* compClipping2d = nullptr;
-			const CfgValue* compTexture = nullptr;
-			const CfgValue* compShader = nullptr;
-			const CfgValue* compMesh = nullptr;
-			//const CfgValue* compText2d = nullptr;
+			const cfg::Value* compLogic = nullptr;
+			const cfg::Value* compTransform = nullptr;
+			//const cfg::Value* compTransform2dEx = nullptr;
+			//const cfg::Value* compTransform3d = nullptr;
+			//const cfg::Value* compClipping2d = nullptr;
+			const cfg::Value* compTexture = nullptr;
+			const cfg::Value* compShader = nullptr;
+			const cfg::Value* compMesh = nullptr;
+			//const cfg::Value* compText2d = nullptr;
 			unsigned int idNameCount = 0;
 			unsigned int nameCount = 0;
 			unsigned int isActiveCount = 0;
@@ -304,24 +313,24 @@ namespace gs
 			unsigned int compMeshCount = 0;
 			//unsigned int compText2dCount = 0;
 
-			CfgReadRule cfgRulesEntity[] = {
-					CfgReadRule("id", &idName, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &idNameCount),
-					CfgReadRule("name", &name, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &nameCount),
-					CfgReadRule("active", &isActive, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_TEXT, &isActiveCount),
-					CfgReadRule("logic-component", &compLogic, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compLogicCount),
-					CfgReadRule("transform-component", &compTransform, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compTransformCount),
-					//CfgReadRule("transform-ex-component", &compTransform2dEx, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compTransform2dExCount),
-					//CfgReadRule("transform3d-component", &compTransform3d, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compTransform3dCount),
-					//CfgReadRule("clipping2d-component", &compClipping2d, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compClipping2dCount),
-					CfgReadRule("texture-component", &compTexture, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compTextureCount),
-					CfgReadRule("shader-component", &compShader, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compShaderCount),
-					CfgReadRule("mesh-component", &compMesh, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compMeshCount),
-					//CfgReadRule("text2d-component", &compText2d, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ARRAY, &compText2dCount),
-					CfgReadRule("")
+			cfg::SelectRule cfgRulesEntity[] = {
+					cfg::SelectRule("id", &idName, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &idNameCount),
+					cfg::SelectRule("name", &name, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &nameCount),
+					cfg::SelectRule("active", &isActive, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &isActiveCount),
+					cfg::SelectRule("logic-component", &compLogic, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compLogicCount),
+					cfg::SelectRule("transform-component", &compTransform, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compTransformCount),
+					//cfg::SelectRule("transform-ex-component", &compTransform2dEx, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compTransform2dExCount),
+					//cfg::SelectRule("transform3d-component", &compTransform3d, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compTransform3dCount),
+					//cfg::SelectRule("clipping2d-component", &compClipping2d, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compClipping2dCount),
+					cfg::SelectRule("texture-component", &compTexture, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compTextureCount),
+					cfg::SelectRule("shader-component", &compShader, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compShaderCount),
+					cfg::SelectRule("mesh-component", &compMesh, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compMeshCount),
+					//cfg::SelectRule("text2d-component", &compText2d, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compText2dCount),
+					cfg::SelectRule("")
 			};
-			unsigned int cnt = cfgValue.mArray.size();
+			unsigned int cnt = cfgValue.mObject.size();
 			for (unsigned int i = startIndex; i < cnt; ++i) {
-				const auto& vp = cfgValue.mArray[i]; // vp ... value pair
+				const auto& vp = cfgValue.mObject[i]; // vp ... value pair
 				if (vp.mName.mText != "entity") {
 					LOGE("Only a entity is here allowed! '%s' is not supported here\n",
 							vp.mName.mText.c_str());
@@ -329,14 +338,15 @@ namespace gs
 					return false;
 				}
 				size_t nextPos = 0;
-				ssize_t storeCnt = vp.mValue.sectionGet(
-						cfgRulesEntity, false, false, true, false, false, 0, &nextPos);
+				ssize_t storeCnt = vp.mValue.objectGet(
+						cfgRulesEntity, false, false, true, false, false, 0,
+						&nextPos);
 				if (storeCnt < 0) {
 					LOGE("Can't read entity section correct! Wrong format! error: %zd\n", storeCnt);
 					vp.mValue.printFilePositionAsError();
 					return false;
 				}
-				//LOGI("storeCnt %zd, nextPos %zu, array size %zu\n", storeCnt, nextPos, vp.mValue.mArray.size());
+				//LOGI("storeCnt %zd, nextPos %zu, array size %zu\n", storeCnt, nextPos, vp.mValue.mObject.size());
 				std::shared_ptr<Entity> child = Entity::create();
 				oe->childEntities().addChild(child);
 				if (idNameCount) {
@@ -382,7 +392,7 @@ namespace gs
 						return false;
 					}
 				}
-				if (nextPos < vp.mValue.mArray.size()) {
+				if (nextPos < vp.mValue.mObject.size()) {
 					if (!loadEntities(vp.mValue, nextPos, child, idMap, fcm, rm, isTkObjectAllowed)) {
 						LOGE("Child entity error\n");
 						return false;
@@ -394,24 +404,24 @@ namespace gs
 	}
 }
 
-bool gs::sceneloader::reload(const CfgValuePair& cfg,
+bool gs::sceneloader::reload(const cfg::NameValuePair& cfg,
 		const std::weak_ptr<FileChangeMonitoring>& fcm,
 		ResourceManager& rm, SceneManager& sm, RenderPassManager& pm,
 		bool reloadResourceManager, bool reloadSceneManager, bool reloadRenderPassManager)
 {
-	const CfgValuePair* contextCfg = nullptr;
-	const CfgValuePair* resourcesCfg = nullptr;
-	const CfgValuePair* scenesCfg = nullptr;
-	const CfgValuePair* renderingCfg = nullptr;
-	CfgReadRule cfgRulesGraphic[] = {
-			CfgReadRule("context", &contextCfg, CfgReadRule::RULE_OPTIONAL, CfgReadRule::ALLOW_ALL),
-			CfgReadRule("resources", &resourcesCfg, CfgReadRule::RULE_MUST_EXIST, CfgReadRule::ALLOW_ALL),
-			CfgReadRule("scenes", &scenesCfg, CfgReadRule::RULE_MUST_EXIST, CfgReadRule::ALLOW_ALL),
-			CfgReadRule("rendering", &renderingCfg, CfgReadRule::RULE_MUST_EXIST, CfgReadRule::ALLOW_ALL),
-			CfgReadRule("")
+	const cfg::NameValuePair* contextCfg = nullptr;
+	const cfg::NameValuePair* resourcesCfg = nullptr;
+	const cfg::NameValuePair* scenesCfg = nullptr;
+	const cfg::NameValuePair* renderingCfg = nullptr;
+	cfg::SelectRule cfgRulesGraphic[] = {
+			cfg::SelectRule("context", &contextCfg, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_ALL),
+			cfg::SelectRule("resources", &resourcesCfg, cfg::SelectRule::RULE_MUST_EXIST, cfg::SelectRule::ALLOW_ALL),
+			cfg::SelectRule("scenes", &scenesCfg, cfg::SelectRule::RULE_MUST_EXIST, cfg::SelectRule::ALLOW_ALL),
+			cfg::SelectRule("rendering", &renderingCfg, cfg::SelectRule::RULE_MUST_EXIST, cfg::SelectRule::ALLOW_ALL),
+			cfg::SelectRule("")
 	};
 	size_t nextPos = 0;
-	ssize_t storeCnt = cfg.mValue.sectionGet(
+	ssize_t storeCnt = cfg.mValue.objectGet(
 			cfgRulesGraphic, false, false, true, false, false, 0, &nextPos);
 	if (storeCnt < 0) {
 		LOGE("scene-file must have the sections 'resources', 'scenes' and 'rendering'. error: %zd\n", storeCnt);
@@ -443,25 +453,27 @@ bool gs::sceneloader::reload(const CfgValuePair& cfg,
 	return true;
 }
 
-bool gs::sceneloader::addTransform(const CfgValue& cfgValue,
+bool gs::sceneloader::addTransform(const cfg::Value& cfgValue,
 		TransformComponent& transform2d)
 {
-	for (const auto &vp : cfgValue.mArray) { // vp ... value pair
-		const std::vector<CfgValuePair> &arr = vp.mName.mArray;
+	for (const auto &vp : cfgValue.mObject) { // vp ... value pair
+		const std::vector<cfg::Value> &arr = vp.mName.mArray;
 		size_t cnt = arr.size();
 		if (!cnt) {
+			LOGE("%s: No valid transform value (empty array)\n",
+					vp.mName.getFilenameAndPosition().c_str());
 			return false;
 		}
-		const std::string &transformName = vp.mName.mArray.front().mValue.mText;
+		const std::string &transformName = vp.mName.mArray.front().mText;
 		if (transformName == "translate") {
 			// translate <x> <y>
 			// translate <x> <y> <z>
 			if (cnt == 3) {
-				transform2d.translate(arr[1].mValue.mFloatingPoint, arr[2].mValue.mFloatingPoint);
+				transform2d.translate(arr[1].mFloatingPoint, arr[2].mFloatingPoint);
 			}
 			else if (cnt == 4) {
-				transform2d.translate(arr[1].mValue.mFloatingPoint,
-						arr[2].mValue.mFloatingPoint, arr[3].mValue.mFloatingPoint);
+				transform2d.translate(arr[1].mFloatingPoint,
+						arr[2].mFloatingPoint, arr[3].mFloatingPoint);
 			}
 			else {
 				return false;
@@ -472,17 +484,17 @@ bool gs::sceneloader::addTransform(const CfgValue& cfgValue,
 			// scale <scale-x> <scale-y> <scale-z>
 			// scale <scale-x> <scale-y> <scale-z> <center-x> <center-y> <center-z>
 			if (cnt == 3) {
-				transform2d.scale(arr[1].mValue.mFloatingPoint, arr[2].mValue.mFloatingPoint);
+				transform2d.scale(arr[1].mFloatingPoint, arr[2].mFloatingPoint);
 			} else if (cnt == 5) {
-				transform2d.scale(arr[1].mValue.mFloatingPoint, arr[2].mValue.mFloatingPoint,
-						arr[3].mValue.mFloatingPoint, arr[4].mValue.mFloatingPoint);
+				transform2d.scale(arr[1].mFloatingPoint, arr[2].mFloatingPoint,
+						arr[3].mFloatingPoint, arr[4].mFloatingPoint);
 			} else if (cnt == 4) {
-				transform2d.scale(arr[1].mValue.mFloatingPoint,
-						arr[2].mValue.mFloatingPoint, arr[3].mValue.mFloatingPoint);
+				transform2d.scale(arr[1].mFloatingPoint,
+						arr[2].mFloatingPoint, arr[3].mFloatingPoint);
 			} else if (cnt == 7) {
-				transform2d.scale(arr[1].mValue.mFloatingPoint, arr[2].mValue.mFloatingPoint,
-						arr[3].mValue.mFloatingPoint, arr[4].mValue.mFloatingPoint,
-						arr[5].mValue.mFloatingPoint, arr[6].mValue.mFloatingPoint);
+				transform2d.scale(arr[1].mFloatingPoint, arr[2].mFloatingPoint,
+						arr[3].mFloatingPoint, arr[4].mFloatingPoint,
+						arr[5].mFloatingPoint, arr[6].mFloatingPoint);
 			} else {
 				return false;
 			}
@@ -491,13 +503,13 @@ bool gs::sceneloader::addTransform(const CfgValue& cfgValue,
 			// rotate-degree <angle> <center-x> <center-y>
 			// rotate-degree <angle> <rot-axis-x> <rot-axis-y> <rot-axis-z>
 			if (cnt == 2) {
-				transform2d.rotateDegree(arr[1].mValue.mFloatingPoint);
+				transform2d.rotateDegree(arr[1].mFloatingPoint);
 			} else if (cnt == 4) {
-				transform2d.rotateDegree(arr[1].mValue.mFloatingPoint, arr[2].mValue.mFloatingPoint,
-						arr[3].mValue.mFloatingPoint);
+				transform2d.rotateDegree(arr[1].mFloatingPoint, arr[2].mFloatingPoint,
+						arr[3].mFloatingPoint);
 			} else if (cnt == 5) {
-				transform2d.rotateDegree(arr[1].mValue.mFloatingPoint, arr[2].mValue.mFloatingPoint,
-						arr[3].mValue.mFloatingPoint, arr[4].mValue.mFloatingPoint);
+				transform2d.rotateDegree(arr[1].mFloatingPoint, arr[2].mFloatingPoint,
+						arr[3].mFloatingPoint, arr[4].mFloatingPoint);
 			} else {
 				return false;
 			}
@@ -505,13 +517,13 @@ bool gs::sceneloader::addTransform(const CfgValue& cfgValue,
 			// rotate-radian <angle>
 			// rotate-radian <angle> <center-x> <center-y>
 			if (cnt == 2) {
-				transform2d.rotateRadian(arr[1].mValue.mFloatingPoint);
+				transform2d.rotateRadian(arr[1].mFloatingPoint);
 			} else if (cnt == 4) {
-				transform2d.rotateRadian(arr[1].mValue.mFloatingPoint, arr[2].mValue.mFloatingPoint,
-						arr[3].mValue.mFloatingPoint);
+				transform2d.rotateRadian(arr[1].mFloatingPoint, arr[2].mFloatingPoint,
+						arr[3].mFloatingPoint);
 			} else if (cnt == 5) {
-				transform2d.rotateRadian(arr[1].mValue.mFloatingPoint, arr[2].mValue.mFloatingPoint,
-						arr[3].mValue.mFloatingPoint, arr[4].mValue.mFloatingPoint);
+				transform2d.rotateRadian(arr[1].mFloatingPoint, arr[2].mFloatingPoint,
+						arr[3].mFloatingPoint, arr[4].mFloatingPoint);
 			} else {
 				return false;
 			}
@@ -520,9 +532,9 @@ bool gs::sceneloader::addTransform(const CfgValue& cfgValue,
 			if (cnt != 7) {
 				return false;
 			}
-			transform2d.matrix(arr[1].mValue.mFloatingPoint, arr[2].mValue.mFloatingPoint,
-					arr[3].mValue.mFloatingPoint, arr[4].mValue.mFloatingPoint,
-					arr[5].mValue.mFloatingPoint, arr[6].mValue.mFloatingPoint);
+			transform2d.matrix(arr[1].mFloatingPoint, arr[2].mFloatingPoint,
+					arr[3].mFloatingPoint, arr[4].mFloatingPoint,
+					arr[5].mFloatingPoint, arr[6].mFloatingPoint);
 		} else {
 			return false;
 		}
@@ -530,16 +542,17 @@ bool gs::sceneloader::addTransform(const CfgValue& cfgValue,
 	return true;
 }
 
-bool gs::sceneloader::updateAndLoad(const CfgValuePair& cfg,
+bool gs::sceneloader::updateAndLoad(const cfg::NameValuePair& cfg,
 		const std::weak_ptr<FileChangeMonitoring>& fcm,
 		SceneManager& sm, ResourceManager& rm)
 {
-	if (!cfg.mValue.isArray()) {
+	if (!cfg.mValue.isObject()) {
+		LOGE("Load scene failed. It's no object.\n");
 		return false;
 	}
 	bool rv = true;
-	const std::vector<CfgValuePair>& array = cfg.mValue.mArray;
-	for (const CfgValuePair& vp : array) {
+	const std::vector<cfg::NameValuePair>& array = cfg.mValue.mObject;
+	for (const cfg::NameValuePair& vp : array) {
 		if (vp.mName.mText == "scene") {
 			std::shared_ptr<Scene> scene = std::make_shared<Scene>();
 			if (!scene->updateAndLoad(fcm, vp, rm)) {
@@ -559,13 +572,13 @@ bool gs::sceneloader::updateAndLoad(const CfgValuePair& cfg,
 
 bool gs::sceneloader::updateAndLoad(std::string& sceneIdName,
 		std::shared_ptr<Entity>& root,
-		Scene::TIdMap& idMap, const CfgValuePair& cfg,
+		Scene::TIdMap& idMap, const cfg::NameValuePair& cfg,
 		const std::weak_ptr<FileChangeMonitoring>& fcm,
 		ResourceManager& rm)
 {
-	const CfgValuePair* sceneCfg = &cfg;
+	const cfg::NameValuePair* sceneCfg = &cfg;
 	if (cfg.mName.mText != "scene") {
-		for (const auto &vp : cfg.mValue.mArray) {
+		for (const auto &vp : cfg.mValue.mObject) {
 			if (vp.mName.mText == "scene") {
 				sceneCfg = &vp;
 			}
@@ -573,7 +586,8 @@ bool gs::sceneloader::updateAndLoad(std::string& sceneIdName,
 	}
 	std::string tmpSceneIdName;
 	if (!root->getConstChildEntities()) {
-		if (!sceneloader::reloadScene(root, *sceneCfg, idMap, true /* alwaysAddExtraRootEntity */, fcm, rm, tmpSceneIdName)) {
+		if (!sceneloader::reloadScene(root, *sceneCfg, idMap,
+				true /* alwaysAddExtraRootEntity */, fcm, rm, tmpSceneIdName)) {
 			return false;
 		}
 		sceneIdName = tmpSceneIdName;
@@ -583,7 +597,8 @@ bool gs::sceneloader::updateAndLoad(std::string& sceneIdName,
 	LOGI("reload scene\n");
 	std::shared_ptr<Entity> tmpRoot;
 	Scene::TIdMap tmpIdMap;
-	if (!sceneloader::reloadScene(tmpRoot, *sceneCfg, tmpIdMap, true /* alwaysAddExtraRootEntity */, fcm, rm, tmpSceneIdName)) {
+	if (!sceneloader::reloadScene(tmpRoot, *sceneCfg, tmpIdMap,
+			true /* alwaysAddExtraRootEntity */, fcm, rm, tmpSceneIdName)) {
 		return false;
 	}
 	idMap.swap(tmpIdMap);
@@ -608,7 +623,7 @@ bool gs::sceneloader::updateAndLoad(std::string& sceneIdName,
 	return true;
 }
 
-std::shared_ptr<gs::Entity> gs::sceneloader::loadScene(const CfgValuePair& cfg,
+std::shared_ptr<gs::Entity> gs::sceneloader::loadScene(const cfg::NameValuePair& cfg,
 		Scene::TIdMap& idMap, bool alwaysAddExtraRootEntity,
 		const std::weak_ptr<FileChangeMonitoring>& fcm,
 		ResourceManager& rm)
@@ -627,33 +642,33 @@ std::shared_ptr<gs::Entity> gs::sceneloader::loadScene(const CfgValuePair& cfg,
  *        If no id is used then this parameter is unchanged.
  */
 bool gs::sceneloader::reloadScene(std::shared_ptr<Entity>& root,
-		const CfgValuePair& cfg,
+		const cfg::NameValuePair& cfg,
 		Scene::TIdMap& idMap,
 		bool alwaysAddExtraRootEntity,
 		const std::weak_ptr<FileChangeMonitoring>& fcm,
 		ResourceManager& rm, std::string& sceneIdName)
 {
-	if (!cfg.isSection()) {
+	if (!cfg.isObject()) {
 		return false;
 	}
-	if (cfg.mValue.mArray.empty()) {
+	if (cfg.mValue.mObject.empty()) {
 		LOGE("No array entry exist\n");
 		return false;
 	}
 	size_t firstEntityIndex = 0;
-	if (cfg.mValue.mArray.front().mName.mText == "id") {
-		if (!cfg.mValue.mArray.front().mValue.isText()) {
+	if (cfg.mValue.mObject.front().mName.mText == "id") {
+		if (!cfg.mValue.mObject.front().mValue.isText()) {
 			LOGE("Id for scene must be a text\n");
 			return false;
 		}
-		sceneIdName = cfg.mValue.mArray.front().mValue.mText;
+		sceneIdName = cfg.mValue.mObject.front().mValue.mText;
 		++firstEntityIndex;
-		if (cfg.mValue.mArray.size() <= 1) {
+		if (cfg.mValue.mObject.size() <= 1) {
 			LOGE("After id an entity must follow!\n");
 			return false;
 		}
 	}
-	if (cfg.mValue.mArray[firstEntityIndex].mName.mText != "entity") {
+	if (cfg.mValue.mObject[firstEntityIndex].mName.mText != "entity") {
 		LOGE("Must start with a entity (directly or after id)!\n");
 		return false;
 	}

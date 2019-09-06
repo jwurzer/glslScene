@@ -1,25 +1,29 @@
 #include <gs/configloader/context_loader.h>
-#include <gs/common/cfg.h>
 #include <gs/system/log.h>
+#include <cfg/cfg.h>
 #include <vector>
 
 namespace gs
 {
 	namespace
 	{
-		bool getVersionParameters(const CfgValue& ver,
+		bool getVersionParameters(const cfg::Value& ver,
 				ContextProperties& p)
 		{
-			if (!ver.isArray()) {
-				LOGE("Wrong value for version\n");
+			std::string apiStr;
+			size_t count = 0;
+			if (ver.isText()) {
+				apiStr = ver.mText;
+				count = 1;
+			}
+			else if (ver.isArray() && ver.mArray.size() > 0){
+				apiStr = ver.mArray[0].mText;
+				count = ver.mArray.size();
+			}
+			else {
+				LOGE("No or wrong value for rendering API (wrong value for version)\n");
 				return false;
 			}
-			size_t count = ver.mArray.size();
-			if (!count) {
-				LOGE("No value for version\n");
-				return false;
-			}
-			const std::string& apiStr = ver.mArray[0].mValue.mText;
 			if (apiStr == "opengl" ||
 					apiStr == "openGl" ||
 					apiStr == "OpenGl") {
@@ -35,12 +39,13 @@ namespace gs
 			if (count < 2) {
 				return true;
 			}
+			// --> can only be an array
 			bool verNumberAllowed = true;
 			bool profileAllowed = true;
 			bool forwardAllowed = true;
 			unsigned int verPosIndex = 1;
-			if (ver.mArray[1].mValue.isText()) {
-				const std::string &apiStr2 = ver.mArray[1].mValue.mText;
+			if (ver.mArray[1].isText()) {
+				const std::string &apiStr2 = ver.mArray[1].mText;
 				if (apiStr2 == "es" || apiStr2 == "ES") {
 					if (p.mRenderApiVersion != RenderingApi::OPENGL) {
 						LOGE("'es' is only allowed if the word opengl is before\n");
@@ -79,21 +84,21 @@ namespace gs
 				return true;
 			}
 
-			if (ver.mArray[verPosIndex].mValue.isNumber()) {
+			if (ver.mArray[verPosIndex].isNumber()) {
 				if (!verNumberAllowed) {
 					LOGE("Version number is not allowed here.\n");
 					return false;
 				}
-				if (ver.mArray[verPosIndex].mValue.isInteger()) {
-					int majorVer = ver.mArray[verPosIndex].mValue.mInteger;
+				if (ver.mArray[verPosIndex].isInteger()) {
+					int majorVer = ver.mArray[verPosIndex].mInteger;
 					if (majorVer < 1) {
 						LOGE("Major opengl version must be >= 1 and not %d\n", majorVer);
 						return false;
 					}
 					p.mMajorVersion = majorVer;
 				}
-				else if (ver.mArray[verPosIndex].mValue.isFloat()) {
-					float verNumber = ver.mArray[verPosIndex].mValue.mFloatingPoint;
+				else if (ver.mArray[verPosIndex].isFloat()) {
+					float verNumber = ver.mArray[verPosIndex].mFloatingPoint;
 					if (verNumber < 1.0f) {
 						LOGE("Major opengl version must be >= 1 and not %f\n", verNumber);
 						return false;
@@ -119,7 +124,7 @@ namespace gs
 			}
 
 			{
-				const std::string &apiStr2 = ver.mArray[nextIndex].mValue.mText;
+				const std::string &apiStr2 = ver.mArray[nextIndex].mText;
 				if (apiStr2 == "core" ||
 						apiStr2 == "compatibility" ||
 						apiStr2 == "compat") {
@@ -152,7 +157,7 @@ namespace gs
 			}
 
 			{
-				const std::string &apiStr2 = ver.mArray[nextIndex].mValue.mText;
+				const std::string &apiStr2 = ver.mArray[nextIndex].mText;
 				if (apiStr2 == "forward" || apiStr2 == "forward-compatibility") {
 					if (!forwardAllowed) {
 						LOGE("No forward is only allowed at this position.\n");
@@ -173,20 +178,20 @@ namespace gs
 			return true;
 		}
 
-		bool getParameters(const CfgValuePair& cfgValuePair,
+		bool getParameters(const cfg::NameValuePair& cfgValuePair,
 				ContextProperties& p)
 		{
 			if (cfgValuePair.mName.mText != "context") {
 				return false;
 			}
-			const CfgValue* version = nullptr;
+			const cfg::Value* version = nullptr;
 			unsigned int versionCount = 0;
-			CfgReadRule cfgRules[] = {
-					CfgReadRule("rendering-api", &version, CfgReadRule::RULE_MUST_EXIST, CfgReadRule::ALLOW_ALL, &versionCount),
-					CfgReadRule("")
+			cfg::SelectRule cfgRules[] = {
+					cfg::SelectRule("rendering-api", &version, cfg::SelectRule::RULE_MUST_EXIST, cfg::SelectRule::ALLOW_ALL, &versionCount),
+					cfg::SelectRule("")
 			};
 			size_t nextPos = 0;
-			ssize_t storeCnt = cfgValuePair.mValue.sectionGet(
+			ssize_t storeCnt = cfgValuePair.mValue.objectGet(
 					cfgRules, false, false, false, false, false, 0, &nextPos);
 			if (storeCnt < 0) {
 				LOGE("context config is wrong (rendering-api exist?) %d\n", int(storeCnt));
@@ -201,17 +206,19 @@ namespace gs
 	}
 }
 
-bool gs::contextloader::getContextParameters(const CfgValuePair& cfgValue,
-		ContextProperties& p)
+bool gs::contextloader::getContextParameters(const cfg::NameValuePair& cfgValue,
+		gs::ContextProperties& p)
 {
 	p.reset();
 
-	if (!cfgValue.mValue.isArray()) {
+	if (!cfgValue.mValue.isObject()) {
+		LOGE("%s: Wrong context config\n",
+				cfgValue.mValue.getFilenameAndPosition().c_str());
 		return false;
 	}
 	unsigned int contextCount = 0;
-	const std::vector<CfgValuePair>& array = cfgValue.mValue.mArray;
-	for (const CfgValuePair& vp : array) {
+	const std::vector<cfg::NameValuePair>& array = cfgValue.mValue.mObject;
+	for (const cfg::NameValuePair& vp : array) {
 		if (vp.mName.mText == "context") {
 			if (contextCount) {
 				LOGE("Only one context is allowed.\n");

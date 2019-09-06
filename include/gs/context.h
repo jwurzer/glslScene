@@ -6,9 +6,13 @@
 #include <SDL.h>
 #include <memory>
 
+namespace cfg
+{
+	class NameValuePair;
+}
+
 namespace gs
 {
-	class CfgValuePair;
 	class ResourceManager;
 	class SceneManager;
 	class RenderPassManager;
@@ -26,7 +30,7 @@ namespace gs
 		bool run();
 
 	private:
-		std::unique_ptr<CfgValuePair> mSceneConfig;
+		std::unique_ptr<cfg::NameValuePair> mSceneConfig;
 
 		// to change the parameters for context creation,
 		// the scene config should be used!

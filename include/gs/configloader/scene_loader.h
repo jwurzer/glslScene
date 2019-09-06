@@ -76,39 +76,43 @@
 #include <gs/scene/scene.h>
 #include <memory>
 
+namespace cfg
+{
+	class Value;
+	class NameValuePair;
+}
+
 namespace gs
 {
 	class Entity;
 	class ResourceManager;
 	class SceneManager;
 	class RenderPassManager;
-	class CfgValue;
-	class CfgValuePair;
 	class TransformComponent;
 	class FileChangeMonitoring;
 
 	namespace sceneloader
 	{
-		bool reload(const CfgValuePair& cfg,
+		bool reload(const cfg::NameValuePair& cfg,
 				const std::weak_ptr<FileChangeMonitoring>& fcm,
 				ResourceManager& rm, SceneManager& sm, RenderPassManager& pm,
 				bool reloadResourceManager, bool reloadSceneManager, bool reloadRenderPassManager);
 
-		bool addTransform(const CfgValue& cfgValue,
+		bool addTransform(const cfg::Value& cfgValue,
 				TransformComponent& transform2d);
 
-		bool updateAndLoad(const CfgValuePair& cfg,
+		bool updateAndLoad(const cfg::NameValuePair& cfg,
 				const std::weak_ptr<FileChangeMonitoring>& fcm,
 				SceneManager& sm, ResourceManager& rm);
 
 		bool updateAndLoad(std::string& sceneIdName,
 				std::shared_ptr<Entity>& root,
-				Scene::TIdMap& idMap, const CfgValuePair& cfg,
+				Scene::TIdMap& idMap, const cfg::NameValuePair& cfg,
 				const std::weak_ptr<FileChangeMonitoring>& fcm,
 				ResourceManager& rm);
 
 		std::shared_ptr<Entity> loadScene(
-				const CfgValuePair& cfg,
+				const cfg::NameValuePair& cfg,
 				Scene::TIdMap& idMap, bool alwaysAddExtraRootEntity,
 				const std::weak_ptr<FileChangeMonitoring>& fcm,
 				ResourceManager& rm);
@@ -119,7 +123,7 @@ namespace gs
 		 *        If no id is used then this parameter is unchanged.
 		 */
 		bool reloadScene(std::shared_ptr<Entity>& root,
-				const CfgValuePair& cfg,
+				const cfg::NameValuePair& cfg,
 				Scene::TIdMap& idMap,
 				bool alwaysAddExtraRootEntity,
 				const std::weak_ptr<FileChangeMonitoring>& fcm,

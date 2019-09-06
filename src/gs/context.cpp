@@ -12,9 +12,7 @@
 #include <gs/gui/gui_manager.h>
 #include <gs/common/vertex.h>
 #include <gs/common/fs.h>
-#include <gs/configloader/sml_parser.h>
 #include <gs/configloader/scene_loader.h>
-#include <gs/common/cfg.h>
 #include <gs/scene/scene.h>
 #include <gs/camera.h>
 #include <gs/configloader/context_loader.h>
@@ -26,6 +24,8 @@
 #include <iostream>
 #include <iomanip>      // std::setw
 #include <vector>
+#include <cfg/cfg.h>
+#include <tml/tml_parser.h>
 
 //Screen dimension constants
 #define SCREEN_WIDTH 800
@@ -76,7 +76,7 @@ bool gs::Context::run()
 
 	bool running = true;
 
-	const CfgValuePair& cfg = *mSceneConfig;
+	const cfg::NameValuePair& cfg = *mSceneConfig;
 
 	mResourceManager.reset(new ResourceManager(mFileMonitoring, mContextProperties.useVaoVersionForMesh()));
 	mSceneManager.reset(new SceneManager());
@@ -234,19 +234,19 @@ bool gs::Context::selectScene(const std::string& progname)
 	}
 
 	{
-		SmlParser selectionParser("scenes/selection.tml");
-		CfgValuePair selectCfg;
-		if (!selectionParser.getAsValuePairTree(selectCfg)) {
+		cfg::TmlParser selectionParser("scenes/selection.tml");
+		cfg::NameValuePair selectCfg;
+		if (!selectionParser.getAsTree(selectCfg)) {
 			LOGE("Can't load selection.tml from scenes correct.\n");
 			return false;
 		}
-		CfgReadRule cfgRules[] = {
-				CfgReadRule("scene-name", &mContextProperties.mSceneDirName, CfgReadRule::RULE_MUST_EXIST),
-				CfgReadRule("")
+		cfg::SelectRule cfgRules[] = {
+				cfg::SelectRule("scene-name", &mContextProperties.mSceneDirName, cfg::SelectRule::RULE_MUST_EXIST),
+				cfg::SelectRule("")
 		};
 		size_t nextPos = 0;
-		ssize_t storeCnt = selectCfg.mValue.sectionGet(
-			cfgRules, false, false, false, false, false, 0, &nextPos);
+		ssize_t storeCnt = selectCfg.mValue.objectGet(
+				cfgRules, false, false, false, false, false, 0, &nextPos);
 		if (storeCnt < 0) {
 			LOGE("selection config is wrong, rv %d\n", int(storeCnt));
 			return false;
@@ -282,9 +282,9 @@ bool gs::Context::selectScene(const std::string& progname)
 #endif
 
 	mSceneFilename = "scene.tml";
-	SmlParser parser(mSceneFilename);
-	mSceneConfig.reset(new CfgValuePair());
-	if (!parser.getAsValuePairTree(*mSceneConfig)) {
+	cfg::TmlParser parser(mSceneFilename);
+	mSceneConfig.reset(new cfg::NameValuePair());
+	if (!parser.getAsTree(*mSceneConfig)) {
 		LOGE("Can't parse scene file. Error: %s\n",
 				parser.getExtendedErrorMsg().c_str());
 		return false;
@@ -485,9 +485,9 @@ void gs::Context::reload()
 {
 	mReloadSceneNow = false;
 
-	std::unique_ptr<CfgValuePair> sceneConfig(new CfgValuePair());
-	SmlParser parser(mSceneFilename);
-	if (!parser.getAsValuePairTree(*sceneConfig)) {
+	std::unique_ptr<cfg::NameValuePair> sceneConfig(new cfg::NameValuePair());
+	cfg::TmlParser parser(mSceneFilename);
+	if (!parser.getAsTree(*sceneConfig)) {
 		LOGE("Parse scene config file failed!\n");
 		return;
 	}
