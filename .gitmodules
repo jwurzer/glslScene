@@ -1,6 +1,6 @@
-[submodule "src/picoc"]
-	path = src/picoc
-	url = https://github.com/jwurzer/picoc.git
 [submodule "external/tml"]
 	path = external/tml
 	url = https://github.com/jwurzer/tml.git
+[submodule "external/picoc"]
+	path = external/picoc
+	url = https://github.com/jwurzer/picoc.git

@@ -2,6 +2,18 @@ Changelog
 =========
 
 
+glslScene 0.x
+-------------
+
+**Features**
+
+**Bugfixes**
+
+**Internals**
+
+* Using TML parser from external repository as submodule instead of own copied version
+* Move submodule PicoC from src/picoc to external/picoc
+
 glslScene 0.2
 -------------
 

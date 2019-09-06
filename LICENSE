@@ -57,6 +57,9 @@ Licenses of external libraries used by glslScene:
 	GLM under The Happy Bunny License and MIT License
 	- http://glm.g-truc.net/copying.txt
 
+	PicoC under New BSD License
+	- https://github.com/jwurzer/picoc/blob/master/LICENSE
+
 
 External libraries are stored in this project at:
 
@@ -95,3 +98,6 @@ External libraries are stored in this project at:
 
 	GLM under The Happy Bunny License and MIT License
 	- Source files are not included
+
+	PicoC under New BSD License
+	- as git submodule under external/picoc
