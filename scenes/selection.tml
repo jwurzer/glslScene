@@ -27,7 +27,7 @@
 # A "open" cube. Using uniforms and attributes (no gl_ transforms)
 #scene-name = scene_002_a_3D
 
-#scene-name = scene_002_b_3D
+scene-name = scene_002_b_3D
 
 # ===================== 003 examples =========================
 
@@ -72,7 +72,7 @@
 #scene-name = scene_006_b_texture_shader
 
 # Two textures with shaders, no matrices
-scene-name = scene_006_c_texture_no-matrix
+#scene-name = scene_006_c_texture_no-matrix
 
 # Two textures with shaders, no matrices for gl 3.3 core
 #scene-name = scene_006_d_texture_gl33

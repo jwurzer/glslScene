@@ -47,4 +47,4 @@ For more information about the licences in glslScene see the [LICENSE](LICENSE) 
 
 External libraries
 ------------------
-glslScene use the following libraries: SDL, GLM, stb_image, ImGui, GLEW or optional glad, some classes from SFML.
+glslScene use the following libraries: SDL, GLM, stb_image, ImGui, PicoC, GLEW or optional glad, some classes from SFML.

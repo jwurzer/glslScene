@@ -37,22 +37,22 @@ endif ()
 file(GLOB_RECURSE PRJ_HEADERFILES include/*.h external/tml/include/*.h)
 file(GLOB_RECURSE PRJ_SOURCEFILES src/*.cpp external/tml/src/cfg/*.cpp external/tml/src/tml/*.cpp)
 
-file(GLOB PRJ_PICOC_ROOT_SOURCEFILES src/picoc/*.c)
-file(GLOB PRJ_PICOC_CSTDLIB_SOURCEFILES src/picoc/cstdlib/*.c)
+file(GLOB PRJ_PICOC_ROOT_SOURCEFILES external/picoc/*.c)
+file(GLOB PRJ_PICOC_CSTDLIB_SOURCEFILES external/picoc/cstdlib/*.c)
 set(PRJ_PICOC_SOURCEFILES ${PRJ_PICOC_ROOT_SOURCEFILES} ${PRJ_PICOC_CSTDLIB_SOURCEFILES})
 
-file(GLOB PRJ_PICOC_HEADERFILES src/picoc/*.h)
+file(GLOB PRJ_PICOC_HEADERFILES external/picoc/*.h)
 
 if (WIN32)
 	set(PRJ_PICOC_SOURCEFILES
 			${PRJ_PICOC_SOURCEFILES}
-			"src/picoc/platform/platform_msvc.c"
-			"src/picoc/platform/library_msvc.c")
+			"external/picoc/platform/platform_msvc.c"
+			"external/picoc/platform/library_msvc.c")
 else()
 	set(PRJ_PICOC_SOURCEFILES
 			${PRJ_PICOC_SOURCEFILES}
-			"src/picoc/platform/platform_unix.c"
-			"src/picoc/platform/library_unix.c")
+			"external/picoc/platform/platform_unix.c"
+			"external/picoc/platform/library_unix.c")
 endif()
 add_definitions( -DPICOC_SKIP_MAIN )
 
@@ -69,7 +69,7 @@ target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/include")
 
 target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/external/tml/include")
 
-target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/picoc")
+target_include_directories(${PRJ_EXENAME} PRIVATE "${CMAKE_SOURCE_DIR}/external/picoc")
 
 target_include_directories(${PRJ_EXENAME} PRIVATE
 	${SDL2_INCLUDE_DIR}

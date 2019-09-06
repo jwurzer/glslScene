@@ -279,13 +279,11 @@ namespace gs
 			id (type: text, optional, is used to search for a entity at the scene, must be unique per scene)
 			name (property, type: text, optional, doesn't have to be unique)
 			active (property, type: bool, optional, default: true)
-			transform2d
-			transform-ex
-			transform3d
-			clipping2d
-			texture
-			mesh
-			text2d
+			logic-component
+			transform-component
+			texture-component
+			shader-component
+			mesh-component
 			entity (for using childEntities)
 			*/
 			std::string idName;
@@ -293,25 +291,17 @@ namespace gs
 			bool isActive = false;
 			const cfg::Value* compLogic = nullptr;
 			const cfg::Value* compTransform = nullptr;
-			//const cfg::Value* compTransform2dEx = nullptr;
-			//const cfg::Value* compTransform3d = nullptr;
-			//const cfg::Value* compClipping2d = nullptr;
 			const cfg::Value* compTexture = nullptr;
 			const cfg::Value* compShader = nullptr;
 			const cfg::Value* compMesh = nullptr;
-			//const cfg::Value* compText2d = nullptr;
 			unsigned int idNameCount = 0;
 			unsigned int nameCount = 0;
 			unsigned int isActiveCount = 0;
 			unsigned int compLogicCount = 0;
 			unsigned int compTransformCount = 0;
-			//unsigned int compTransform2dExCount = 0;
-			//unsigned int compTransform3dCount = 0;
-			//unsigned int compClipping2dCount = 0;
 			unsigned int compTextureCount = 0;
 			unsigned int compShaderCount = 0;
 			unsigned int compMeshCount = 0;
-			//unsigned int compText2dCount = 0;
 
 			cfg::SelectRule cfgRulesEntity[] = {
 					cfg::SelectRule("id", &idName, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &idNameCount),
@@ -319,13 +309,9 @@ namespace gs
 					cfg::SelectRule("active", &isActive, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_TEXT, &isActiveCount),
 					cfg::SelectRule("logic-component", &compLogic, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compLogicCount),
 					cfg::SelectRule("transform-component", &compTransform, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compTransformCount),
-					//cfg::SelectRule("transform-ex-component", &compTransform2dEx, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compTransform2dExCount),
-					//cfg::SelectRule("transform3d-component", &compTransform3d, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compTransform3dCount),
-					//cfg::SelectRule("clipping2d-component", &compClipping2d, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compClipping2dCount),
 					cfg::SelectRule("texture-component", &compTexture, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compTextureCount),
 					cfg::SelectRule("shader-component", &compShader, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compShaderCount),
 					cfg::SelectRule("mesh-component", &compMesh, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compMeshCount),
-					//cfg::SelectRule("text2d-component", &compText2d, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_OBJECT, &compText2dCount),
 					cfg::SelectRule("")
 			};
 			unsigned int cnt = cfgValue.mObject.size();
