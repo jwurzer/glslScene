@@ -11,8 +11,9 @@ glslScene 0.x
 
 **Internals**
 
-* Using TML parser from external repository as submodule instead of own copied version
+* Using TML parser from external repository as submodule instead of an own copied version
 * Move submodule PicoC from src/picoc to external/picoc
+* Using ImGui from external repository as submodule instead of an own copied version
 
 glslScene 0.2
 -------------
