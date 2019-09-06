@@ -97,8 +97,8 @@ resources
 		#uniform mat4 uModelViewProjectionMatrix = mvp-matrix
 		#uniform mat4 uEntityMatrix = entity-matrix
 		uniform mat4 uLightModelMatrix0 = 0 0 0 0  0 0 0 0  0 0 0 0  0 0 0 0
-		uniform sampler2d uDiffuseMap = 0
-		uniform sampler2d uSpecularMap = 1
+		uniform sampler2D uDiffuseMap = 0
+		uniform sampler2D uSpecularMap = 1
 
 		# light config
 		uniform vec3 uLightColor = 1.0 1.0 1.0
