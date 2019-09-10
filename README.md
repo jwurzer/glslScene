@@ -34,6 +34,34 @@ glslScene binaries
 ------------------
 Windows builds: Binaries for Windows can be downloaded from the [releases](https://github.com/jwurzer/glslScene/releases) section. Simple download glslScene-win-vX-X.zip extract it and start glslscene-rel.exe (release build) or glslscene.exe (debug build) from the bin subdirectory.
 
+Compile glslScene
+-----------------
+
+### Compile for Linux (Debian / Ubuntu)
+
+Update list of available packages for Debian/Ubuntu (instead of **apt-get** the command **apt** can be used)
+
+	$ sudo apt-get update
+
+Install dependencies
+
+	$ sudo apt-get install git make cmake g++ libsdl2-dev libglew-dev libglm-dev libreadline-dev
+
+Checkout source code and submodules
+
+	$ git clone https://github.com/jwurzer/glslScene.git
+	$ cd glslScene
+	glslScene$ git submodule update --init --recursive
+
+Compile per make with Makefile
+
+	glslScene$ make
+
+Start glslScene
+
+	glslScene$ build/glslScene
+
+
 License
 -------
 Most parts of glslScene are dual-licensed in public domain and zlib license. Some other parts (e.g. external used libraries) are under different licenses (e.g. ImGui library under MIT License, GLEW library under modified BSD License).
