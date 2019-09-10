@@ -55,12 +55,86 @@ Checkout source code and submodules
 
 Compile per make with Makefile
 
+The Makefile creates a build subdirectory, calls cmake for you and compiles it.
+Instead of using the Makefile (which is in this project only a helper script for using CMake), cmake can be used directly. If you want to use cmake look into the Makefile to see the cmake build commands.
+
 	glslScene$ make
 
 Start glslScene
 
 	glslScene$ build/glslScene
 
+### Compile for Windows with Visual Studio
+
+##### Requirements
+
+* git for Windows
+
+* Visual Studio 2017
+
+* cmake (e.g. Windows installer version)
+
+  Add CMake to system PATH
+
+* Make for Windows
+
+  http://gnuwin32.sourceforge.net/packages/make.htm
+  
+  http://gnuwin32.sourceforge.net/downlinks/make.php (Installer)
+  
+  Add the install path inclusive bin subdirectory to PATH.
+  e.g. add the following to PATH:
+  C:\Program Files (x86)\GnuWin32\bin
+
+##### Checkout the source code (using the cmd)
+
+	> git clone https://github.com/jwurzer/glslScene.git
+	> cd glslScene
+	glslScene> git submodule update --init --recursive
+
+##### Necessary Libraries: SDL, GLM and GLEW
+
+Create a subdirectory **lib** at glslScene (direct inside of glslScene).
+
+Download the following libraries into the lib directory:
+
+* SDL library - https://www.libsdl.org/release/SDL2-devel-2.0.10-VC.zip
+* GLM library - https://github.com/g-truc/glm/releases/download/0.9.9.6/glm-0.9.9.6.zip
+* GLEW library - https://sourceforge.net/projects/glew/files/glew/2.1.0/glew-2.1.0-win32.zip/download
+
+Extract `SDL2-devel-2.0.10-VC.zip`, `glm-0.9.9.6.zip` and `glew-2.1.0-win32.zip` direct into the **lib** directory.
+The CMakeLists.txt except this paths.
+
+After extraction the hierachy of the lib folder **must** look like this:
+
+	glslScene\lib               (contains the zip files and the sub directories glew-2.1.0, glm and SDL-2.0.10)
+	glslScene\lib\glew-2.1.0    (contains LICENSE.txt and the sub dirs bin, doc, include and lib)
+	glslScene\lib\glew-2.1.0\bin
+	glslScene\lib\glew-2.1.0\doc
+	glslScene\lib\glew-2.1.0\include
+	glslScene\lib\glew-2.1.0\lib
+	glslScene\lib\glm           (contains some files and the sub dirs doc, glm, test and util)
+	glslScene\lib\glm\doc
+	glslScene\lib\glm\glm
+	glslScene\lib\glm\test
+	glslScene\lib\glm\util
+	glslScene\lib\SDL2-2.0.10   (contains some txt files and the sub dirs docs, include and lib)
+	glslScene\lib\SDL2-2.0.10\docs
+	glslScene\lib\SDL2-2.0.10\include
+	glslScene\lib\SDL2-2.0.10\lib
+
+##### Create Visual Studio solution
+
+Open a command line (cmd) go into the glslScene directory and enter the command make
+
+	glslScene> make
+
+This creates a subdirectory build and calls CMake to create a solution inside the build directory.
+After this the message `"Open the project with Visual Studio and compile it ;-)"` should be printed.
+
+##### Compile glslScene
+
+Go into the build directory open the solution glslScene.sln. In Visual Studio there are three projects: ALL_BUILD, glslScene and ZERO_CHECK. Select the glslScene project as Startup project. Compile the project glslScene und run it.
 
 License
 -------
