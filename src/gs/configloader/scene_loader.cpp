@@ -19,6 +19,7 @@
 #include <gs/res/resource_manager.h>
 #include <gs/rendering/render_pass_manager.h>
 #include <gs/scene/scene_manager.h>
+#include <gs/common/ssize.h>
 #include <cfg/cfg.h>
 
 namespace gs

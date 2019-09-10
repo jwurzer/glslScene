@@ -12,6 +12,7 @@
 #include <gs/gui/gui_manager.h>
 #include <gs/common/vertex.h>
 #include <gs/common/fs.h>
+#include <gs/common/ssize.h>
 #include <gs/configloader/scene_loader.h>
 #include <gs/scene/scene.h>
 #include <gs/camera.h>

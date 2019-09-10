@@ -2,6 +2,7 @@
 
 #include <gs/configloader/uniform_attr_loader.h>
 #include <gs/common/str.h>
+#include <gs/common/ssize.h>
 #include <gs/system/log.h>
 #include <gs/res/texture.h>
 #include <gs/res/resource_manager.h>
