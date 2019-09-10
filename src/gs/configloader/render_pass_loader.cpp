@@ -7,6 +7,7 @@
 #include <gs/ecs/transform_component.h>
 #include <gs/system/log.h>
 #include <gs/camera.h>
+#include <gs/common/ssize.h>
 #include <cfg/cfg.h>
 #include <glm/gtc/matrix_transform.hpp>
 

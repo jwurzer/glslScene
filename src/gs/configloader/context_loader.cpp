@@ -1,5 +1,6 @@
 #include <gs/configloader/context_loader.h>
 #include <gs/system/log.h>
+#include <gs/common/ssize.h>
 #include <cfg/cfg.h>
 #include <vector>
 
