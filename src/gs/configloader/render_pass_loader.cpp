@@ -39,44 +39,49 @@ namespace gs
 		bool setViewMatrix(RenderPass& pass, const cfg::NameValuePair& cfgValue)
 		{
 			if (cfgValue.mName.mText != "view-matrix") {
-				LOGE("no projection section! '%s'\n",
+				LOGE("no view section! '%s'\n",
 						cfgValue.mName.mText.c_str());
 				return false;
 			}
 			const cfg::Value* lookAt = nullptr;
 			const cfg::Value* transformCfg= nullptr;
-			const cfg::Value* cameraCfg = nullptr;
+			const std::vector<cfg::Value>* cameraCfg = nullptr;
 			cfg::SelectRule cfgRules[] = {
 					cfg::SelectRule("look-at", &lookAt, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_ALL),
 					cfg::SelectRule("transform", &transformCfg, cfg::SelectRule::RULE_OPTIONAL),
 					cfg::SelectRule("camera", &cameraCfg, cfg::SelectRule::RULE_OPTIONAL),
 					cfg::SelectRule("")
 			};
+			std::string errMsg;
 			size_t nextPos = 0;
 			ssize_t storeCnt = cfgValue.mValue.objectGet(
-					cfgRules, false, false, false, false, false, 0, &nextPos);
+					cfgRules, false, false, false, false, false, 0, &nextPos,
+					cfg::EReset::RESET_POINTERS_TO_NULL, &errMsg);
 			if (storeCnt < 0) {
-				LOGE("projection config is wrong, rv %d\n", int(storeCnt));
+				LOGE("%s: view config is wrong. rv = %zd, err msg: %s\n",
+						cfgValue.mValue.getFilenameAndPosition().c_str(),
+						storeCnt, errMsg.c_str());
 				return false;
 			}
 			if (cameraCfg) {
-				if (cameraCfg->mArray.size() != 2 && cameraCfg->mArray.size() != 3) {
-					LOGE("Wrong camera value format.\n");
+				const std::vector<cfg::Value>& camArray = *cameraCfg;
+				if (camArray.size() != 2 && camArray.size() != 3) {
+					LOGE("Wrong camera value format. %zu\n", camArray.size());
 					return false;
 				}
-				if (!cameraCfg->mArray[0].isBool()) {
+				if (!camArray[0].isBool()) {
 					LOGE("First camera value must be a boolean.\n");
 					return false;
 				}
-				if (cameraCfg->mArray[0].mBool) {
+				if (camArray[0].mBool) {
 					if (transformCfg) {
 						LOGE("camera can't be combined.\n");
 						return false;
 					}
 					pass.mCamera = std::make_shared<Camera>();
-					pass.mCamera->setSpeed(cameraCfg->mArray[1].mFloatingPoint);
-					if (cameraCfg->mArray.size() >= 3) {
-						pass.mCamera->setRotateDistance(cameraCfg->mArray[2].mFloatingPoint);
+					pass.mCamera->setSpeed(camArray[1].mFloatingPoint);
+					if (camArray.size() >= 3) {
+						pass.mCamera->setRotateDistance(camArray[2].mFloatingPoint);
 					}
 				}
 			}
@@ -138,11 +143,15 @@ namespace gs
 					cfg::SelectRule("frustum", &frustum, cfg::SelectRule::RULE_OPTIONAL, cfg::SelectRule::ALLOW_ALL),
 					cfg::SelectRule("")
 			};
+			std::string errMsg;
 			size_t nextPos = 0;
 			ssize_t storeCnt = cfgValue.mValue.objectGet(
-					cfgRules, false, false, false, false, false, 0, &nextPos);
+					cfgRules, false, false, false, false, false, 0, &nextPos,
+					cfg::EReset::RESET_POINTERS_TO_NULL, &errMsg);
 			if (storeCnt < 0) {
-				LOGE("projection config is wrong, rv %d\n", int(storeCnt));
+				LOGE("%s: projection config is wrong. rv = %zd, err msg: %s\n",
+						cfgValue.mValue.getFilenameAndPosition().c_str(),
+						storeCnt, errMsg.c_str());
 				return false;
 			}
 			if (ortho) {
@@ -273,7 +282,7 @@ namespace gs
 			bool depthTest = false;
 			cfg::SelectRule cfgRules[] = {
 					cfg::SelectRule("framebuffer-id", &fbIdName, cfg::SelectRule::RULE_MUST_EXIST),
-					cfg::SelectRule("clear-color", &clearColor, cfg::SelectRule::RULE_MUST_EXIST),
+					cfg::SelectRule("clear-color", &clearColor, cfg::SelectRule::RULE_MUST_EXIST, cfg::SelectRule::ALLOW_ARRAY),
 					cfg::SelectRule("projection-matrix", &projectionCfg, cfg::SelectRule::RULE_OPTIONAL),
 					cfg::SelectRule("view-matrix", &viewCfg, cfg::SelectRule::RULE_OPTIONAL),
 					cfg::SelectRule("scene-id", &sceneIdName, cfg::SelectRule::RULE_MUST_EXIST),
@@ -281,11 +290,15 @@ namespace gs
 					cfg::SelectRule("")
 			};
 
+			std::string errMsg;
 			size_t nextPos = 0;
 			ssize_t storeCnt = cfgValue.mValue.objectGet(
-					cfgRules, false, false, false, false, false, 0, &nextPos);
+					cfgRules, false, false, false, false, false, 0, &nextPos,
+					cfg::EReset::RESET_POINTERS_TO_NULL, &errMsg);
 			if (storeCnt < 0) {
-				LOGE("render-pass config is wrong\n");
+				LOGE("%s: render-pass config is wrong. rv = %zd, err msg: %s\n",
+						cfgValue.mValue.getFilenameAndPosition().c_str(),
+						storeCnt, errMsg.c_str());
 				return false;
 			}
 			TFramebufferId fbId = 0;

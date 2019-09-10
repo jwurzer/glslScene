@@ -318,18 +318,22 @@ namespace gs
 			for (unsigned int i = startIndex; i < cnt; ++i) {
 				const auto& vp = cfgValue.mObject[i]; // vp ... value pair
 				if (vp.mName.mText != "entity") {
-					LOGE("Only a entity is here allowed! '%s' is not supported here\n",
+					LOGE("%s: Only a entity is here allowed! '%s' is not supported here\n",
+							vp.mName.getFilenameAndPosition().c_str(),
 							vp.mName.mText.c_str());
-					vp.mName.printFilePositionAsError();
 					return false;
 				}
+				std::string errMsg;
 				size_t nextPos = 0;
 				ssize_t storeCnt = vp.mValue.objectGet(
 						cfgRulesEntity, false, false, true, false, false, 0,
-						&nextPos);
+						&nextPos,
+						cfg::EReset::RESET_POINTERS_TO_NULL,
+						&errMsg);
 				if (storeCnt < 0) {
-					LOGE("Can't read entity section correct! Wrong format! error: %zd\n", storeCnt);
-					vp.mValue.printFilePositionAsError();
+					LOGE("%s: Can't read entity section correct! Wrong format! error: %zd, err msg: %s\n",
+							vp.mValue.getFilenameAndPosition().c_str(),
+							storeCnt, errMsg.c_str());
 					return false;
 				}
 				//LOGI("storeCnt %zd, nextPos %zu, array size %zu\n", storeCnt, nextPos, vp.mValue.mObject.size());

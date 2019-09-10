@@ -647,7 +647,8 @@ gs::TFramebufferId gs::resloader::addFramebuffer(ResourceManager& rm, const cfg:
 	const cfg::Value* sizeValue = nullptr;
 	cfg::SelectRule cfgRules[] = {
 			cfg::SelectRule("id", &idName, cfg::SelectRule::RULE_MUST_EXIST),
-			cfg::SelectRule("size", &sizeValue, cfg::SelectRule::RULE_MUST_EXIST, cfg::SelectRule::ALLOW_OBJECT | cfg::SelectRule::ALLOW_TEXT),
+			cfg::SelectRule("size", &sizeValue, cfg::SelectRule::RULE_MUST_EXIST,
+					cfg::SelectRule::ALLOW_ARRAY | cfg::SelectRule::ALLOW_TEXT),
 			cfg::SelectRule("")
 	};
 
