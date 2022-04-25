@@ -4,6 +4,7 @@
 #include <gs/res/resource.h>
 #include <gs/rendering/gl_api.h>
 #include <gs/common/rect.h>
+#include <gs/common/color.h>
 #include <string>
 
 namespace gs
@@ -20,6 +21,15 @@ namespace gs
 		LINEAR,
 	};
 
+	enum class TexWrap
+	{
+		DEFAULT = 0, // use the default behaviour of opengl, default of GL should be GL_REPEAT
+		REPEAT,
+		MIRRORED_REPEAT,
+		CLAMP_TO_EDGE,
+		CLAMP_TO_BORDER,
+	};
+
 	class ColorU32;
 
 	class Texture: public Resource
@@ -27,7 +37,9 @@ namespace gs
 	public:
 		Texture(const std::weak_ptr<FileChangeMonitoring>& fcm,
 				const std::string& filename,
-				TexMipmap mipmap, TexFilter minFilter, TexFilter magFilter);
+				TexMipmap mipmap, TexFilter minFilter, TexFilter magFilter,
+				TexWrap wrap = TexWrap::DEFAULT,
+				const Color& clampBorderColor = Color::black());
 		virtual ~Texture();
 
 		virtual ResType getType() const override;
@@ -44,6 +56,7 @@ namespace gs
 		TexMipmap getMipmap() const;
 		TexFilter getMinFilter() const;
 		TexFilter getMagFilter() const;
+		TexWrap getTexWrap() const;
 		unsigned int getWidth() const;
 		unsigned int getHeight() const;
 		unsigned int getBytePerPixel() const;
@@ -57,6 +70,9 @@ namespace gs
 		TexMipmap mMipmap;
 		TexFilter mMinFilter;
 		TexFilter mMagFilter;
+		TexWrap mWrap;
+		Color mClampBorderColor;
+
 		unsigned int mWidth;
 		unsigned int mHeight;
 		unsigned int mBytePerPixel; // should be 4 (4 for RGBA)

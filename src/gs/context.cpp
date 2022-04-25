@@ -41,6 +41,7 @@ gs::Context::Context(const std::string& progname)
 	mProperties.mWindowSizeI.mHeight = SCREEN_HEIGHT;
 	mProperties.mWindowSize.mWidth = static_cast<float>(mProperties.mWindowSizeI.mWidth);
 	mProperties.mWindowSize.mHeight = static_cast<float>(mProperties.mWindowSizeI.mHeight);
+	mProperties.mWindowRatio = Size2f(mProperties.mWindowSize.mWidth / mProperties.mWindowSize.mHeight, 1.0f);
 
 	if (!selectScene(progname)) {
 		LOGE("Can't load scene file\n");
@@ -165,7 +166,7 @@ bool gs::Context::run()
 					break;
 				case SDL_MOUSEMOTION:
 					mProperties.mMousePosPixel = Vector2f(static_cast<float>(e.motion.x),
-							static_cast<float>(mProperties.mWindowSize.mHeight - e.motion.y - 1));
+							static_cast<float>(mProperties.mWindowSizeI.mHeight - e.motion.y - 1));
 					mProperties.mMousePosFactor = Vector2f(
 							mProperties.mMousePosPixel.x / mProperties.mWindowSize.mWidth,
 							mProperties.mMousePosPixel.y / mProperties.mWindowSize.mHeight);

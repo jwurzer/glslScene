@@ -507,6 +507,7 @@ bool gs::sceneloader::addTransform(const cfg::Value& cfgValue,
 		} else if (transformName == "rotate-radian") {
 			// rotate-radian <angle>
 			// rotate-radian <angle> <center-x> <center-y>
+			// rotate-radian <angle> <rot-axis-x> <rot-axis-y> <rot-axis-z>
 			if (cnt == 2) {
 				transform2d.rotateRadian(arr[1].mFloatingPoint);
 			} else if (cnt == 4) {

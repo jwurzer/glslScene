@@ -8,10 +8,35 @@
 #include <stb/stb_image.h>
 #include <string.h>
 
+namespace gs
+{
+	namespace
+	{
+		GLint getOpenGLWrapping(TexWrap wrap)
+		{
+			switch (wrap) {
+				case TexWrap::DEFAULT:
+					return GL_REPEAT;
+				case TexWrap::REPEAT:
+					return GL_REPEAT;
+				case TexWrap::MIRRORED_REPEAT:
+					return GL_MIRRORED_REPEAT;
+				case TexWrap::CLAMP_TO_EDGE:
+					return GL_CLAMP_TO_EDGE;
+				case TexWrap::CLAMP_TO_BORDER:
+					return GL_CLAMP_TO_BORDER;
+			}
+			return GL_REPEAT;
+		}
+	}
+}
+
 gs::Texture::Texture(const std::weak_ptr<FileChangeMonitoring>& fcm,
-		const std::string& filename, TexMipmap mipmap, TexFilter minFilter, TexFilter magFilter)
+		const std::string& filename, TexMipmap mipmap, TexFilter minFilter,
+		TexFilter magFilter, TexWrap wrap, const Color& clampBorderColor)
 		:Resource(fcm), mFilename(filename),
 		mMipmap(mipmap), mMinFilter(minFilter), mMagFilter(magFilter),
+		mWrap(wrap), mClampBorderColor(clampBorderColor),
 		mWidth(0), mHeight(0),
 		mBytePerPixel(0), mUpdateArea(0, 0, 0, 0), mData(nullptr),
 		mGlTexId(0)
@@ -69,10 +94,9 @@ bool gs::Texture::load()
 #ifdef COLORING_TEX_FOR_DEBUGGING
 			coloringTextureForDebugging(*this);
 #endif
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			break;
 	}
+
 	switch (mMinFilter)
 	{
 		case TexFilter::NEAREST:
@@ -86,6 +110,7 @@ bool gs::Texture::load()
 							GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 			break;
 	}
+
 	switch (mMagFilter)
 	{
 		case TexFilter::NEAREST:
@@ -97,6 +122,16 @@ bool gs::Texture::load()
 					GL_LINEAR);
 			break;
 	}
+
+	if (mWrap != TexWrap::DEFAULT) {
+		GLint glWrap = getOpenGLWrapping(mWrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrap);
+		if (mWrap == TexWrap::CLAMP_TO_BORDER) {
+			glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, mClampBorderColor.rgba);
+		}
+	}
+
 	glBindTexture(GL_TEXTURE_2D, 0); // unbind
 	if (getHotReloadingFileCount() == 0) {
 		addFileForHotReloading(mFilename);
@@ -194,6 +229,11 @@ gs::TexFilter gs::Texture::getMinFilter() const
 gs::TexFilter gs::Texture::getMagFilter() const
 {
 	return mMagFilter;
+}
+
+gs::TexWrap gs::Texture::getTexWrap() const
+{
+	return mWrap;
 }
 
 unsigned int gs::Texture::getWidth() const

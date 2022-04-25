@@ -33,7 +33,8 @@ void gs::Renderer::render(const std::shared_ptr<Entity>& e, const ResourceManage
 	Matrices m;
 	m.mEntityMatrix = glm::mat4(1.0f);
 	m.mModelMatrix *= m.mEntityMatrix;
-	m.mModelViewMatrix = m.mModelMatrix * properties.mViewMatrix;
+	m.mModelViewMatrix = properties.mViewMatrix * m.mModelMatrix;
+	//m.mModelViewMatrix = m.mModelMatrix * properties.mViewMatrix;
 	m.mMvpMatrix = properties.mProjectionMatrix * m.mModelViewMatrix;
 	properties.mModelMatrix = m.mModelMatrix;
 	mMatrixStack.push_back(m); // push after m is set correct
