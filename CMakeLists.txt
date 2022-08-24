@@ -37,9 +37,9 @@ endif ()
 file(GLOB_RECURSE PRJ_HEADERFILES include/*.h external/tml/include/*.h
 		external/imgui/imconfig.h
 		external/imgui/imgui.h
-		external/imgui/examples/imgui_impl_opengl2.h
-		external/imgui/examples/imgui_impl_opengl3.h
-		external/imgui/examples/imgui_impl_sdl.h
+		external/imgui/backends/imgui_impl_opengl2.h
+		external/imgui/backends/imgui_impl_opengl3.h
+		external/imgui/backends/imgui_impl_sdl.h
 		external/imgui/imgui_internal.h
 		external/imgui/imstb_rectpack.h
 		external/imgui/imstb_textedit.h
@@ -50,10 +50,11 @@ file(GLOB_RECURSE PRJ_SOURCEFILES src/*.cpp external/tml/src/cfg/*.cpp external/
 		external/imgui/imgui.cpp
 		external/imgui/imgui_demo.cpp
 		external/imgui/imgui_draw.cpp
-		external/imgui/examples/imgui_impl_opengl2.cpp
-		external/imgui/examples/imgui_impl_opengl3.cpp
-		external/imgui/examples/imgui_impl_sdl.cpp
+		external/imgui/backends/imgui_impl_opengl2.cpp
+		external/imgui/backends/imgui_impl_opengl3.cpp
+		external/imgui/backends/imgui_impl_sdl.cpp
 		external/imgui/imgui_widgets.cpp
+		external/imgui/imgui_tables.cpp
 		)
 
 

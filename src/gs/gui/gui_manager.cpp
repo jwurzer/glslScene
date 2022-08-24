@@ -1,9 +1,9 @@
 #include <gs/gui/gui_manager.h>
 
 #include <imgui.h>
-#include <examples/imgui_impl_sdl.h>
-#include <examples/imgui_impl_opengl2.h>
-#include <examples/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_sdl.h>
+#include <backends/imgui_impl_opengl2.h>
+#include <backends/imgui_impl_opengl3.h>
 
 #include <gs/context_properties.h>
 
