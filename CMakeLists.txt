@@ -46,7 +46,10 @@ file(GLOB_RECURSE PRJ_HEADERFILES include/*.h external/tml/include/*.h
 		external/imgui/imstb_truetype.h
 		)
 
-file(GLOB_RECURSE PRJ_SOURCEFILES src/*.cpp external/tml/src/cfg/*.cpp external/tml/src/tml/*.cpp
+file(GLOB_RECURSE PRJ_SOURCEFILES src/*.cpp
+		external/tml/src/cfg/*.cpp
+		external/tml/src/tml/*.cpp
+		external/tml/src/interpreter/*.cpp
 		external/imgui/imgui.cpp
 		external/imgui/imgui_demo.cpp
 		external/imgui/imgui_draw.cpp

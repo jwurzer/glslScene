@@ -8,7 +8,7 @@
 #include <gs/ecs/shader_component.h>
 #include <gs/ecs/mesh_component.h>
 #include <gs/logic/glsl_sandbox_logic.h>
-#include "gs/logic/rotate_logic.h"
+#include <gs/logic/rotate_logic.h>
 #include <gs/logic/light_matrix_logic.h>
 #include <gs/logic/script_logic.h>
 #include <gs/logic/c_wrapper_logic.h>

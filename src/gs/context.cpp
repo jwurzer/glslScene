@@ -13,6 +13,7 @@
 #include <gs/common/vertex.h>
 #include <gs/common/fs.h>
 #include <gs/common/ssize.h>
+#include <gs/configloader/config_loader.h>
 #include <gs/configloader/scene_loader.h>
 #include <gs/scene/scene.h>
 #include <gs/camera.h>
@@ -27,6 +28,7 @@
 #include <vector>
 #include <cfg/cfg.h>
 #include <tml/tml_parser.h>
+#include <tml/tml_string.h>
 
 //Screen dimension constants
 #define SCREEN_WIDTH 800
@@ -284,11 +286,10 @@ bool gs::Context::selectScene(const std::string& progname)
 #endif
 
 	mSceneFilename = "scene.tml";
-	cfg::TmlParser parser(mSceneFilename);
 	mSceneConfig.reset(new cfg::NameValuePair());
-	if (!parser.getAsTree(*mSceneConfig)) {
-		LOGE("Can't parse scene file. Error: %s\n",
-				parser.getExtendedErrorMsg().c_str());
+	if (!configloader::getConfigAsTree(mSceneFilename, *mSceneConfig)) {
+		LOGE("Can't load scene file. %s\n", mSceneFilename.c_str());
+		LOGD("%s", cfg::tmlstring::valueToString(0, mSceneConfig->mValue).c_str());
 		return false;
 	}
 	return true;
@@ -488,9 +489,9 @@ void gs::Context::reload()
 	mReloadSceneNow = false;
 
 	std::unique_ptr<cfg::NameValuePair> sceneConfig(new cfg::NameValuePair());
-	cfg::TmlParser parser(mSceneFilename);
-	if (!parser.getAsTree(*sceneConfig)) {
-		LOGE("Parse scene config file failed!\n");
+	if (!configloader::getConfigAsTree(mSceneFilename, *sceneConfig)) {
+		LOGE("Can't load scene file. %s\n", mSceneFilename.c_str());
+		LOGD("%s", cfg::tmlstring::valueToString(0, mSceneConfig->mValue).c_str());
 		return;
 	}
 	bool reloadResourceManager = true;
