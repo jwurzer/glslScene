@@ -141,45 +141,53 @@ glm::mat4 gs::Projection::applyProjection(const gs::Properties &p, float width, 
 				}
 				projectionMatrix = glm::ortho(viewLeft, viewRight,
 						viewBottom, viewTop, viewNear, viewFar);
-				viewSize = glm::vec3(viewRight - viewLeft, viewTop - viewBottom, viewFar - viewNear);
+				// TODO should be the viewSize signed? (not abs() ?)
+				viewSize = glm::vec3(std::abs(viewRight - viewLeft), std::abs(viewTop - viewBottom), std::abs(viewFar - viewNear));
 				break;
 			}
 
 			float viewWidth = viewRight - viewLeft;
+			float absViewWidth = std::abs(viewWidth);
 			float halfWidth = viewWidth * 0.5f;
 			float centerX = viewLeft + halfWidth;
 			//float widthFactor = viewWidth / width;
 
 			float viewHeight = viewTop - viewBottom;
+			float absViewHeight = std::abs(viewHeight);
 			float halfHeight = viewHeight * 0.5f;
 			float centerY = viewBottom + halfHeight;
 			//float heightFactor = viewHeight / height;
 
 			float resRatio = width / height;
 			float viewRatio = viewWidth / viewHeight;
+			float absResRatio = std::abs(resRatio);
+			float absViewRatio = std::abs(viewRatio);
 
 			if (mProjectionMode == ProjectionMode::ORTHO_CUSTOM_SHRINK_TO_FIT) {
-				if (resRatio < viewRatio) {
-					viewHeight = viewWidth / resRatio;
+				if (absResRatio < absViewRatio) {
+					absViewHeight = absViewWidth / absResRatio;
 				}
 				else {
-					viewWidth = viewHeight * resRatio;
+					absViewWidth = absViewHeight * absResRatio;
 				}
 			}
 			else if (mProjectionMode == ProjectionMode::ORTHO_CUSTOM_WIDTH_FIT) {
-				viewHeight = viewWidth / resRatio;
+				absViewHeight = absViewWidth / absResRatio;
 			}
 			else if (mProjectionMode == ProjectionMode::ORTHO_CUSTOM_HEIGHT_FIT) {
-				viewWidth = viewHeight * resRatio;
+				absViewWidth = absViewHeight * absResRatio;
 			}
 			else if (mProjectionMode == ProjectionMode::ORTHO_CUSTOM_CROP) {
-				if (resRatio < viewRatio) {
-					viewWidth = viewHeight * resRatio;
+				if (absResRatio < absViewRatio) {
+					absViewWidth = absViewHeight * absResRatio;
 				}
 				else {
-					viewHeight = viewWidth / resRatio;
+					absViewHeight = absViewWidth / absResRatio;
 				}
 			}
+
+			viewWidth = viewWidth < 0.0f ? -absViewWidth : absViewWidth;
+			viewHeight = viewHeight < 0.0f ? -absViewHeight : absViewHeight;
 
 			halfWidth = viewWidth * 0.5f;
 			halfHeight = viewHeight * 0.5f;
@@ -194,7 +202,8 @@ glm::mat4 gs::Projection::applyProjection(const gs::Properties &p, float width, 
 			}
 			projectionMatrix = glm::ortho(
 					viewLeft, viewRight, viewBottom, viewTop, viewNear, viewFar);
-			viewSize = glm::vec3(viewRight - viewLeft, viewTop - viewBottom, viewFar - viewNear);
+			// TODO should be the viewSize signed? (not abs() ?)
+			viewSize = glm::vec3(std::abs(viewRight - viewLeft), std::abs(viewTop - viewBottom), std::abs(viewFar - viewNear));
 			break;
 		}
 		case ProjectionMode::PERSPECTIVE_WINDOW_RATIO:
